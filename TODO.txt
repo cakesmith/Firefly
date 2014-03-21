@@ -1,0 +1,79 @@
+- documentation
+
+- test benches
+
+- memory reports
+
+- fix function call with wrong amount of arguments (signatures?)
+
+- Optimize OS code
+
+- change Exceptions in Ultron to SyntaxErrors with filename and line number
+    + maybe print a snippet
+    
+- fix some parsing error messages 
+    "found identifier 'Screen' expected 'do let while if return'" 
+    instead of possibly confusing "expected }"
+
+- refactor Jarvis code
+    + refactor file handling code
+    + make a compile chain
+    
+- add variables on the fly with let statements, would have to implement 
+    cacheing of entire vm function writing until end of function. Symbol table 
+    can be updated during descent and then variables added to the var statement
+    automatically.
+    
+- arrange so that methods on this are explicitly called with this.method()
+  and functions are called without Class.function() unless calling a function
+  from another class
+
+- defragmentation
+
+- stress testing
+
+- macros
+
+- fix color problems
+
+- option for indentation instead of {}?
+
+- add some syntactic sugar for elif % ^ <= >= != !> !< += -= and or xor not 
+
+- keyword arguments?
+
+- add grow() and slice() to arrays
+    + Done
+    
+- add negative indexing to arrays
+    + Done
+  
+- referenced based garbage collection?
+    - (dispose of string literals)
+
+- operator precidence?
+
+- be aware of referencing a non initialized array
+    + almost everything as a first class object?
+    + strictly/loosely/un- typed?
+
+- virtual machine emulator
+    + profiling
+    + breakpoints
+        - step in and out of functions
+        - memory locations changing
+        
+
+- refactor jarvis code to make it nicer
+
+- add a GUI
+
+- make some hardware
+    + video
+    + keyboard
+
+- make a daisy chain bus controller for peripherals
+
+- ...
+
+- profit

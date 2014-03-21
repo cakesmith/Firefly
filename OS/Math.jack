@@ -1,0 +1,206 @@
+// Math v1.0
+
+
+/**
+ * A basic math library.
+ */
+class Math {
+    
+    static Array twoToThe
+    
+    static int intSize, sqrtHelper, divHelper
+    
+    
+    /** Initializes the library. */
+    function void init() {
+        var int power
+        
+        // Number of bits in an int
+        let intSize = 16
+        
+        
+        let sqrtHelper = (intSize/2) - 1 
+        let twoToThe = Array.new(intSize)
+
+        let power = 1
+        let twoToThe[0] = 1
+        
+        while power < (intSize + 1) {
+            let twoToThe[power] = twoToThe[power - 1] + twoToThe[power - 1]
+            let power = power + 1
+        }
+    
+
+        
+    }
+
+    /** 
+     * Returns 2^x
+     */
+     
+    function int twoToThe(int x) {
+        return twoToThe[x]
+    }
+    
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+    
+        if x < 0 { return -x }
+        return x
+    }
+
+    /** Returns the product of x and y. */
+    function int multiply(int x, int y) {
+        var int sum, shiftedX, j
+        
+        let j = 0
+        let sum = 0
+        let shiftedX = x
+        
+        while j < (intSize) {
+            if Math.bit(y, j) {
+                let sum = sum + shiftedX
+            }
+        let shiftedX = shiftedX + shiftedX
+        let j = j + 1
+        }
+        
+        return sum
+        
+    }
+    
+    /** Returns true if the j-th bit of x is 1 and false otherwise */
+    function boolean bit(int x, int j) {
+        if !((x & twoToThe[j]) = 0) {
+            return true
+        }
+        return false
+    
+    }
+        
+    /** Returns the integer part of x/y. 
+     *  function returns 0 if y > x
+     *  function returns -1 for overflow
+     * */
+    function int divide(int x, int y) {
+        var boolean sign
+        
+        if y = 0 {
+            // Divide by zero
+            do Sys.error(5)
+        }
+        
+        // sign is true iff x and y have differing signs
+        
+        let sign = Math.xor(x, y) < 0
+        
+        
+        let x = Math.abs(x)
+        let y = Math.abs(y)
+        
+        if sign { 
+            return -Math._subdivide(x,y)
+        } 
+        
+        return Math._subdivide(x,y)
+        
+        
+        
+    }
+    
+    /** 
+     * wrapper for Math.divide
+     */
+     
+    function int div(int x, int y) {
+        return(Math.divide(x, y))
+    }
+    
+    function int _subdivide(int x, int y) {
+        var int q
+
+        if (y > x) | (y < 0) { 
+            let divHelper = 0
+            return 0 
+        }
+        
+        let q = Math._subdivide(x, y+y)
+        
+        if (x - divHelper) < y {
+            return q + q
+        } else {
+            let divHelper = divHelper + y
+            return q + q + 1
+        }
+    }
+
+    function int xor(int x, int y) {
+        return (x & !y) | (!x & y)
+    }
+    
+    /** Returns the integer part of the square root of x. 
+     * 
+     *  Strategy: find an integer y such that y^2 <= x < (y+1)^2
+     *  by performing a binary search in the range 0..2^(n/2)-1
+     * 
+     * */
+     
+    function int sqrt(int x) {
+        var int j, y, t, tt
+        
+        let j = sqrtHelper
+        let y = 0
+        
+        while (j > 0) | (j = 0) {
+            
+            let t = y + twoToThe[j]
+            let tt = (t * t)
+            
+            if ((tt < x) | (tt = x)) & (tt > 0) {
+                let y = t
+            }
+            
+        let j = j - 1
+        }   
+    
+    return y
+    }
+    
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+        if b > a {
+            return b
+        }
+        return a
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+        if b < a {
+            return b
+        }
+        return a
+    }
+    
+    
+    /** 
+     * Modulo
+     */
+     function int mod(int n, int base) {         
+         return(n - ((n / base) * base))
+     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+}

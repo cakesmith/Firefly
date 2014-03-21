@@ -1,0 +1,25 @@
+class Main {
+    function void main() {
+        var boolean test;
+        var int i, j;
+        
+        let i = 3;
+        let j = 4;
+        
+        if (i = 5) {
+            do Output.printString("I equals 5!");
+            do Output.println();
+        }
+        else {
+            if (i = 3) {
+                do Output.printString("I equals 3");
+                do Output.println();
+            }
+            else {
+                do Output.printString("Bad!");
+                do Output.println();
+            }
+        }
+
+    }
+}

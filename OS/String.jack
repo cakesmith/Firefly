@@ -1,0 +1,251 @@
+// String v1.0
+
+
+/**
+ * Represents a String object. Implements the String type.
+ */
+ 
+class String {
+
+    field Array self
+    field int length, pointer
+    
+    /** Constructs a new empty String with a maximum length of maxLength. */
+    constructor String new(int maxLength) {
+        var int i
+        
+        if maxLength < 0 {
+            let maxLength = 1
+        }
+        
+        let pointer = 0
+        
+        let length = maxLength
+        
+        let self = Array.new(maxLength)
+        
+        let i = 0
+        
+        while i < maxLength {
+            let self[i] = 32
+
+            let i = i + 1
+        }
+        
+        
+        return this
+    }
+
+    /** De-allocates the string and frees its space. */
+    method void dispose() {
+        let length = 0
+        let pointer = 0
+        do Array.dispose(self)
+    }
+
+    /** Returns the current length of this String. */
+    method int length() {
+        return length
+    }
+
+    /** 
+     * Returns the character at location j
+     * Allowing for negative, 0, and 
+     * wraparound indexing
+     */
+     
+    method char charAt(int j) {
+        
+        if j < 0 {
+            let j = Math.abs(length + j)
+        }
+        
+        if (j > length) | (j = length) {
+            let j = Math.mod(j, length)
+        }
+         
+           return self[j]
+
+        
+    }
+
+    /** Sets the j'th character of this string to be c. */
+    method void setCharAt(int j, char c) {
+    
+        if j < 0 {
+            let j = Math.abs(length + j)
+        }
+        
+        if (j > length) | (j = length) {
+            let j = Math.mod(j, length)
+        }
+
+        let self[j] = c
+            
+            
+    }
+
+    /** Appends the character c to the end of this String.
+     *  Returns this string as the return value. */
+    method String appendChar(char c) {
+        
+        
+        if pointer = length {
+            do grow(1)
+        }
+        
+        let self[pointer] = c
+        let pointer = pointer + 1
+        return this
+    }
+    
+    /**
+     * Returns a slice of this string 
+     */
+     
+    method String slice(int from, int to) {
+        var String slice
+        
+        if from = to {
+            let slice = String.new(1)
+            do slice.appendChar(charAt(from))
+            
+        } else {
+        
+            if from < to {
+            
+                let slice = String.new((to - from) + 1)
+                
+                while (from < to) | (from = to) {
+                    
+                    do slice.appendChar(charAt(from))
+                    
+                    let from = from + 1
+                }
+                
+            } else {  // to < from, reverse the slice and return it
+            
+                let slice = String.new((from - to) + 1)
+                
+                while (from > to) | (from = to) {
+                    
+                    do slice.appendChar(charAt(from))
+                    
+                    let from = from - 1
+                }
+            }
+        }
+    
+    return slice
+
+    }
+    
+    /** 
+     * Grows this string by n characters
+     */
+     
+    method void grow(int n) {
+        
+        var int i
+        
+        var Array chars
+        
+        let chars = Array.new(length + 1)
+        
+        let i = 0
+        while i < length {
+            let chars[i] = charAt(i)
+            let i = i + 1
+        }
+        
+        do self.dispose()
+
+        let self = chars
+        let length = length + 1
+
+    }
+
+    /** Erases the last character from this String. */
+    method void eraseLastChar() {
+        if pointer > 0 {
+            let pointer = pointer - 1
+            let length = length - 1
+        }
+    }
+
+    /** Returns the integer value of this String until the first non
+     *  numeric character. */
+    method int intValue() {
+        var int i, v, d
+        
+        if charAt(0) = 45 {
+            let i = 1
+        } else {
+            let i = 0
+        }
+        
+        let v = 0
+        
+        while i < length {
+            
+            let v = (v * 10) + (self[i] - 48)
+            let i = i + 1
+        }
+        
+        if charAt(0) = 45 {
+            return -v
+        }
+        
+        return v
+        
+    }
+
+    /** Sets this String to hold a representation of the given number. */
+    method void setInt(int number) {
+                
+        var int lastDigit, absNum
+        var char c
+        
+        let absNum = Math.abs(number)
+        
+        let lastDigit = Math.mod(absNum, 10)
+        
+        let c = lastDigit + 48
+
+        if absNum < 10 {
+            
+            let length = 1
+            let pointer = 0
+            
+            if number < 0 {
+                do appendChar(45)
+            }
+            
+            do appendChar(c)
+
+        } else {
+            
+            do setInt(number / 10)
+            do appendChar(c)
+            
+        }
+    }
+    
+
+    
+        
+    /** Returns the new line character. */
+    function char newLine() {
+        return(128)
+    }
+
+    /** Returns the backspace character. */
+    function char backSpace() {
+        return(129)
+    }
+
+    /** Returns the double quote (") character. */
+    function char doubleQuote() {
+        return(34)
+    }
+}

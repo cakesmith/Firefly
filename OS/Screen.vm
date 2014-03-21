@@ -1,0 +1,662 @@
+//
+function Screen.init 0
+//
+push constant 0
+not
+pop static 13
+push constant 512
+pop static 14
+push constant 256
+pop static 15
+push constant 16384
+pop static 16
+return
+
+//
+function Screen.clearScreen 1
+//
+push constant 8191
+pop local 0
+label Screen.clearScreen.while.0
+push local 0
+push constant 1
+neg
+gt
+not
+if-goto Screen.clearScreen.while.1
+push static 16
+push local 0
+add
+pop pointer 1
+push constant 0
+pop that 0
+push local 0
+push constant 1
+sub
+pop local 0
+goto Screen.clearScreen.while.0
+label Screen.clearScreen.while.1
+return
+
+//
+function Screen.setColor 0
+//
+push argument 0
+pop static 13
+return
+
+//
+function Screen.getColor 0
+//
+push static 13
+return
+
+//
+function Screen.drawPixel 4
+//
+push argument 0
+push constant 16
+call Math.divide 2
+push argument 1
+push constant 32
+call Math.multiply 2
+add
+pop local 0
+push argument 0
+push constant 16
+call Math.mod 2
+call Math.twoToThe 1
+pop local 1
+push static 16
+push local 0
+add
+pop pointer 1
+push pointer 1
+push static 16
+push local 0
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+push local 1
+not
+and
+push static 13
+push local 1
+and
+or
+pop that 0
+return
+
+//
+function Screen.drawHoriz 7
+//
+push argument 1
+push argument 0
+sub
+pop local 0
+push local 0
+push constant 0
+gt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawHoriz.if.0
+push local 0
+push constant 16
+gt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawHoriz.if.1
+push constant 16
+push argument 0
+push constant 16
+call Math.mod 2
+sub
+pop local 1
+push argument 2
+push constant 32
+call Math.multiply 2
+pop local 6
+label Screen.drawHoriz.while.0
+push local 1
+push constant 0
+gt
+not
+if-goto Screen.drawHoriz.while.1
+push argument 0
+push local 1
+add
+push constant 16
+call Math.divide 2
+push local 6
+add
+pop local 5
+push argument 0
+push local 1
+add
+push constant 16
+call Math.mod 2
+call Math.twoToThe 1
+pop local 3
+push static 16
+push local 5
+add
+pop pointer 1
+push pointer 1
+push static 16
+push local 5
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+push local 3
+not
+and
+push static 13
+push local 3
+and
+or
+pop that 0
+push local 1
+push constant 1
+sub
+pop local 1
+goto Screen.drawHoriz.while.0
+label Screen.drawHoriz.while.1
+push argument 0
+push constant 16
+push argument 0
+push constant 16
+call Math.mod 2
+sub
+add
+pop argument 0
+push argument 1
+push constant 16
+call Math.mod 2
+pop local 1
+label Screen.drawHoriz.while.2
+push local 1
+push constant 0
+gt
+not
+if-goto Screen.drawHoriz.while.3
+push argument 1
+push local 1
+sub
+push constant 16
+call Math.divide 2
+push local 6
+add
+pop local 5
+push argument 1
+push local 1
+sub
+push constant 16
+call Math.mod 2
+call Math.twoToThe 1
+pop local 3
+push static 16
+push local 5
+add
+pop pointer 1
+push pointer 1
+push static 16
+push local 5
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+push local 3
+not
+and
+push static 13
+push local 3
+and
+or
+pop that 0
+push local 1
+push constant 1
+sub
+pop local 1
+goto Screen.drawHoriz.while.2
+label Screen.drawHoriz.while.3
+push argument 1
+push argument 1
+push constant 16
+call Math.mod 2
+sub
+pop argument 1
+push argument 1
+push argument 0
+sub
+pop local 0
+label Screen.drawHoriz.while.4
+push local 0
+push constant 0
+gt
+not
+if-goto Screen.drawHoriz.while.5
+push argument 1
+push local 0
+sub
+push constant 16
+call Math.divide 2
+push local 6
+add
+pop local 5
+push static 16
+push local 5
+add
+pop pointer 1
+push static 13
+pop that 0
+push local 0
+push constant 16
+sub
+pop local 0
+goto Screen.drawHoriz.while.4
+label Screen.drawHoriz.while.5
+label Screen.drawHoriz.if.1
+if-goto Screen.drawHoriz.goto.0
+label Screen.drawHoriz.while.6
+push local 0
+push constant 0
+gt
+not
+if-goto Screen.drawHoriz.while.7
+push argument 0
+push local 0
+add
+push argument 2
+call Screen.drawPixel 2
+pop temp 0
+push local 0
+push constant 1
+sub
+pop local 0
+goto Screen.drawHoriz.while.6
+label Screen.drawHoriz.while.7
+label Screen.drawHoriz.goto.0
+label Screen.drawHoriz.if.0
+if-goto Screen.drawHoriz.goto.1
+push argument 1
+push argument 0
+push argument 2
+call Screen.drawHoriz 3
+pop temp 0
+label Screen.drawHoriz.goto.1
+return
+
+//
+function Screen.drawVert 3
+//
+push argument 2
+push argument 1
+sub
+push constant 0
+lt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawVert.if.0
+push argument 0
+push argument 2
+push argument 1
+call Screen.drawVert 3
+pop temp 0
+label Screen.drawVert.if.0
+if-goto Screen.drawVert.goto.0
+push argument 0
+push constant 16
+call Math.divide 2
+push argument 1
+push constant 32
+call Math.multiply 2
+add
+pop local 0
+push argument 0
+push constant 16
+call Math.mod 2
+call Math.twoToThe 1
+pop local 1
+label Screen.drawVert.while.0
+push argument 2
+push argument 1
+gt
+not
+if-goto Screen.drawVert.while.1
+push static 16
+push local 0
+add
+pop pointer 1
+push pointer 1
+push static 16
+push local 0
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+push local 1
+not
+and
+push static 13
+push local 1
+and
+or
+pop that 0
+push argument 2
+push constant 1
+sub
+pop argument 2
+push local 0
+push constant 32
+add
+pop local 0
+goto Screen.drawVert.while.0
+label Screen.drawVert.while.1
+label Screen.drawVert.goto.0
+return
+
+//
+function Screen.drawLine 5
+//
+push constant 0
+pop local 4
+push argument 2
+push argument 0
+sub
+pop local 0
+push local 0
+push constant 0
+eq
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.0
+push argument 0
+push argument 1
+push argument 3
+call Screen.drawVert 3
+pop temp 0
+push constant 0
+return
+label Screen.drawLine.if.0
+pop temp 1
+push argument 3
+push argument 1
+sub
+pop local 1
+push local 1
+push constant 0
+eq
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.1
+push argument 0
+push argument 2
+push argument 1
+call Screen.drawHoriz 3
+pop temp 0
+push constant 0
+return
+label Screen.drawLine.if.1
+pop temp 1
+push constant 0
+pop local 2
+push constant 0
+pop local 3
+push constant 0
+pop local 4
+push local 0
+push constant 0
+lt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.2
+push local 1
+push constant 0
+lt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.3
+push argument 2
+push argument 3
+push argument 0
+push argument 1
+call Screen.drawLine 4
+pop temp 0
+push constant 0
+return
+label Screen.drawLine.if.3
+if-goto Screen.drawLine.goto.0
+push local 0
+neg
+pop local 0
+label Screen.drawLine.while.0
+push local 2
+push local 0
+lt
+push local 2
+push local 0
+eq
+or
+push local 3
+push local 1
+lt
+push local 3
+push local 1
+eq
+or
+and
+not
+if-goto Screen.drawLine.while.1
+push argument 0
+push local 2
+sub
+push argument 1
+push local 3
+add
+call Screen.drawPixel 2
+pop temp 0
+push local 4
+push constant 0
+lt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.4
+push local 2
+push constant 1
+add
+pop local 2
+push local 4
+push local 1
+add
+pop local 4
+label Screen.drawLine.if.4
+if-goto Screen.drawLine.goto.1
+push local 3
+push constant 1
+add
+pop local 3
+push local 4
+push local 0
+sub
+pop local 4
+label Screen.drawLine.goto.1
+goto Screen.drawLine.while.0
+label Screen.drawLine.while.1
+push constant 0
+return
+label Screen.drawLine.goto.0
+label Screen.drawLine.if.2
+if-goto Screen.drawLine.goto.2
+push local 1
+push constant 0
+lt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.5
+push argument 2
+push argument 3
+push argument 0
+push argument 1
+call Screen.drawLine 4
+pop temp 0
+push constant 0
+return
+label Screen.drawLine.if.5
+pop temp 1
+label Screen.drawLine.goto.2
+label Screen.drawLine.while.2
+push local 2
+push local 0
+lt
+push local 2
+push local 0
+eq
+or
+push local 3
+push local 1
+lt
+push local 3
+push local 1
+eq
+or
+and
+not
+if-goto Screen.drawLine.while.3
+push argument 0
+push local 2
+add
+push argument 1
+push local 3
+add
+call Screen.drawPixel 2
+pop temp 0
+push local 4
+push constant 0
+lt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Screen.drawLine.if.6
+push local 2
+push constant 1
+add
+pop local 2
+push local 4
+push local 1
+add
+pop local 4
+label Screen.drawLine.if.6
+if-goto Screen.drawLine.goto.3
+push local 3
+push constant 1
+add
+pop local 3
+push local 4
+push local 0
+sub
+pop local 4
+label Screen.drawLine.goto.3
+goto Screen.drawLine.while.2
+label Screen.drawLine.while.3
+return
+
+//
+function Screen.drawRectangle 0
+//
+label Screen.drawRectangle.while.0
+push argument 1
+push constant 1
+sub
+push argument 3
+lt
+not
+if-goto Screen.drawRectangle.while.1
+push argument 0
+push argument 2
+push argument 1
+call Screen.drawHoriz 3
+pop temp 0
+push argument 1
+push constant 1
+add
+pop argument 1
+goto Screen.drawRectangle.while.0
+label Screen.drawRectangle.while.1
+return
+
+//
+function Screen.drawCircle 2
+//
+push argument 2
+call Math.abs 1
+pop argument 2
+push argument 2
+neg
+pop local 0
+label Screen.drawCircle.while.0
+push local 0
+push constant 1
+sub
+push argument 2
+lt
+not
+if-goto Screen.drawCircle.while.1
+push argument 2
+push argument 2
+call Math.multiply 2
+push local 0
+push local 0
+call Math.multiply 2
+sub
+call Math.sqrt 1
+pop local 1
+push argument 0
+push local 1
+sub
+push argument 1
+push local 0
+add
+push argument 0
+push local 1
+add
+push argument 1
+push local 0
+add
+call Screen.drawLine 4
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto Screen.drawCircle.while.0
+label Screen.drawCircle.while.1
+return
