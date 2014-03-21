@@ -201,11 +201,11 @@ class Output {
 
     function void _print(char c) {
         var Array printme
-        var int startX, startY, stopX, stopY, x, y
+        var int startX, startY, stopX, stopY, x, y, m, memloc, screenStart, y32, sx, py
         var boolean color
         
-        let color = Screen.getColor()
-        
+        let screenStart = 16384
+
         let printme = Output.getMap(c)
         
         let startX = cursorX * 8
@@ -216,19 +216,33 @@ class Output {
         
         let y = 0
         
+        let y32 = startY * 32
+
         while (startY + y) < stopY {
         
+        
         let x = 0
+        let sx = startX
+        let py = printme[y]
         
             while (startX + x) < stopX {
-                do Screen.setColor(Math.bit(printme[y], x))
-                do Screen.drawPixel(startX+x,startY+y)
+                //~ do Screen.setColor(Math.bit(printme[y], x))
+                //~ do Screen.drawPixel(startX+x,startY+y)
+                
+                let memloc = (sx/16) + y32
+                
+                let m = Math.twoToThe(Math.mod(sx, 16))
+
+                let color = Math.bit(py,x)
+                                
+                let screenStart[memloc] = (screenStart[memloc] & !m) | (color & m)
+        
+                let sx = sx + 1
                 let x = x + 1
             }
             let y = y + 1
+            let y32 = y32 + 32
         }
-        
-        do Screen.setColor(color)
     }
     
     /** Prints s starting at the cursor location, and advances the

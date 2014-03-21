@@ -3,13 +3,13 @@ function Screen.init 0
 //
 push constant 0
 not
-pop static 13
-push constant 512
 pop static 14
-push constant 256
+push constant 512
 pop static 15
-push constant 16384
+push constant 256
 pop static 16
+push constant 16384
+pop static 17
 return
 
 //
@@ -24,7 +24,7 @@ neg
 gt
 not
 if-goto Screen.clearScreen.while.1
-push static 16
+push static 17
 push local 0
 add
 pop pointer 1
@@ -42,13 +42,13 @@ return
 function Screen.setColor 0
 //
 push argument 0
-pop static 13
+pop static 14
 return
 
 //
 function Screen.getColor 0
 //
-push static 13
+push static 14
 return
 
 //
@@ -67,12 +67,12 @@ push constant 16
 call Math.mod 2
 call Math.twoToThe 1
 pop local 1
-push static 16
+push static 17
 push local 0
 add
 pop pointer 1
 push pointer 1
-push static 16
+push static 17
 push local 0
 add
 pop pointer 1
@@ -83,7 +83,7 @@ push temp 2
 push local 1
 not
 and
-push static 13
+push static 14
 push local 1
 and
 or
@@ -144,12 +144,12 @@ push constant 16
 call Math.mod 2
 call Math.twoToThe 1
 pop local 3
-push static 16
+push static 17
 push local 5
 add
 pop pointer 1
 push pointer 1
-push static 16
+push static 17
 push local 5
 add
 pop pointer 1
@@ -160,7 +160,7 @@ push temp 2
 push local 3
 not
 and
-push static 13
+push static 14
 push local 3
 and
 or
@@ -204,12 +204,12 @@ push constant 16
 call Math.mod 2
 call Math.twoToThe 1
 pop local 3
-push static 16
+push static 17
 push local 5
 add
 pop pointer 1
 push pointer 1
-push static 16
+push static 17
 push local 5
 add
 pop pointer 1
@@ -220,7 +220,7 @@ push temp 2
 push local 3
 not
 and
-push static 13
+push static 14
 push local 3
 and
 or
@@ -255,11 +255,11 @@ call Math.divide 2
 push local 6
 add
 pop local 5
-push static 16
+push static 17
 push local 5
 add
 pop pointer 1
-push static 13
+push static 14
 pop that 0
 push local 0
 push constant 16
@@ -337,12 +337,12 @@ push argument 1
 gt
 not
 if-goto Screen.drawVert.while.1
-push static 16
+push static 17
 push local 0
 add
 pop pointer 1
 push pointer 1
-push static 16
+push static 17
 push local 0
 add
 pop pointer 1
@@ -353,7 +353,7 @@ push temp 2
 push local 1
 not
 and
-push static 13
+push static 14
 push local 1
 and
 or

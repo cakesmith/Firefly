@@ -361,7 +361,7 @@ pop temp 1
 return
 
 //
-function String.intValue 4
+function String.intValue 5
 //
 push argument 0
 pop pointer 0
@@ -384,15 +384,6 @@ pop local 0
 label String.intValue.goto.0
 push constant 0
 pop local 1
-label String.intValue.while.0
-push local 0
-push this 1
-lt
-not
-if-goto String.intValue.while.1
-push local 1
-push constant 10
-call Math.multiply 2
 push pointer 1
 push this 0
 push local 0
@@ -402,6 +393,25 @@ push that 0
 pop temp 2
 pop pointer 1
 push temp 2
+pop local 3
+label String.intValue.while.0
+push local 0
+push this 1
+lt
+push local 3
+push constant 47
+gt
+push local 3
+push constant 58
+lt
+and
+and
+not
+if-goto String.intValue.while.1
+push local 1
+push constant 10
+call Math.multiply 2
+push local 3
 push constant 48
 sub
 add
@@ -410,6 +420,16 @@ push local 0
 push constant 1
 add
 pop local 0
+push pointer 1
+push this 0
+push local 0
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+pop local 3
 goto String.intValue.while.0
 label String.intValue.while.1
 push pointer 0

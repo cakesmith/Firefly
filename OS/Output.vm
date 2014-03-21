@@ -1543,10 +1543,10 @@ label Output.printChar.goto.0
 return
 
 //
-function Output._print 8
+function Output._print 14
 //
-call Screen.getColor 0
-pop local 7
+push constant 16384
+pop local 9
 push argument 0
 call Output.getMap 1
 pop local 0
@@ -1568,6 +1568,10 @@ add
 pop local 4
 push constant 0
 pop local 6
+push local 2
+push constant 32
+call Math.multiply 2
+pop local 10
 label Output._print.while.0
 push local 2
 push local 6
@@ -1578,14 +1582,8 @@ not
 if-goto Output._print.while.1
 push constant 0
 pop local 5
-label Output._print.while.2
 push local 1
-push local 5
-add
-push local 3
-lt
-not
-if-goto Output._print.while.3
+pop local 11
 push pointer 1
 push local 0
 push local 6
@@ -1595,18 +1593,55 @@ push that 0
 pop temp 2
 pop pointer 1
 push temp 2
-push local 5
-call Math.bit 2
-call Screen.setColor 1
-pop temp 0
+pop local 12
+label Output._print.while.2
 push local 1
 push local 5
 add
-push local 2
-push local 6
+push local 3
+lt
+not
+if-goto Output._print.while.3
+push local 11
+push constant 16
+call Math.divide 2
+push local 10
 add
-call Screen.drawPixel 2
-pop temp 0
+pop local 8
+push local 11
+push constant 16
+call Math.mod 2
+call Math.twoToThe 1
+pop local 7
+push local 12
+push local 5
+call Math.bit 2
+pop local 13
+push local 9
+push local 8
+add
+pop pointer 1
+push pointer 1
+push local 9
+push local 8
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+push local 7
+not
+and
+push local 13
+push local 7
+and
+or
+pop that 0
+push local 11
+push constant 1
+add
+pop local 11
 push local 5
 push constant 1
 add
@@ -1617,11 +1652,12 @@ push local 6
 push constant 1
 add
 pop local 6
+push local 10
+push constant 32
+add
+pop local 10
 goto Output._print.while.0
 label Output._print.while.1
-push local 7
-call Screen.setColor 1
-pop temp 0
 return
 
 //
