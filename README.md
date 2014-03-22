@@ -1,4 +1,0 @@
-Firefly
-=======
-
-Firefly computing system
