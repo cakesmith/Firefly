@@ -35,8 +35,23 @@ pop local 0
 goto Keyboard.readChar.while.0
 label Keyboard.readChar.while.1
 push local 0
+call String.backSpace 0
+eq
+push local 0
+call String.newLine 0
+eq
+or
+not
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Keyboard.readChar.if.0
+push local 0
 call Output.printChar 1
 pop temp 0
+label Keyboard.readChar.if.0
+pop temp 1
 push local 0
 return
 
@@ -68,8 +83,22 @@ push temp 1
 push temp 1
 not
 if-goto Keyboard.readLine.if.0
+push local 0
+call String.length 1
+push constant 0
+gt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Keyboard.readLine.if.1
 call Output.backSpace 0
 pop temp 0
+push local 0
+call String.eraseLastChar 1
+pop temp 0
+label Keyboard.readLine.if.1
+pop temp 1
 label Keyboard.readLine.if.0
 if-goto Keyboard.readLine.goto.0
 push local 0

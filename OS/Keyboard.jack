@@ -48,8 +48,9 @@ class Keyboard {
         while c = 0 {
             let c = Keyboard.keyPressed()
         }
-        
-        do Output.printChar(c)
+        if !((c = String.backSpace()) | (c = String.newLine())) {
+            do Output.printChar(c)
+        }
         return c
     }
 
@@ -71,7 +72,10 @@ class Keyboard {
             let c = Keyboard.readChar()
             
             if c = String.backSpace() {
-                do Output.backSpace()
+                if s.length() > 0 {
+                    do Output.backSpace()
+                    do s.eraseLastChar()
+                }
             } else {
                 do s.appendChar(c)
             }

@@ -60,7 +60,9 @@ class Main {
         do Output.println();
         while (~ok) {
     	    let s = Keyboard.readLine("Please type 'JACK' and press enter: ");
-
+            do Output.println()
+            do Output.printString(s)
+            
 	    if (s.length() = 4) {
 	        if ((s.charAt(0) = 74) & (s.charAt(1) = 65) & (s.charAt(2) = 67) & (s.charAt(3) = 75)) {
 	            do Output.printString("ok");
