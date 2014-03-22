@@ -1,0 +1,291 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Screen.jack
+
+/**
+ * Graphic screen library.
+ */
+class Screen {
+    
+        static boolean color
+        static int width, height
+        static int screenStart
+
+    /** Initializes the Screen. */
+    function void init() {
+        
+        let color = true
+        let width = 512
+        let height = 256
+        
+        let screenStart = 16384
+    }
+
+    /** Erases the whole screen. */
+    function void clearScreen() {
+        var int maxmem
+        let maxmem = 8191
+        
+        while maxmem > -1 {
+            let screenStart[maxmem] = 0
+            let maxmem = maxmem - 1
+        }
+    }
+
+    /** Sets the color to be used in further draw commands
+     *  where white = false, black = true. */
+    function void setColor(boolean b) {
+        let color = b
+    }
+
+    function boolean getColor() {
+        return color
+    }
+    
+    /** Draws the (x, y) pixel. */
+    function void drawPixel(int x, int y) {        
+        var int memloc, m, w, f
+        
+        /*
+         * bool f;         // conditional flag
+         * unsigned int m; // the bit mask
+         * unsigned int w; // the word to modify: if (f) w |= m; else w &= ~m
+         *  
+         *  w ^= (-f ^ w) & m;
+         * OR, for superscalar CPUs:
+         * 
+         *   w = (w & ~m) | (-f & m);
+         */
+         
+        let memloc = (x / 16)  + (y * 32)
+        
+        let m = Math.twoToThe(Math.mod(x, 16))
+        
+        let screenStart[memloc] = (screenStart[memloc] & !m) | (color & m)
+        
+
+                
+    }
+
+    
+    /** 
+     * Draw a horizontal line
+     */
+
+    function void drawHoriz(int x1, int x2, int y) {
+   
+        var int dx, mod, i, m, w, memloc, y32
+            
+        let dx = x2 - x1
+
+        if dx > 0 {         // x2 > x1
+        
+            if dx > 16 {
+                // align to first memory boundary
+                
+                let mod = 16 - Math.mod(x1, 16)
+                
+                let y32 = y * 32
+                                
+                while mod > 0 {
+                    
+                    let memloc = ((x1 + mod) / 16)  + y32
+        
+                    let m = Math.twoToThe(Math.mod(x1 + mod, 16))
+
+                    let screenStart[memloc] = (screenStart[memloc] & !m) | (color & m)
+        
+                    //~ do Screen.drawPixel(x1 + mod, y)
+                    
+                    let mod = mod - 1
+                }
+                
+                let x1 = x1 + (16 - Math.mod(x1, 16))
+                
+                // align to second memory boundry
+                
+                let mod = Math.mod(x2, 16)
+                
+                while mod > 0 {
+                    
+                    let memloc = ((x2 - mod) / 16)  + y32
+        
+                    let m = Math.twoToThe(Math.mod(x2 - mod, 16))
+        
+                    let screenStart[memloc] = (screenStart[memloc] & !m) | (color & m)
+                    
+                    //~ do Screen.drawPixel(x2 - mod, y)
+
+                    let mod = mod - 1
+                }
+                
+                let x2 = x2 - Math.mod(x2, 16)
+                
+                // the rest should be divisible by 16
+                
+                let dx = x2 - x1
+                
+                while dx > 0 {
+                    let memloc = ((x2 - dx) / 16)  + y32
+
+                    let screenStart[memloc] = color
+                    
+                    //~ do Screen._drawChunk(x2 - dx, y)
+                    let dx = dx - 16
+                }
+            
+            } else {
+                while dx > 0 {
+                    do Screen.drawPixel(x1 + dx, y)
+                    let dx = dx - 1
+                }
+            }
+            
+
+        } else {
+            do Screen.drawHoriz(x2, x1, y)
+        }
+    }
+    
+    function void drawVert(int x, int y1, int y2) {
+        
+        var int memloc, m, dy
+
+        
+        if y2 - y1 < 0 {
+            do Screen.drawVert(x, y2, y1)
+            
+        } else {
+            let memloc = (x / 16)  + (y1 * 32)
+        
+            let m = Math.twoToThe(Math.mod(x, 16))
+            
+            while y2 > y1 {
+                
+                let screenStart[memloc] = (screenStart[memloc] & !m) | (color & m)
+                let y2 = y2 - 1
+                let memloc = memloc + 32
+                
+            }
+        }
+        
+    }
+    
+    /** Draws a line from (x1, y1) to (x2, y2). */
+    function void drawLine(int x1, int y1, int x2, int y2) {
+        var int dx, dy, a, b, adyMinusbdx
+        
+        let adyMinusbdx = 0
+        
+        let dx = x2 - x1
+        
+        if dx = 0 {
+            do Screen.drawVert(x1, y1, y2)
+            return
+        }
+        
+        let dy = y2 - y1
+        
+        if dy = 0 {
+            do Screen.drawHoriz(x1, x2, y1)
+            return
+        }
+
+
+        let a = 0
+        let b = 0
+         
+        let adyMinusbdx = 0
+        
+        if (dx < 0) {
+            
+            if (dy < 0) {   // dx < 0 and dy < 0
+                            // swap both points
+                            
+                do Screen.drawLine(x2, y2, x1, y1)
+                return
+           
+                } else {        // dx < 0 and dy > 0
+                                // this is only subtly different than when dx > 0
+                                // because we draw the pixel at x1-a instead of x1+a
+
+                    let dx = -dx
+                    
+                    while ((a < dx) | (a = dx)) & ((b < dy) | (b = dy)) {
+            
+                        do Screen.drawPixel(x1-a, y1+b)
+                        
+                        if adyMinusbdx < 0 {
+                            let a = a + 1
+                            let adyMinusbdx = adyMinusbdx + dy
+                            
+                        } else {
+                            let b = b + 1
+                            let adyMinusbdx = adyMinusbdx - dx
+                        }
+        
+                    }
+                
+                return
+                }
+            
+            } else {
+                
+                if (dy < 0) {   // dx > 0 and dy < 0
+                                // swap both points
+                                
+                    do Screen.drawLine(x2, y2, x1, y1)
+                    return
+                }
+                
+            } 
+ 
+        while ((a < dx) | (a = dx)) & ((b < dy) | (b = dy)) {
+            
+            do Screen.drawPixel(x1+a, y1+b)
+            
+            if adyMinusbdx < 0 {
+                let a = a+1
+                let adyMinusbdx = adyMinusbdx + dy
+                
+            } else {
+                let b = b+1
+                let adyMinusbdx = adyMinusbdx - dx
+            }
+        
+        }
+    }
+    
+    
+    /** Draws a filled rectangle where the top left corner
+     *  is (x1, y1) and the bottom right corner is (x2, y2). */
+    function void drawRectangle(int x1, int y1, int x2, int y2) {
+        
+        while (y1 - 1) < y2 {
+            do Screen.drawHoriz(x1, x2, y1)
+            let y1 = y1 + 1
+        }
+        
+
+    }
+
+    /** Draws a filled circle of radius r around (cx, cy). */
+    function void drawCircle(int cx, int cy, int r) {
+        var int dy, z
+                
+        let r = Math.abs(r)
+        
+        let dy = -r
+                        
+        while (dy - 1) < r {
+            
+            let z = Math.sqrt((r*r) - (dy*dy))
+            
+            do Screen.drawLine(cx-z, cy + dy, cx+z, cy + dy) 
+            
+            let dy = dy + 1
+        }
+    }
+    
+}   // End class Screen
