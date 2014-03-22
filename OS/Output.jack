@@ -1,4 +1,5 @@
 // Output v1.0
+
 /**
  * Handles writing characters to the screen.
  * The text screen (256 columns and 512 rows) is divided into 23 text rows (0..22), 

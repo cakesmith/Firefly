@@ -190,17 +190,4 @@ class Math {
      function int mod(int n, int base) {         
          return(n - ((n / base) * base))
      }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
