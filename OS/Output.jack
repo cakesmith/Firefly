@@ -184,14 +184,23 @@ class Output {
     }
     
     /**
+     * Print an anonymous string and then destroy it
+     */
+     
+    function void print(String s) {
+        do Output.printString(s)
+        do Memory.deAlloc(s)
+    }
+    
+    /**
      * Prints the location of the cursor to the screen
      */
     
     
     function void printLoc() {
-        do Output.printString("X: ")
+        do Output.print("X: ")
         do Output.printInt(cursorX)
-        do Output.printString(" Y: ")
+        do Output.print(" Y: ")
         do Output.printInt(cursorY)
     }
 
@@ -294,7 +303,7 @@ class Output {
         
         let s = String.new(6)
         do s.setInt(i)
-        do Output.printString(s)
+        do Output.print(s)
     }
     
 

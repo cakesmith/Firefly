@@ -235,7 +235,6 @@ class String {
         }
     }
     
-
     
         
     /** Returns the new line character. */

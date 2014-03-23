@@ -1501,6 +1501,17 @@ pop temp 1
 return
 
 //
+function Output.print 0
+//
+push argument 0
+call Output.printString 1
+pop temp 0
+push argument 0
+call Memory.deAlloc 1
+pop temp 0
+return
+
+//
 function Output.printLoc 0
 //
 push constant 3
@@ -1511,7 +1522,7 @@ push constant 58
 call String.appendChar 2
 push constant 32
 call String.appendChar 2
-call Output.printString 1
+call Output.print 1
 pop temp 0
 push static 10
 call Output.printInt 1
@@ -1526,7 +1537,7 @@ push constant 58
 call String.appendChar 2
 push constant 32
 call String.appendChar 2
-call Output.printString 1
+call Output.print 1
 pop temp 0
 push static 9
 call Output.printInt 1
@@ -1750,7 +1761,7 @@ push argument 0
 call String.setInt 2
 pop temp 0
 push local 0
-call Output.printString 1
+call Output.print 1
 pop temp 0
 return
 
