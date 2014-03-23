@@ -7,7 +7,7 @@ M=D
 0;JMP
 // ***
 // OS
-// compiled on Thursday March 20, 2014
+// compiled on Saturday March 22, 2014
 // ***
 // Begin hardcode
 // ***
@@ -12946,20 +12946,44 @@ M=D
 // {line: 9739}
 (Output.printChar.if.1)
 // {line: 9744}
-// pop temp 1
+// if-goto Output.printChar.goto.1
 @SP
 AM=M-1
 D=M
-@R6
+@Output.printChar.goto.1
+D;JNE
+// {line: 9757}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
 M=D
-// {line: 9745}
+@Output.println
+D=A
+@R15
+M=D
+@Output.printChar.call.2
+D=A
+@call
+0;JMP
+(Output.printChar.call.2)
+// {line: 9762}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 9763}
+(Output.printChar.goto.1)
+// {line: 9764}
 (Output.printChar.goto.0)
-// {line: 9747}
+// {line: 9766}
 // return
 @return
 0;JMP
-// {line: 9780}
-// function Output._print nLocals: 8
+// {line: 9823}
+// function Output._print nLocals: 14
 (Output._print)
 @SP
 AM=M+1
@@ -12993,23 +13017,40 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 9793}
-// call Screen.getColor nArgs: 0
-@0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 9829}
+// push constant 16384
+@16384
 D=A
-@R14
+@SP
+M=M+1
+A=M-1
 M=D
-@Screen.getColor
-D=A
-@R15
-M=D
-@Output._print.call.0
-D=A
-@call
-0;JMP
-(Output._print.call.0)
-// {line: 9806}
-// pop local 7
+// {line: 9844}
+// pop local 9
 @SP
 AM=M-1
 D=M
@@ -13022,8 +13063,10 @@ A=A+1
 A=A+1
 A=A+1
 A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 9815}
+// {line: 9853}
 // push argument 0
 @0
 D=A
@@ -13034,7 +13077,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 9828}
+// {line: 9866}
 // call Output.getMap nArgs: 1
 @1
 D=A
@@ -13044,12 +13087,12 @@ M=D
 D=A
 @R15
 M=D
-@Output._print.call.1
+@Output._print.call.0
 D=A
 @call
 0;JMP
-(Output._print.call.1)
-// {line: 9834}
+(Output._print.call.0)
+// {line: 9872}
 // pop local 0
 @SP
 AM=M-1
@@ -13057,7 +13100,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 9840}
+// {line: 9878}
 // push static 10
 @Output.static.10
 D=M
@@ -13065,7 +13108,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 9846}
+// {line: 9884}
 // push constant 8
 @8
 D=A
@@ -13073,7 +13116,47 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 9859}
+// {line: 9897}
+// call Math.multiply nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.multiply
+D=A
+@R15
+M=D
+@Output._print.call.1
+D=A
+@call
+0;JMP
+(Output._print.call.1)
+// {line: 9904}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 9910}
+// push static 9
+@Output.static.9
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 9916}
+// push constant 11
+@11
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 9929}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -13088,32 +13171,133 @@ D=A
 @call
 0;JMP
 (Output._print.call.2)
-// {line: 9866}
-// pop local 1
+// {line: 9937}
+// pop local 2
 @SP
 AM=M-1
 D=M
 @LCL
 A=M
 A=A+1
+A=A+1
 M=D
-// {line: 9872}
-// push static 9
-@Output.static.9
+// {line: 9946}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 9878}
-// push constant 11
-@11
+// {line: 9952}
+// push constant 7
+@7
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 9891}
+// {line: 9957}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 9966}
+// pop local 3
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 9975}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 9981}
+// push constant 10
+@10
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 9986}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 9996}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10002}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10014}
+// pop local 6
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10023}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10029}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10042}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -13128,101 +13312,8 @@ D=A
 @call
 0;JMP
 (Output._print.call.3)
-// {line: 9899}
-// pop local 2
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-A=A+1
-A=A+1
-M=D
-// {line: 9908}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 9914}
-// push constant 7
-@7
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 9919}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 9928}
-// pop local 3
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-A=A+1
-A=A+1
-A=A+1
-M=D
-// {line: 9937}
-// push local 2
-@2
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 9943}
-// push constant 10
-@10
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 9948}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 9958}
-// pop local 4
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-A=A+1
-A=A+1
-A=A+1
-A=A+1
-M=D
-// {line: 9964}
-// push constant 0
-@0
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 9976}
-// pop local 6
+// {line: 10058}
+// pop local 10
 @SP
 AM=M-1
 D=M
@@ -13234,10 +13325,14 @@ A=A+1
 A=A+1
 A=A+1
 A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 9977}
+// {line: 10059}
 (Output._print.while.0)
-// {line: 9986}
+// {line: 10068}
 // push local 2
 @2
 D=A
@@ -13248,7 +13343,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 9995}
+// {line: 10077}
 // push local 6
 @6
 D=A
@@ -13259,14 +13354,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10000}
+// {line: 10082}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 10009}
+// {line: 10091}
 // push local 4
 @4
 D=A
@@ -13277,7 +13372,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10016}
+// {line: 10098}
 // lt
 @Output._print.lt.0
 D=A
@@ -13286,19 +13381,19 @@ M=D
 @lt
 0;JMP
 (Output._print.lt.0)
-// {line: 10019}
+// {line: 10101}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 10024}
+// {line: 10106}
 // if-goto Output._print.while.1
 @SP
 AM=M-1
 D=M
 @Output._print.while.1
 D;JNE
-// {line: 10030}
+// {line: 10112}
 // push constant 0
 @0
 D=A
@@ -13306,7 +13401,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10041}
+// {line: 10123}
 // pop local 5
 @SP
 AM=M-1
@@ -13319,70 +13414,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 10042}
-(Output._print.while.2)
-// {line: 10051}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10060}
-// push local 5
-@5
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10065}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 10074}
-// push local 3
-@3
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10081}
-// lt
-@Output._print.lt.1
-D=A
-@R14
-M=D
-@lt
-0;JMP
-(Output._print.lt.1)
-// {line: 10084}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 10089}
-// if-goto Output._print.while.3
-@SP
-AM=M-1
-D=M
-@Output._print.while.3
-D;JNE
-// {line: 10095}
+// {line: 10129}
 // push pointer 1
 @4
 D=M
@@ -13390,7 +13422,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10104}
+// {line: 10138}
 // push local 0
 @0
 D=A
@@ -13401,7 +13433,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10113}
+// {line: 10147}
 // push local 6
 @6
 D=A
@@ -13412,21 +13444,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10118}
+// {line: 10152}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 10123}
+// {line: 10157}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 10132}
+// {line: 10166}
 // push that 0
 @0
 D=A
@@ -13437,21 +13469,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10137}
+// {line: 10171}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 10142}
+// {line: 10176}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 10148}
+// {line: 10182}
 // push temp 2
 @7
 D=M
@@ -13459,55 +13491,26 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10157}
-// push local 5
-@5
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10170}
-// call Math.bit nArgs: 2
-@2
-D=A
-@R14
-M=D
-@Math.bit
-D=A
-@R15
-M=D
-@Output._print.call.4
-D=A
-@call
-0;JMP
-(Output._print.call.4)
-// {line: 10183}
-// call Screen.setColor nArgs: 1
-@1
-D=A
-@R14
-M=D
-@Screen.setColor
-D=A
-@R15
-M=D
-@Output._print.call.5
-D=A
-@call
-0;JMP
-(Output._print.call.5)
-// {line: 10188}
-// pop temp 0
+// {line: 10199}
+// pop local 11
 @SP
 AM=M-1
 D=M
-@R5
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 10197}
+// {line: 10208}
 // push local 1
 @1
 D=A
@@ -13518,60 +13521,90 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10206}
-// push local 5
-@5
+// {line: 10214}
+// push constant 16
+@16
 D=A
-@LCL
-A=M+D
-D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10211}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 10220}
-// push local 2
-@2
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10229}
-// push local 6
-@6
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10234}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 10247}
-// call Screen.drawPixel nArgs: 2
+// {line: 10227}
+// call Math.divide nArgs: 2
 @2
 D=A
 @R14
 M=D
-@Screen.drawPixel
+@Math.divide
+D=A
+@R15
+M=D
+@Output._print.call.4
+D=A
+@call
+0;JMP
+(Output._print.call.4)
+// {line: 10245}
+// pop local 12
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10254}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10260}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10273}
+// call Math.mod nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.mod
+D=A
+@R15
+M=D
+@Output._print.call.5
+D=A
+@call
+0;JMP
+(Output._print.call.5)
+// {line: 10286}
+// call Math.twoToThe nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Math.twoToThe
 D=A
 @R15
 M=D
@@ -13580,14 +13613,35 @@ D=A
 @call
 0;JMP
 (Output._print.call.6)
-// {line: 10252}
-// pop temp 0
+// {line: 10299}
+// pop local 7
 @SP
 AM=M-1
 D=M
-@R5
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 10261}
+// {line: 10300}
+(Output._print.while.2)
+// {line: 10309}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10318}
 // push local 5
 @5
 D=A
@@ -13598,7 +13652,436 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10267}
+// {line: 10323}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 10332}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10339}
+// lt
+@Output._print.lt.1
+D=A
+@R14
+M=D
+@lt
+0;JMP
+(Output._print.lt.1)
+// {line: 10342}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 10347}
+// if-goto Output._print.while.3
+@SP
+AM=M-1
+D=M
+@Output._print.while.3
+D;JNE
+// {line: 10356}
+// push local 12
+@12
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10365}
+// push local 10
+@10
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10370}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 10384}
+// pop local 8
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10393}
+// push local 11
+@11
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10402}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10415}
+// call Math.bit nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.bit
+D=A
+@R15
+M=D
+@Output._print.call.7
+D=A
+@call
+0;JMP
+(Output._print.call.7)
+// {line: 10434}
+// pop local 13
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10443}
+// push local 9
+@9
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10452}
+// push local 8
+@8
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10457}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 10462}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 10468}
+// push pointer 1
+@4
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10477}
+// push local 9
+@9
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10486}
+// push local 8
+@8
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10491}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 10496}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 10505}
+// push that 0
+@0
+D=A
+@THAT
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10510}
+// pop temp 2
+@SP
+AM=M-1
+D=M
+@R7
+M=D
+// {line: 10515}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 10521}
+// push temp 2
+@7
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10530}
+// push local 7
+@7
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10533}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 10538}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 10547}
+// push local 13
+@13
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10556}
+// push local 7
+@7
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10561}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 10566}
+// or
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M|D
+// {line: 10572}
+// pop that 0
+@SP
+AM=M-1
+D=M
+@THAT
+A=M
+M=D
+// {line: 10581}
+// push local 7
+@7
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10590}
+// push local 7
+@7
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10595}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 10608}
+// pop local 7
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10617}
+// push local 7
+@7
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10623}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10630}
+// lt
+@Output._print.lt.2
+D=A
+@R14
+M=D
+@lt
+0;JMP
+(Output._print.lt.2)
+// {line: 10635}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 10641}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10647}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10650}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 10655}
+// if-goto Output._print.if.0
+@SP
+AM=M-1
+D=M
+@Output._print.if.0
+D;JNE
+// {line: 10661}
 // push constant 1
 @1
 D=A
@@ -13606,14 +14089,103 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10272}
+// {line: 10674}
+// pop local 7
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10683}
+// push local 12
+@12
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10689}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10694}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 10283}
+// {line: 10712}
+// pop local 12
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 10713}
+(Output._print.if.0)
+// {line: 10718}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 10727}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10733}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 10738}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 10749}
 // pop local 5
 @SP
 AM=M-1
@@ -13626,13 +14198,13 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 10285}
+// {line: 10751}
 // goto Output._print.while.2
 @Output._print.while.2
 0;JMP
-// {line: 10286}
+// {line: 10752}
 (Output._print.while.3)
-// {line: 10295}
+// {line: 10761}
 // push local 6
 @6
 D=A
@@ -13643,7 +14215,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10301}
+// {line: 10767}
 // push constant 1
 @1
 D=A
@@ -13651,14 +14223,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10306}
+// {line: 10772}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 10318}
+// {line: 10784}
 // pop local 6
 @SP
 AM=M-1
@@ -13672,15 +14244,9 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 10320}
-// goto Output._print.while.0
-@Output._print.while.0
-0;JMP
-// {line: 10321}
-(Output._print.while.1)
-// {line: 10330}
-// push local 7
-@7
+// {line: 10793}
+// push local 10
+@10
 D=A
 @LCL
 A=M+D
@@ -13689,33 +14255,50 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10343}
-// call Screen.setColor nArgs: 1
-@1
+// {line: 10799}
+// push constant 32
+@32
 D=A
-@R14
+@SP
+M=M+1
+A=M-1
 M=D
-@Screen.setColor
-D=A
-@R15
-M=D
-@Output._print.call.7
-D=A
-@call
-0;JMP
-(Output._print.call.7)
-// {line: 10348}
-// pop temp 0
+// {line: 10804}
+// add
 @SP
 AM=M-1
 D=M
-@R5
+A=A-1
+M=M+D
+// {line: 10820}
+// pop local 10
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 10350}
+// {line: 10822}
+// goto Output._print.while.0
+@Output._print.while.0
+0;JMP
+// {line: 10823}
+(Output._print.while.1)
+// {line: 10825}
 // return
 @return
 0;JMP
-// {line: 10359}
+// {line: 10834}
 // function Output.printString nLocals: 2
 (Output.printString)
 @SP
@@ -13726,7 +14309,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 10368}
+// {line: 10843}
 // push argument 0
 @0
 D=A
@@ -13737,7 +14320,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10381}
+// {line: 10856}
 // call String.length nArgs: 1
 @1
 D=A
@@ -13752,7 +14335,7 @@ D=A
 @call
 0;JMP
 (Output.printString.call.0)
-// {line: 10388}
+// {line: 10863}
 // pop local 1
 @SP
 AM=M-1
@@ -13761,7 +14344,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 10394}
+// {line: 10869}
 // push constant 0
 @0
 D=A
@@ -13769,7 +14352,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10400}
+// {line: 10875}
 // pop local 0
 @SP
 AM=M-1
@@ -13777,9 +14360,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 10401}
+// {line: 10876}
 (Output.printString.while.0)
-// {line: 10410}
+// {line: 10885}
 // push local 0
 @0
 D=A
@@ -13790,7 +14373,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10419}
+// {line: 10894}
 // push local 1
 @1
 D=A
@@ -13801,7 +14384,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10426}
+// {line: 10901}
 // lt
 @Output.printString.lt.0
 D=A
@@ -13810,19 +14393,19 @@ M=D
 @lt
 0;JMP
 (Output.printString.lt.0)
-// {line: 10429}
+// {line: 10904}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 10434}
+// {line: 10909}
 // if-goto Output.printString.while.1
 @SP
 AM=M-1
 D=M
 @Output.printString.while.1
 D;JNE
-// {line: 10443}
+// {line: 10918}
 // push argument 0
 @0
 D=A
@@ -13833,7 +14416,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10452}
+// {line: 10927}
 // push local 0
 @0
 D=A
@@ -13844,7 +14427,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10465}
+// {line: 10940}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -13859,7 +14442,7 @@ D=A
 @call
 0;JMP
 (Output.printString.call.1)
-// {line: 10478}
+// {line: 10953}
 // call Output.printChar nArgs: 1
 @1
 D=A
@@ -13874,14 +14457,14 @@ D=A
 @call
 0;JMP
 (Output.printString.call.2)
-// {line: 10483}
+// {line: 10958}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 10492}
+// {line: 10967}
 // push local 0
 @0
 D=A
@@ -13892,7 +14475,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10498}
+// {line: 10973}
 // push constant 1
 @1
 D=A
@@ -13900,14 +14483,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10503}
+// {line: 10978}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 10509}
+// {line: 10984}
 // pop local 0
 @SP
 AM=M-1
@@ -13915,24 +14498,24 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 10511}
+// {line: 10986}
 // goto Output.printString.while.0
 @Output.printString.while.0
 0;JMP
-// {line: 10512}
+// {line: 10987}
 (Output.printString.while.1)
-// {line: 10514}
+// {line: 10989}
 // return
 @return
 0;JMP
-// {line: 10519}
+// {line: 10994}
 // function Output.printInt nLocals: 1
 (Output.printInt)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 10525}
+// {line: 11000}
 // push constant 6
 @6
 D=A
@@ -13940,7 +14523,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10538}
+// {line: 11013}
 // call String.new nArgs: 1
 @1
 D=A
@@ -13955,7 +14538,7 @@ D=A
 @call
 0;JMP
 (Output.printInt.call.0)
-// {line: 10544}
+// {line: 11019}
 // pop local 0
 @SP
 AM=M-1
@@ -13963,7 +14546,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 10553}
+// {line: 11028}
 // push local 0
 @0
 D=A
@@ -13974,7 +14557,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10562}
+// {line: 11037}
 // push argument 0
 @0
 D=A
@@ -13985,7 +14568,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10575}
+// {line: 11050}
 // call String.setInt nArgs: 2
 @2
 D=A
@@ -14000,14 +14583,14 @@ D=A
 @call
 0;JMP
 (Output.printInt.call.1)
-// {line: 10580}
+// {line: 11055}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 10589}
+// {line: 11064}
 // push local 0
 @0
 D=A
@@ -14018,7 +14601,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10602}
+// {line: 11077}
 // call Output.printString nArgs: 1
 @1
 D=A
@@ -14033,21 +14616,21 @@ D=A
 @call
 0;JMP
 (Output.printInt.call.2)
-// {line: 10607}
+// {line: 11082}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 10609}
+// {line: 11084}
 // return
 @return
 0;JMP
-// {line: 10610}
+// {line: 11085}
 // function Output.println nLocals: 0
 (Output.println)
-// {line: 10616}
+// {line: 11091}
 // push static 9
 @Output.static.9
 D=M
@@ -14055,7 +14638,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10622}
+// {line: 11097}
 // push constant 23
 @23
 D=A
@@ -14063,7 +14646,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10629}
+// {line: 11104}
 // lt
 @Output.println.lt.0
 D=A
@@ -14072,14 +14655,14 @@ M=D
 @lt
 0;JMP
 (Output.println.lt.0)
-// {line: 10634}
+// {line: 11109}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 10640}
+// {line: 11115}
 // push temp 1
 @6
 D=M
@@ -14087,7 +14670,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10646}
+// {line: 11121}
 // push temp 1
 @6
 D=M
@@ -14095,19 +14678,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10649}
+// {line: 11124}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 10654}
+// {line: 11129}
 // if-goto Output.println.if.0
 @SP
 AM=M-1
 D=M
 @Output.println.if.0
 D;JNE
-// {line: 10660}
+// {line: 11135}
 // push constant 0
 @0
 D=A
@@ -14115,14 +14698,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10665}
+// {line: 11140}
 // pop static 10
 @SP
 AM=M-1
 D=M
 @Output.static.10
 M=D
-// {line: 10671}
+// {line: 11146}
 // push static 9
 @Output.static.9
 D=M
@@ -14130,7 +14713,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10677}
+// {line: 11152}
 // push constant 1
 @1
 D=A
@@ -14138,37 +14721,37 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10682}
+// {line: 11157}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 10687}
+// {line: 11162}
 // pop static 9
 @SP
 AM=M-1
 D=M
 @Output.static.9
 M=D
-// {line: 10688}
+// {line: 11163}
 (Output.println.if.0)
-// {line: 10693}
+// {line: 11168}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 10695}
+// {line: 11170}
 // return
 @return
 0;JMP
-// {line: 10696}
+// {line: 11171}
 // function Output.backSpace nLocals: 0
 (Output.backSpace)
-// {line: 10702}
+// {line: 11177}
 // push static 10
 @Output.static.10
 D=M
@@ -14176,7 +14759,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10708}
+// {line: 11183}
 // push constant 0
 @0
 D=A
@@ -14184,7 +14767,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10715}
+// {line: 11190}
 // gt
 @Output.backSpace.gt.0
 D=A
@@ -14193,14 +14776,14 @@ M=D
 @gt
 0;JMP
 (Output.backSpace.gt.0)
-// {line: 10720}
+// {line: 11195}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 10726}
+// {line: 11201}
 // push temp 1
 @6
 D=M
@@ -14208,7 +14791,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10732}
+// {line: 11207}
 // push temp 1
 @6
 D=M
@@ -14216,19 +14799,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10735}
+// {line: 11210}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 10740}
+// {line: 11215}
 // if-goto Output.backSpace.if.0
 @SP
 AM=M-1
 D=M
 @Output.backSpace.if.0
 D;JNE
-// {line: 10746}
+// {line: 11221}
 // push static 9
 @Output.static.9
 D=M
@@ -14236,7 +14819,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10752}
+// {line: 11227}
 // push static 10
 @Output.static.10
 D=M
@@ -14244,7 +14827,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 10758}
+// {line: 11233}
 // push constant 1
 @1
 D=A
@@ -14252,14 +14835,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10763}
+// {line: 11238}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 10776}
+// {line: 11251}
 // call Output.moveCursor nArgs: 2
 @2
 D=A
@@ -14274,30 +14857,50 @@ D=A
 @call
 0;JMP
 (Output.backSpace.call.0)
-// {line: 10781}
+// {line: 11256}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 10782}
+// {line: 11257}
 (Output.backSpace.if.0)
-// {line: 10787}
+// {line: 11262}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 10789}
+// {line: 11264}
 // return
 @return
 0;JMP
-// {line: 10790}
-// function Main.main nLocals: 0
+// {line: 11285}
+// function Main.main nLocals: 5
 (Main.main)
-// {line: 10796}
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 11291}
 // push constant 0
 @0
 D=A
@@ -14305,37 +14908,33 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 10802}
-// push constant 220
-@220
+// {line: 11301}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 11307}
+// push constant 16
+@16
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10808}
-// push constant 511
-@511
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10814}
-// push constant 220
-@220
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10827}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11320}
+// call String.new nArgs: 1
+@1
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.new
 D=A
 @R15
 M=D
@@ -14344,52 +14943,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.0)
-// {line: 10832}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 10838}
-// push constant 280
-@280
+// {line: 11326}
+// push constant 107
+@107
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10844}
-// push constant 90
-@90
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10850}
-// push constant 410
-@410
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10856}
-// push constant 220
-@220
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10869}
-// call Screen.drawRectangle nArgs: 4
-@4
+// {line: 11339}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawRectangle
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14398,28 +14966,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.1)
-// {line: 10874}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 10880}
-// push constant 0
-@0
+// {line: 11345}
+// push constant 101
+@101
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10893}
-// call Screen.setColor nArgs: 1
-@1
+// {line: 11358}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.setColor
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14428,52 +14989,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.2)
-// {line: 10898}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 10904}
-// push constant 350
-@350
+// {line: 11364}
+// push constant 121
+@121
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10910}
-// push constant 120
-@120
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10916}
-// push constant 390
-@390
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10922}
-// push constant 219
-@219
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10935}
-// call Screen.drawRectangle nArgs: 4
-@4
+// {line: 11377}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawRectangle
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14482,52 +15012,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.3)
-// {line: 10940}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 10946}
-// push constant 292
-@292
+// {line: 11383}
+// push constant 80
+@80
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10952}
-// push constant 120
-@120
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10958}
-// push constant 332
-@332
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10964}
-// push constant 150
-@150
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 10977}
-// call Screen.drawRectangle nArgs: 4
-@4
+// {line: 11396}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawRectangle
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14536,33 +15035,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.4)
-// {line: 10982}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 10988}
-// push constant 0
-@0
+// {line: 11402}
+// push constant 114
+@114
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 10991}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 11004}
-// call Screen.setColor nArgs: 1
-@1
+// {line: 11415}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.setColor
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14571,44 +15058,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.5)
-// {line: 11009}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11015}
-// push constant 360
-@360
+// {line: 11421}
+// push constant 101
+@101
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11021}
-// push constant 170
-@170
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11027}
-// push constant 3
-@3
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11040}
-// call Screen.drawCircle nArgs: 3
-@3
+// {line: 11434}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawCircle
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14617,52 +15081,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.6)
-// {line: 11045}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11051}
-// push constant 280
-@280
+// {line: 11440}
+// push constant 115
+@115
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11057}
-// push constant 90
-@90
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11063}
-// push constant 345
-@345
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11069}
-// push constant 35
-@35
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11082}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11453}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14671,52 +15104,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.7)
-// {line: 11087}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11093}
-// push constant 345
-@345
+// {line: 11459}
+// push constant 115
+@115
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11099}
-// push constant 35
-@35
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11105}
-// push constant 410
-@410
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11111}
-// push constant 90
-@90
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11124}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11472}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14725,44 +15127,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.8)
-// {line: 11129}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11135}
-// push constant 140
-@140
+// {line: 11478}
+// push constant 101
+@101
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11141}
-// push constant 60
-@60
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11147}
-// push constant 30
-@30
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11160}
-// call Screen.drawCircle nArgs: 3
-@3
+// {line: 11491}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawCircle
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14771,52 +15150,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.9)
-// {line: 11165}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11171}
-// push constant 140
-@140
+// {line: 11497}
+// push constant 100
+@100
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11177}
-// push constant 26
-@26
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11183}
-// push constant 140
-@140
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11189}
-// push constant 6
-@6
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11202}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11510}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14825,52 +15173,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.10)
-// {line: 11207}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11213}
-// push constant 163
-@163
+// {line: 11516}
+// push constant 32
+@32
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11219}
-// push constant 35
-@35
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11225}
-// push constant 178
-@178
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11231}
-// push constant 20
-@20
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11244}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11529}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14879,52 +15196,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.11)
-// {line: 11249}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11255}
-// push constant 174
-@174
+// {line: 11535}
+// push constant 116
+@116
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11261}
-// push constant 60
-@60
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11267}
-// push constant 194
-@194
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11273}
-// push constant 60
-@60
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11286}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11548}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14933,52 +15219,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.12)
-// {line: 11291}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11297}
-// push constant 163
-@163
+// {line: 11554}
+// push constant 101
+@101
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11303}
-// push constant 85
-@85
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11309}
-// push constant 178
-@178
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11315}
-// push constant 100
-@100
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11328}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11567}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -14987,52 +15242,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.13)
-// {line: 11333}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11339}
-// push constant 140
-@140
+// {line: 11573}
+// push constant 115
+@115
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11345}
-// push constant 94
-@94
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11351}
-// push constant 140
-@140
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11357}
-// push constant 114
-@114
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11370}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11586}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -15041,52 +15265,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.14)
-// {line: 11375}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11381}
-// push constant 117
-@117
+// {line: 11592}
+// push constant 116
+@116
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11387}
-// push constant 85
-@85
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11393}
-// push constant 102
-@102
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11399}
-// push constant 100
-@100
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11412}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11605}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -15095,52 +15288,21 @@ D=A
 @call
 0;JMP
 (Main.main.call.15)
-// {line: 11417}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11423}
-// push constant 106
-@106
+// {line: 11611}
+// push constant 58
+@58
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 11429}
-// push constant 60
-@60
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11435}
-// push constant 86
-@86
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11441}
-// push constant 60
-@60
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11454}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11624}
+// call String.appendChar nArgs: 2
+@2
 D=A
 @R14
 M=D
-@Screen.drawLine
+@String.appendChar
 D=A
 @R15
 M=D
@@ -15149,52 +15311,13 @@ D=A
 @call
 0;JMP
 (Main.main.call.16)
-// {line: 11459}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 11465}
-// push constant 117
-@117
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11471}
-// push constant 35
-@35
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11477}
-// push constant 102
-@102
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11483}
-// push constant 20
-@20
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 11496}
-// call Screen.drawLine nArgs: 4
-@4
+// {line: 11637}
+// call Output.printString nArgs: 1
+@1
 D=A
 @R14
 M=D
-@Screen.drawLine
+@Output.printString
 D=A
 @R15
 M=D
@@ -15203,14 +15326,860 @@ D=A
 @call
 0;JMP
 (Main.main.call.17)
-// {line: 11501}
+// {line: 11642}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 11507}
+// {line: 11655}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.18
+D=A
+@call
+0;JMP
+(Main.main.call.18)
+// {line: 11660}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 11661}
+(Main.main.while.0)
+// {line: 11670}
+// push local 4
+@4
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11673}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 11676}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 11681}
+// if-goto Main.main.while.1
+@SP
+AM=M-1
+D=M
+@Main.main.while.1
+D;JNE
+// {line: 11687}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11700}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.19
+D=A
+@call
+0;JMP
+(Main.main.call.19)
+// {line: 11706}
+// push constant 80
+@80
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11719}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.20
+D=A
+@call
+0;JMP
+(Main.main.call.20)
+// {line: 11725}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11738}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.21
+D=A
+@call
+0;JMP
+(Main.main.call.21)
+// {line: 11744}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11757}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.22
+D=A
+@call
+0;JMP
+(Main.main.call.22)
+// {line: 11763}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11776}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.23
+D=A
+@call
+0;JMP
+(Main.main.call.23)
+// {line: 11782}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11795}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.24
+D=A
+@call
+0;JMP
+(Main.main.call.24)
+// {line: 11801}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11814}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.25
+D=A
+@call
+0;JMP
+(Main.main.call.25)
+// {line: 11820}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11833}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.26
+D=A
+@call
+0;JMP
+(Main.main.call.26)
+// {line: 11839}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11852}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.27
+D=A
+@call
+0;JMP
+(Main.main.call.27)
+// {line: 11858}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11871}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.28
+D=A
+@call
+0;JMP
+(Main.main.call.28)
+// {line: 11877}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11890}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.29
+D=A
+@call
+0;JMP
+(Main.main.call.29)
+// {line: 11896}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11909}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.30
+D=A
+@call
+0;JMP
+(Main.main.call.30)
+// {line: 11915}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11928}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.31
+D=A
+@call
+0;JMP
+(Main.main.call.31)
+// {line: 11934}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11947}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.32
+D=A
+@call
+0;JMP
+(Main.main.call.32)
+// {line: 11953}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11966}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.33
+D=A
+@call
+0;JMP
+(Main.main.call.33)
+// {line: 11972}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 11985}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.34
+D=A
+@call
+0;JMP
+(Main.main.call.34)
+// {line: 11991}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12004}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.35
+D=A
+@call
+0;JMP
+(Main.main.call.35)
+// {line: 12010}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12023}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.36
+D=A
+@call
+0;JMP
+(Main.main.call.36)
+// {line: 12029}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12042}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.37
+D=A
+@call
+0;JMP
+(Main.main.call.37)
+// {line: 12048}
+// push constant 80
+@80
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12061}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.38
+D=A
+@call
+0;JMP
+(Main.main.call.38)
+// {line: 12067}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12080}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.39
+D=A
+@call
+0;JMP
+(Main.main.call.39)
+// {line: 12086}
+// push constant 103
+@103
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12099}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.40
+D=A
+@call
+0;JMP
+(Main.main.call.40)
+// {line: 12105}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12118}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.41
+D=A
+@call
+0;JMP
+(Main.main.call.41)
+// {line: 12124}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12137}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.42
+D=A
+@call
+0;JMP
+(Main.main.call.42)
+// {line: 12143}
+// push constant 68
+@68
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12156}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.43
+D=A
+@call
+0;JMP
+(Main.main.call.43)
+// {line: 12162}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12175}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.44
+D=A
+@call
+0;JMP
+(Main.main.call.44)
+// {line: 12181}
+// push constant 119
+@119
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12194}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.45
+D=A
+@call
+0;JMP
+(Main.main.call.45)
+// {line: 12200}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12213}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.46
+D=A
+@call
+0;JMP
+(Main.main.call.46)
+// {line: 12219}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12232}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.47
+D=A
+@call
+0;JMP
+(Main.main.call.47)
+// {line: 12238}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12251}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.48
+D=A
+@call
+0;JMP
+(Main.main.call.48)
+// {line: 12257}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12270}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.49
+D=A
+@call
+0;JMP
+(Main.main.call.49)
+// {line: 12276}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12289}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.50
+D=A
+@call
+0;JMP
+(Main.main.call.50)
+// {line: 12295}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12308}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.51
+D=A
+@call
+0;JMP
+(Main.main.call.51)
+// {line: 12321}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.52
+D=A
+@call
+0;JMP
+(Main.main.call.52)
+// {line: 12326}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 12327}
+(Main.main.while.2)
+// {line: 12336}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12342}
 // push constant 0
 @0
 D=A
@@ -15218,18 +16187,9236 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11509}
+// {line: 12349}
+// eq
+@Main.main.eq.0
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.0)
+// {line: 12352}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 12357}
+// if-goto Main.main.while.3
+@SP
+AM=M-1
+D=M
+@Main.main.while.3
+D;JNE
+// {line: 12370}
+// call Keyboard.keyPressed nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Keyboard.keyPressed
+D=A
+@R15
+M=D
+@Main.main.call.53
+D=A
+@call
+0;JMP
+(Main.main.call.53)
+// {line: 12377}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 12379}
+// goto Main.main.while.2
+@Main.main.while.2
+0;JMP
+// {line: 12380}
+(Main.main.while.3)
+// {line: 12389}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12395}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 12396}
+(Main.main.while.4)
+// {line: 12405}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12411}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12418}
+// eq
+@Main.main.eq.1
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.1)
+// {line: 12421}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 12424}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 12429}
+// if-goto Main.main.while.5
+@SP
+AM=M-1
+D=M
+@Main.main.while.5
+D;JNE
+// {line: 12442}
+// call Keyboard.keyPressed nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Keyboard.keyPressed
+D=A
+@R15
+M=D
+@Main.main.call.54
+D=A
+@call
+0;JMP
+(Main.main.call.54)
+// {line: 12449}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 12451}
+// goto Main.main.while.4
+@Main.main.while.4
+0;JMP
+// {line: 12452}
+(Main.main.while.5)
+// {line: 12465}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.55
+D=A
+@call
+0;JMP
+(Main.main.call.55)
+// {line: 12470}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 12479}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12485}
+// push constant 137
+@137
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12492}
+// eq
+@Main.main.eq.2
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.2)
+// {line: 12497}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 12503}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12509}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12512}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 12517}
+// if-goto Main.main.if.0
+@SP
+AM=M-1
+D=M
+@Main.main.if.0
+D;JNE
+// {line: 12523}
+// push constant 2
+@2
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12536}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.56
+D=A
+@call
+0;JMP
+(Main.main.call.56)
+// {line: 12542}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12555}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.57
+D=A
+@call
+0;JMP
+(Main.main.call.57)
+// {line: 12561}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12574}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.58
+D=A
+@call
+0;JMP
+(Main.main.call.58)
+// {line: 12587}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.59
+D=A
+@call
+0;JMP
+(Main.main.call.59)
+// {line: 12592}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 12605}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.60
+D=A
+@call
+0;JMP
+(Main.main.call.60)
+// {line: 12610}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 12616}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12619}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 12629}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 12630}
+(Main.main.if.0)
+// {line: 12635}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 12637}
+// goto Main.main.while.0
+@Main.main.while.0
+0;JMP
+// {line: 12638}
+(Main.main.while.1)
+// {line: 12644}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12654}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 12660}
+// push constant 14
+@14
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12673}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.61
+D=A
+@call
+0;JMP
+(Main.main.call.61)
+// {line: 12679}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12692}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.62
+D=A
+@call
+0;JMP
+(Main.main.call.62)
+// {line: 12698}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12711}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.63
+D=A
+@call
+0;JMP
+(Main.main.call.63)
+// {line: 12717}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12730}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.64
+D=A
+@call
+0;JMP
+(Main.main.call.64)
+// {line: 12736}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12749}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.65
+D=A
+@call
+0;JMP
+(Main.main.call.65)
+// {line: 12755}
+// push constant 67
+@67
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12768}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.66
+D=A
+@call
+0;JMP
+(Main.main.call.66)
+// {line: 12774}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12787}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.67
+D=A
+@call
+0;JMP
+(Main.main.call.67)
+// {line: 12793}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12806}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.68
+D=A
+@call
+0;JMP
+(Main.main.call.68)
+// {line: 12812}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12825}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.69
+D=A
+@call
+0;JMP
+(Main.main.call.69)
+// {line: 12831}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12844}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.70
+D=A
+@call
+0;JMP
+(Main.main.call.70)
+// {line: 12850}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12863}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.71
+D=A
+@call
+0;JMP
+(Main.main.call.71)
+// {line: 12869}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12882}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.72
+D=A
+@call
+0;JMP
+(Main.main.call.72)
+// {line: 12888}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12901}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.73
+D=A
+@call
+0;JMP
+(Main.main.call.73)
+// {line: 12907}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12920}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.74
+D=A
+@call
+0;JMP
+(Main.main.call.74)
+// {line: 12926}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12939}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.75
+D=A
+@call
+0;JMP
+(Main.main.call.75)
+// {line: 12952}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.76
+D=A
+@call
+0;JMP
+(Main.main.call.76)
+// {line: 12957}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 12970}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.77
+D=A
+@call
+0;JMP
+(Main.main.call.77)
+// {line: 12975}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 12981}
+// push constant 59
+@59
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 12994}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.78
+D=A
+@call
+0;JMP
+(Main.main.call.78)
+// {line: 13000}
+// push constant 40
+@40
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13013}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.79
+D=A
+@call
+0;JMP
+(Main.main.call.79)
+// {line: 13019}
+// push constant 86
+@86
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13032}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.80
+D=A
+@call
+0;JMP
+(Main.main.call.80)
+// {line: 13038}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13051}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.81
+D=A
+@call
+0;JMP
+(Main.main.call.81)
+// {line: 13057}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13070}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.82
+D=A
+@call
+0;JMP
+(Main.main.call.82)
+// {line: 13076}
+// push constant 105
+@105
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13089}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.83
+D=A
+@call
+0;JMP
+(Main.main.call.83)
+// {line: 13095}
+// push constant 102
+@102
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13108}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.84
+D=A
+@call
+0;JMP
+(Main.main.call.84)
+// {line: 13114}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13127}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.85
+D=A
+@call
+0;JMP
+(Main.main.call.85)
+// {line: 13133}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13146}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.86
+D=A
+@call
+0;JMP
+(Main.main.call.86)
+// {line: 13152}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13165}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.87
+D=A
+@call
+0;JMP
+(Main.main.call.87)
+// {line: 13171}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13184}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.88
+D=A
+@call
+0;JMP
+(Main.main.call.88)
+// {line: 13190}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13203}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.89
+D=A
+@call
+0;JMP
+(Main.main.call.89)
+// {line: 13209}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13222}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.90
+D=A
+@call
+0;JMP
+(Main.main.call.90)
+// {line: 13228}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13241}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.91
+D=A
+@call
+0;JMP
+(Main.main.call.91)
+// {line: 13247}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13260}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.92
+D=A
+@call
+0;JMP
+(Main.main.call.92)
+// {line: 13266}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13279}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.93
+D=A
+@call
+0;JMP
+(Main.main.call.93)
+// {line: 13285}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13298}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.94
+D=A
+@call
+0;JMP
+(Main.main.call.94)
+// {line: 13304}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13317}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.95
+D=A
+@call
+0;JMP
+(Main.main.call.95)
+// {line: 13323}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13336}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.96
+D=A
+@call
+0;JMP
+(Main.main.call.96)
+// {line: 13342}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13355}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.97
+D=A
+@call
+0;JMP
+(Main.main.call.97)
+// {line: 13361}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13374}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.98
+D=A
+@call
+0;JMP
+(Main.main.call.98)
+// {line: 13380}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13393}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.99
+D=A
+@call
+0;JMP
+(Main.main.call.99)
+// {line: 13399}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13412}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.100
+D=A
+@call
+0;JMP
+(Main.main.call.100)
+// {line: 13418}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13431}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.101
+D=A
+@call
+0;JMP
+(Main.main.call.101)
+// {line: 13437}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13450}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.102
+D=A
+@call
+0;JMP
+(Main.main.call.102)
+// {line: 13456}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13469}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.103
+D=A
+@call
+0;JMP
+(Main.main.call.103)
+// {line: 13475}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13488}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.104
+D=A
+@call
+0;JMP
+(Main.main.call.104)
+// {line: 13494}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13507}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.105
+D=A
+@call
+0;JMP
+(Main.main.call.105)
+// {line: 13513}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13526}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.106
+D=A
+@call
+0;JMP
+(Main.main.call.106)
+// {line: 13532}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13545}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.107
+D=A
+@call
+0;JMP
+(Main.main.call.107)
+// {line: 13551}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13564}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.108
+D=A
+@call
+0;JMP
+(Main.main.call.108)
+// {line: 13570}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13583}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.109
+D=A
+@call
+0;JMP
+(Main.main.call.109)
+// {line: 13589}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13602}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.110
+D=A
+@call
+0;JMP
+(Main.main.call.110)
+// {line: 13608}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13621}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.111
+D=A
+@call
+0;JMP
+(Main.main.call.111)
+// {line: 13627}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13640}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.112
+D=A
+@call
+0;JMP
+(Main.main.call.112)
+// {line: 13646}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13659}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.113
+D=A
+@call
+0;JMP
+(Main.main.call.113)
+// {line: 13665}
+// push constant 105
+@105
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13678}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.114
+D=A
+@call
+0;JMP
+(Main.main.call.114)
+// {line: 13684}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13697}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.115
+D=A
+@call
+0;JMP
+(Main.main.call.115)
+// {line: 13703}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13716}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.116
+D=A
+@call
+0;JMP
+(Main.main.call.116)
+// {line: 13722}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13735}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.117
+D=A
+@call
+0;JMP
+(Main.main.call.117)
+// {line: 13741}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13754}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.118
+D=A
+@call
+0;JMP
+(Main.main.call.118)
+// {line: 13760}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13773}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.119
+D=A
+@call
+0;JMP
+(Main.main.call.119)
+// {line: 13779}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13792}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.120
+D=A
+@call
+0;JMP
+(Main.main.call.120)
+// {line: 13798}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13811}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.121
+D=A
+@call
+0;JMP
+(Main.main.call.121)
+// {line: 13817}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13830}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.122
+D=A
+@call
+0;JMP
+(Main.main.call.122)
+// {line: 13836}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13849}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.123
+D=A
+@call
+0;JMP
+(Main.main.call.123)
+// {line: 13855}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13868}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.124
+D=A
+@call
+0;JMP
+(Main.main.call.124)
+// {line: 13874}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13887}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.125
+D=A
+@call
+0;JMP
+(Main.main.call.125)
+// {line: 13893}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13906}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.126
+D=A
+@call
+0;JMP
+(Main.main.call.126)
+// {line: 13912}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13925}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.127
+D=A
+@call
+0;JMP
+(Main.main.call.127)
+// {line: 13931}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13944}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.128
+D=A
+@call
+0;JMP
+(Main.main.call.128)
+// {line: 13950}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13963}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.129
+D=A
+@call
+0;JMP
+(Main.main.call.129)
+// {line: 13969}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 13982}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.130
+D=A
+@call
+0;JMP
+(Main.main.call.130)
+// {line: 13988}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14001}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.131
+D=A
+@call
+0;JMP
+(Main.main.call.131)
+// {line: 14007}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14020}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.132
+D=A
+@call
+0;JMP
+(Main.main.call.132)
+// {line: 14026}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14039}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.133
+D=A
+@call
+0;JMP
+(Main.main.call.133)
+// {line: 14045}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14058}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.134
+D=A
+@call
+0;JMP
+(Main.main.call.134)
+// {line: 14064}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14077}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.135
+D=A
+@call
+0;JMP
+(Main.main.call.135)
+// {line: 14083}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14096}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.136
+D=A
+@call
+0;JMP
+(Main.main.call.136)
+// {line: 14102}
+// push constant 41
+@41
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14115}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.137
+D=A
+@call
+0;JMP
+(Main.main.call.137)
+// {line: 14128}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.138
+D=A
+@call
+0;JMP
+(Main.main.call.138)
+// {line: 14133}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 14146}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.139
+D=A
+@call
+0;JMP
+(Main.main.call.139)
+// {line: 14151}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 14152}
+(Main.main.while.6)
+// {line: 14161}
+// push local 4
+@4
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14164}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 14167}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 14172}
+// if-goto Main.main.while.7
+@SP
+AM=M-1
+D=M
+@Main.main.while.7
+D;JNE
+// {line: 14178}
+// push constant 29
+@29
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14191}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.140
+D=A
+@call
+0;JMP
+(Main.main.call.140)
+// {line: 14197}
+// push constant 80
+@80
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14210}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.141
+D=A
+@call
+0;JMP
+(Main.main.call.141)
+// {line: 14216}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14229}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.142
+D=A
+@call
+0;JMP
+(Main.main.call.142)
+// {line: 14235}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14248}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.143
+D=A
+@call
+0;JMP
+(Main.main.call.143)
+// {line: 14254}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14267}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.144
+D=A
+@call
+0;JMP
+(Main.main.call.144)
+// {line: 14273}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14286}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.145
+D=A
+@call
+0;JMP
+(Main.main.call.145)
+// {line: 14292}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14305}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.146
+D=A
+@call
+0;JMP
+(Main.main.call.146)
+// {line: 14311}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14324}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.147
+D=A
+@call
+0;JMP
+(Main.main.call.147)
+// {line: 14330}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14343}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.148
+D=A
+@call
+0;JMP
+(Main.main.call.148)
+// {line: 14349}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14362}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.149
+D=A
+@call
+0;JMP
+(Main.main.call.149)
+// {line: 14368}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14381}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.150
+D=A
+@call
+0;JMP
+(Main.main.call.150)
+// {line: 14387}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14400}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.151
+D=A
+@call
+0;JMP
+(Main.main.call.151)
+// {line: 14406}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14419}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.152
+D=A
+@call
+0;JMP
+(Main.main.call.152)
+// {line: 14425}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14438}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.153
+D=A
+@call
+0;JMP
+(Main.main.call.153)
+// {line: 14444}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14457}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.154
+D=A
+@call
+0;JMP
+(Main.main.call.154)
+// {line: 14463}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14476}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.155
+D=A
+@call
+0;JMP
+(Main.main.call.155)
+// {line: 14482}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14495}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.156
+D=A
+@call
+0;JMP
+(Main.main.call.156)
+// {line: 14501}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14514}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.157
+D=A
+@call
+0;JMP
+(Main.main.call.157)
+// {line: 14520}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14533}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.158
+D=A
+@call
+0;JMP
+(Main.main.call.158)
+// {line: 14539}
+// push constant 117
+@117
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14552}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.159
+D=A
+@call
+0;JMP
+(Main.main.call.159)
+// {line: 14558}
+// push constant 109
+@109
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14571}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.160
+D=A
+@call
+0;JMP
+(Main.main.call.160)
+// {line: 14577}
+// push constant 98
+@98
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14590}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.161
+D=A
+@call
+0;JMP
+(Main.main.call.161)
+// {line: 14596}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14609}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.162
+D=A
+@call
+0;JMP
+(Main.main.call.162)
+// {line: 14615}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14628}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.163
+D=A
+@call
+0;JMP
+(Main.main.call.163)
+// {line: 14634}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14647}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.164
+D=A
+@call
+0;JMP
+(Main.main.call.164)
+// {line: 14653}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14666}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.165
+D=A
+@call
+0;JMP
+(Main.main.call.165)
+// {line: 14672}
+// push constant 51
+@51
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14685}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.166
+D=A
+@call
+0;JMP
+(Main.main.call.166)
+// {line: 14691}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14704}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.167
+D=A
+@call
+0;JMP
+(Main.main.call.167)
+// {line: 14710}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14723}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.168
+D=A
+@call
+0;JMP
+(Main.main.call.168)
+// {line: 14729}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14742}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.169
+D=A
+@call
+0;JMP
+(Main.main.call.169)
+// {line: 14755}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.170
+D=A
+@call
+0;JMP
+(Main.main.call.170)
+// {line: 14760}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 14773}
+// call Keyboard.readChar nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Keyboard.readChar
+D=A
+@R15
+M=D
+@Main.main.call.171
+D=A
+@call
+0;JMP
+(Main.main.call.171)
+// {line: 14779}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 14792}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.172
+D=A
+@call
+0;JMP
+(Main.main.call.172)
+// {line: 14797}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 14806}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14812}
+// push constant 51
+@51
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14819}
+// eq
+@Main.main.eq.3
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.3)
+// {line: 14824}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 14830}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14836}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14839}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 14844}
+// if-goto Main.main.if.1
+@SP
+AM=M-1
+D=M
+@Main.main.if.1
+D;JNE
+// {line: 14850}
+// push constant 2
+@2
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14863}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.173
+D=A
+@call
+0;JMP
+(Main.main.call.173)
+// {line: 14869}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14882}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.174
+D=A
+@call
+0;JMP
+(Main.main.call.174)
+// {line: 14888}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14901}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.175
+D=A
+@call
+0;JMP
+(Main.main.call.175)
+// {line: 14914}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.176
+D=A
+@call
+0;JMP
+(Main.main.call.176)
+// {line: 14919}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 14932}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.177
+D=A
+@call
+0;JMP
+(Main.main.call.177)
+// {line: 14937}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 14943}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14946}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 14956}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 14957}
+(Main.main.if.1)
+// {line: 14962}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 14964}
+// goto Main.main.while.6
+@Main.main.while.6
+0;JMP
+// {line: 14965}
+(Main.main.while.7)
+// {line: 14971}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 14981}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 14987}
+// push constant 14
+@14
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15000}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.178
+D=A
+@call
+0;JMP
+(Main.main.call.178)
+// {line: 15006}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15019}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.179
+D=A
+@call
+0;JMP
+(Main.main.call.179)
+// {line: 15025}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15038}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.180
+D=A
+@call
+0;JMP
+(Main.main.call.180)
+// {line: 15044}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15057}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.181
+D=A
+@call
+0;JMP
+(Main.main.call.181)
+// {line: 15063}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15076}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.182
+D=A
+@call
+0;JMP
+(Main.main.call.182)
+// {line: 15082}
+// push constant 76
+@76
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15095}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.183
+D=A
+@call
+0;JMP
+(Main.main.call.183)
+// {line: 15101}
+// push constant 105
+@105
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15114}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.184
+D=A
+@call
+0;JMP
+(Main.main.call.184)
+// {line: 15120}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15133}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.185
+D=A
+@call
+0;JMP
+(Main.main.call.185)
+// {line: 15139}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15152}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.186
+D=A
+@call
+0;JMP
+(Main.main.call.186)
+// {line: 15158}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15171}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.187
+D=A
+@call
+0;JMP
+(Main.main.call.187)
+// {line: 15177}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15190}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.188
+D=A
+@call
+0;JMP
+(Main.main.call.188)
+// {line: 15196}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15209}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.189
+D=A
+@call
+0;JMP
+(Main.main.call.189)
+// {line: 15215}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15228}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.190
+D=A
+@call
+0;JMP
+(Main.main.call.190)
+// {line: 15234}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15247}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.191
+D=A
+@call
+0;JMP
+(Main.main.call.191)
+// {line: 15253}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15266}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.192
+D=A
+@call
+0;JMP
+(Main.main.call.192)
+// {line: 15279}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.193
+D=A
+@call
+0;JMP
+(Main.main.call.193)
+// {line: 15284}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 15297}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.194
+D=A
+@call
+0;JMP
+(Main.main.call.194)
+// {line: 15302}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 15308}
+// push constant 38
+@38
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15321}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.195
+D=A
+@call
+0;JMP
+(Main.main.call.195)
+// {line: 15327}
+// push constant 40
+@40
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15340}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.196
+D=A
+@call
+0;JMP
+(Main.main.call.196)
+// {line: 15346}
+// push constant 86
+@86
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15359}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.197
+D=A
+@call
+0;JMP
+(Main.main.call.197)
+// {line: 15365}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15378}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.198
+D=A
+@call
+0;JMP
+(Main.main.call.198)
+// {line: 15384}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15397}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.199
+D=A
+@call
+0;JMP
+(Main.main.call.199)
+// {line: 15403}
+// push constant 105
+@105
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15416}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.200
+D=A
+@call
+0;JMP
+(Main.main.call.200)
+// {line: 15422}
+// push constant 102
+@102
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15435}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.201
+D=A
+@call
+0;JMP
+(Main.main.call.201)
+// {line: 15441}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15454}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.202
+D=A
+@call
+0;JMP
+(Main.main.call.202)
+// {line: 15460}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15473}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.203
+D=A
+@call
+0;JMP
+(Main.main.call.203)
+// {line: 15479}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15492}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.204
+D=A
+@call
+0;JMP
+(Main.main.call.204)
+// {line: 15498}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15511}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.205
+D=A
+@call
+0;JMP
+(Main.main.call.205)
+// {line: 15517}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15530}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.206
+D=A
+@call
+0;JMP
+(Main.main.call.206)
+// {line: 15536}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15549}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.207
+D=A
+@call
+0;JMP
+(Main.main.call.207)
+// {line: 15555}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15568}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.208
+D=A
+@call
+0;JMP
+(Main.main.call.208)
+// {line: 15574}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15587}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.209
+D=A
+@call
+0;JMP
+(Main.main.call.209)
+// {line: 15593}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15606}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.210
+D=A
+@call
+0;JMP
+(Main.main.call.210)
+// {line: 15612}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15625}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.211
+D=A
+@call
+0;JMP
+(Main.main.call.211)
+// {line: 15631}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15644}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.212
+D=A
+@call
+0;JMP
+(Main.main.call.212)
+// {line: 15650}
+// push constant 117
+@117
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15663}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.213
+D=A
+@call
+0;JMP
+(Main.main.call.213)
+// {line: 15669}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15682}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.214
+D=A
+@call
+0;JMP
+(Main.main.call.214)
+// {line: 15688}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15701}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.215
+D=A
+@call
+0;JMP
+(Main.main.call.215)
+// {line: 15707}
+// push constant 103
+@103
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15720}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.216
+D=A
+@call
+0;JMP
+(Main.main.call.216)
+// {line: 15726}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15739}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.217
+D=A
+@call
+0;JMP
+(Main.main.call.217)
+// {line: 15745}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15758}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.218
+D=A
+@call
+0;JMP
+(Main.main.call.218)
+// {line: 15764}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15777}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.219
+D=A
+@call
+0;JMP
+(Main.main.call.219)
+// {line: 15783}
+// push constant 102
+@102
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15796}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.220
+D=A
+@call
+0;JMP
+(Main.main.call.220)
+// {line: 15802}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15815}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.221
+D=A
+@call
+0;JMP
+(Main.main.call.221)
+// {line: 15821}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15834}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.222
+D=A
+@call
+0;JMP
+(Main.main.call.222)
+// {line: 15840}
+// push constant 98
+@98
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15853}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.223
+D=A
+@call
+0;JMP
+(Main.main.call.223)
+// {line: 15859}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15872}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.224
+D=A
+@call
+0;JMP
+(Main.main.call.224)
+// {line: 15878}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15891}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.225
+D=A
+@call
+0;JMP
+(Main.main.call.225)
+// {line: 15897}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15910}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.226
+D=A
+@call
+0;JMP
+(Main.main.call.226)
+// {line: 15916}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15929}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.227
+D=A
+@call
+0;JMP
+(Main.main.call.227)
+// {line: 15935}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15948}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.228
+D=A
+@call
+0;JMP
+(Main.main.call.228)
+// {line: 15954}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15967}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.229
+D=A
+@call
+0;JMP
+(Main.main.call.229)
+// {line: 15973}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 15986}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.230
+D=A
+@call
+0;JMP
+(Main.main.call.230)
+// {line: 15992}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16005}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.231
+D=A
+@call
+0;JMP
+(Main.main.call.231)
+// {line: 16011}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16024}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.232
+D=A
+@call
+0;JMP
+(Main.main.call.232)
+// {line: 16030}
+// push constant 41
+@41
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16043}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.233
+D=A
+@call
+0;JMP
+(Main.main.call.233)
+// {line: 16056}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.234
+D=A
+@call
+0;JMP
+(Main.main.call.234)
+// {line: 16061}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 16074}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.235
+D=A
+@call
+0;JMP
+(Main.main.call.235)
+// {line: 16079}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 16080}
+(Main.main.while.8)
+// {line: 16089}
+// push local 4
+@4
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16092}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 16095}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 16100}
+// if-goto Main.main.while.9
+@SP
+AM=M-1
+D=M
+@Main.main.while.9
+D;JNE
+// {line: 16106}
+// push constant 36
+@36
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16119}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.236
+D=A
+@call
+0;JMP
+(Main.main.call.236)
+// {line: 16125}
+// push constant 80
+@80
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16138}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.237
+D=A
+@call
+0;JMP
+(Main.main.call.237)
+// {line: 16144}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16157}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.238
+D=A
+@call
+0;JMP
+(Main.main.call.238)
+// {line: 16163}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16176}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.239
+D=A
+@call
+0;JMP
+(Main.main.call.239)
+// {line: 16182}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16195}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.240
+D=A
+@call
+0;JMP
+(Main.main.call.240)
+// {line: 16201}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16214}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.241
+D=A
+@call
+0;JMP
+(Main.main.call.241)
+// {line: 16220}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16233}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.242
+D=A
+@call
+0;JMP
+(Main.main.call.242)
+// {line: 16239}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16252}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.243
+D=A
+@call
+0;JMP
+(Main.main.call.243)
+// {line: 16258}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16271}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.244
+D=A
+@call
+0;JMP
+(Main.main.call.244)
+// {line: 16277}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16290}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.245
+D=A
+@call
+0;JMP
+(Main.main.call.245)
+// {line: 16296}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16309}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.246
+D=A
+@call
+0;JMP
+(Main.main.call.246)
+// {line: 16315}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16328}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.247
+D=A
+@call
+0;JMP
+(Main.main.call.247)
+// {line: 16334}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16347}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.248
+D=A
+@call
+0;JMP
+(Main.main.call.248)
+// {line: 16353}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16366}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.249
+D=A
+@call
+0;JMP
+(Main.main.call.249)
+// {line: 16372}
+// push constant 74
+@74
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16385}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.250
+D=A
+@call
+0;JMP
+(Main.main.call.250)
+// {line: 16391}
+// push constant 65
+@65
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16404}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.251
+D=A
+@call
+0;JMP
+(Main.main.call.251)
+// {line: 16410}
+// push constant 67
+@67
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16423}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.252
+D=A
+@call
+0;JMP
+(Main.main.call.252)
+// {line: 16429}
+// push constant 75
+@75
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16442}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.253
+D=A
+@call
+0;JMP
+(Main.main.call.253)
+// {line: 16448}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16461}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.254
+D=A
+@call
+0;JMP
+(Main.main.call.254)
+// {line: 16467}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16480}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.255
+D=A
+@call
+0;JMP
+(Main.main.call.255)
+// {line: 16486}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16499}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.256
+D=A
+@call
+0;JMP
+(Main.main.call.256)
+// {line: 16505}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16518}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.257
+D=A
+@call
+0;JMP
+(Main.main.call.257)
+// {line: 16524}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16537}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.258
+D=A
+@call
+0;JMP
+(Main.main.call.258)
+// {line: 16543}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16556}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.259
+D=A
+@call
+0;JMP
+(Main.main.call.259)
+// {line: 16562}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16575}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.260
+D=A
+@call
+0;JMP
+(Main.main.call.260)
+// {line: 16581}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16594}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.261
+D=A
+@call
+0;JMP
+(Main.main.call.261)
+// {line: 16600}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16613}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.262
+D=A
+@call
+0;JMP
+(Main.main.call.262)
+// {line: 16619}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16632}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.263
+D=A
+@call
+0;JMP
+(Main.main.call.263)
+// {line: 16638}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16651}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.264
+D=A
+@call
+0;JMP
+(Main.main.call.264)
+// {line: 16657}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16670}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.265
+D=A
+@call
+0;JMP
+(Main.main.call.265)
+// {line: 16676}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16689}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.266
+D=A
+@call
+0;JMP
+(Main.main.call.266)
+// {line: 16695}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16708}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.267
+D=A
+@call
+0;JMP
+(Main.main.call.267)
+// {line: 16714}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16727}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.268
+D=A
+@call
+0;JMP
+(Main.main.call.268)
+// {line: 16733}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16746}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.269
+D=A
+@call
+0;JMP
+(Main.main.call.269)
+// {line: 16752}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16765}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.270
+D=A
+@call
+0;JMP
+(Main.main.call.270)
+// {line: 16771}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16784}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.271
+D=A
+@call
+0;JMP
+(Main.main.call.271)
+// {line: 16790}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16803}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.272
+D=A
+@call
+0;JMP
+(Main.main.call.272)
+// {line: 16816}
+// call Keyboard.readLine nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Keyboard.readLine
+D=A
+@R15
+M=D
+@Main.main.call.273
+D=A
+@call
+0;JMP
+(Main.main.call.273)
+// {line: 16824}
+// pop local 2
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+M=D
+// {line: 16837}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.274
+D=A
+@call
+0;JMP
+(Main.main.call.274)
+// {line: 16842}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 16851}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16864}
+// call String.length nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.length
+D=A
+@R15
+M=D
+@Main.main.call.275
+D=A
+@call
+0;JMP
+(Main.main.call.275)
+// {line: 16870}
+// push constant 4
+@4
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16877}
+// eq
+@Main.main.eq.4
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.4)
+// {line: 16882}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 16888}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16894}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16897}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 16902}
+// if-goto Main.main.if.2
+@SP
+AM=M-1
+D=M
+@Main.main.if.2
+D;JNE
+// {line: 16911}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16917}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16930}
+// call String.charAt nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.charAt
+D=A
+@R15
+M=D
+@Main.main.call.276
+D=A
+@call
+0;JMP
+(Main.main.call.276)
+// {line: 16936}
+// push constant 74
+@74
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16943}
+// eq
+@Main.main.eq.5
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.5)
+// {line: 16952}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16958}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16971}
+// call String.charAt nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.charAt
+D=A
+@R15
+M=D
+@Main.main.call.277
+D=A
+@call
+0;JMP
+(Main.main.call.277)
+// {line: 16977}
+// push constant 65
+@65
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 16984}
+// eq
+@Main.main.eq.6
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.6)
+// {line: 16989}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 16998}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17004}
+// push constant 2
+@2
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17017}
+// call String.charAt nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.charAt
+D=A
+@R15
+M=D
+@Main.main.call.278
+D=A
+@call
+0;JMP
+(Main.main.call.278)
+// {line: 17023}
+// push constant 67
+@67
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17030}
+// eq
+@Main.main.eq.7
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.7)
+// {line: 17035}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 17044}
+// push local 2
+@2
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17050}
+// push constant 3
+@3
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17063}
+// call String.charAt nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.charAt
+D=A
+@R15
+M=D
+@Main.main.call.279
+D=A
+@call
+0;JMP
+(Main.main.call.279)
+// {line: 17069}
+// push constant 75
+@75
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17076}
+// eq
+@Main.main.eq.8
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.8)
+// {line: 17081}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 17086}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 17092}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17098}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17101}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 17106}
+// if-goto Main.main.if.3
+@SP
+AM=M-1
+D=M
+@Main.main.if.3
+D;JNE
+// {line: 17112}
+// push constant 2
+@2
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17125}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.280
+D=A
+@call
+0;JMP
+(Main.main.call.280)
+// {line: 17131}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17144}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.281
+D=A
+@call
+0;JMP
+(Main.main.call.281)
+// {line: 17150}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17163}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.282
+D=A
+@call
+0;JMP
+(Main.main.call.282)
+// {line: 17176}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.283
+D=A
+@call
+0;JMP
+(Main.main.call.283)
+// {line: 17181}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 17194}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.284
+D=A
+@call
+0;JMP
+(Main.main.call.284)
+// {line: 17199}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 17205}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17208}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 17218}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 17219}
+(Main.main.if.3)
+// {line: 17224}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 17225}
+(Main.main.if.2)
+// {line: 17230}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 17232}
+// goto Main.main.while.8
+@Main.main.while.8
+0;JMP
+// {line: 17233}
+(Main.main.while.9)
+// {line: 17239}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17249}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 17255}
+// push constant 13
+@13
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17268}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.285
+D=A
+@call
+0;JMP
+(Main.main.call.285)
+// {line: 17274}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17287}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.286
+D=A
+@call
+0;JMP
+(Main.main.call.286)
+// {line: 17293}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17306}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.287
+D=A
+@call
+0;JMP
+(Main.main.call.287)
+// {line: 17312}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17325}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.288
+D=A
+@call
+0;JMP
+(Main.main.call.288)
+// {line: 17331}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17344}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.289
+D=A
+@call
+0;JMP
+(Main.main.call.289)
+// {line: 17350}
+// push constant 73
+@73
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17363}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.290
+D=A
+@call
+0;JMP
+(Main.main.call.290)
+// {line: 17369}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17382}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.291
+D=A
+@call
+0;JMP
+(Main.main.call.291)
+// {line: 17388}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17401}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.292
+D=A
+@call
+0;JMP
+(Main.main.call.292)
+// {line: 17407}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17420}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.293
+D=A
+@call
+0;JMP
+(Main.main.call.293)
+// {line: 17426}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17439}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.294
+D=A
+@call
+0;JMP
+(Main.main.call.294)
+// {line: 17445}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17458}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.295
+D=A
+@call
+0;JMP
+(Main.main.call.295)
+// {line: 17464}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17477}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.296
+D=A
+@call
+0;JMP
+(Main.main.call.296)
+// {line: 17483}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17496}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.297
+D=A
+@call
+0;JMP
+(Main.main.call.297)
+// {line: 17502}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17515}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.298
+D=A
+@call
+0;JMP
+(Main.main.call.298)
+// {line: 17528}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.299
+D=A
+@call
+0;JMP
+(Main.main.call.299)
+// {line: 17533}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 17546}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.300
+D=A
+@call
+0;JMP
+(Main.main.call.300)
+// {line: 17551}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 17557}
+// push constant 38
+@38
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17570}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.301
+D=A
+@call
+0;JMP
+(Main.main.call.301)
+// {line: 17576}
+// push constant 40
+@40
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17589}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.302
+D=A
+@call
+0;JMP
+(Main.main.call.302)
+// {line: 17595}
+// push constant 86
+@86
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17608}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.303
+D=A
+@call
+0;JMP
+(Main.main.call.303)
+// {line: 17614}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17627}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.304
+D=A
+@call
+0;JMP
+(Main.main.call.304)
+// {line: 17633}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17646}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.305
+D=A
+@call
+0;JMP
+(Main.main.call.305)
+// {line: 17652}
+// push constant 105
+@105
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17665}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.306
+D=A
+@call
+0;JMP
+(Main.main.call.306)
+// {line: 17671}
+// push constant 102
+@102
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17684}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.307
+D=A
+@call
+0;JMP
+(Main.main.call.307)
+// {line: 17690}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17703}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.308
+D=A
+@call
+0;JMP
+(Main.main.call.308)
+// {line: 17709}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17722}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.309
+D=A
+@call
+0;JMP
+(Main.main.call.309)
+// {line: 17728}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17741}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.310
+D=A
+@call
+0;JMP
+(Main.main.call.310)
+// {line: 17747}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17760}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.311
+D=A
+@call
+0;JMP
+(Main.main.call.311)
+// {line: 17766}
+// push constant 104
+@104
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17779}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.312
+D=A
+@call
+0;JMP
+(Main.main.call.312)
+// {line: 17785}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17798}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.313
+D=A
+@call
+0;JMP
+(Main.main.call.313)
+// {line: 17804}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17817}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.314
+D=A
+@call
+0;JMP
+(Main.main.call.314)
+// {line: 17823}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17836}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.315
+D=A
+@call
+0;JMP
+(Main.main.call.315)
+// {line: 17842}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17855}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.316
+D=A
+@call
+0;JMP
+(Main.main.call.316)
+// {line: 17861}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17874}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.317
+D=A
+@call
+0;JMP
+(Main.main.call.317)
+// {line: 17880}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17893}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.318
+D=A
+@call
+0;JMP
+(Main.main.call.318)
+// {line: 17899}
+// push constant 117
+@117
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17912}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.319
+D=A
+@call
+0;JMP
+(Main.main.call.319)
+// {line: 17918}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17931}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.320
+D=A
+@call
+0;JMP
+(Main.main.call.320)
+// {line: 17937}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17950}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.321
+D=A
+@call
+0;JMP
+(Main.main.call.321)
+// {line: 17956}
+// push constant 103
+@103
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17969}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.322
+D=A
+@call
+0;JMP
+(Main.main.call.322)
+// {line: 17975}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 17988}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.323
+D=A
+@call
+0;JMP
+(Main.main.call.323)
+// {line: 17994}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18007}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.324
+D=A
+@call
+0;JMP
+(Main.main.call.324)
+// {line: 18013}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18026}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.325
+D=A
+@call
+0;JMP
+(Main.main.call.325)
+// {line: 18032}
+// push constant 102
+@102
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18045}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.326
+D=A
+@call
+0;JMP
+(Main.main.call.326)
+// {line: 18051}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18064}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.327
+D=A
+@call
+0;JMP
+(Main.main.call.327)
+// {line: 18070}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18083}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.328
+D=A
+@call
+0;JMP
+(Main.main.call.328)
+// {line: 18089}
+// push constant 98
+@98
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18102}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.329
+D=A
+@call
+0;JMP
+(Main.main.call.329)
+// {line: 18108}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18121}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.330
+D=A
+@call
+0;JMP
+(Main.main.call.330)
+// {line: 18127}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18140}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.331
+D=A
+@call
+0;JMP
+(Main.main.call.331)
+// {line: 18146}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18159}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.332
+D=A
+@call
+0;JMP
+(Main.main.call.332)
+// {line: 18165}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18178}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.333
+D=A
+@call
+0;JMP
+(Main.main.call.333)
+// {line: 18184}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18197}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.334
+D=A
+@call
+0;JMP
+(Main.main.call.334)
+// {line: 18203}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18216}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.335
+D=A
+@call
+0;JMP
+(Main.main.call.335)
+// {line: 18222}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18235}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.336
+D=A
+@call
+0;JMP
+(Main.main.call.336)
+// {line: 18241}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18254}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.337
+D=A
+@call
+0;JMP
+(Main.main.call.337)
+// {line: 18260}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18273}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.338
+D=A
+@call
+0;JMP
+(Main.main.call.338)
+// {line: 18279}
+// push constant 41
+@41
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18292}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.339
+D=A
+@call
+0;JMP
+(Main.main.call.339)
+// {line: 18305}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.340
+D=A
+@call
+0;JMP
+(Main.main.call.340)
+// {line: 18310}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 18323}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.341
+D=A
+@call
+0;JMP
+(Main.main.call.341)
+// {line: 18328}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 18329}
+(Main.main.while.10)
+// {line: 18338}
+// push local 4
+@4
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18341}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 18344}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 18349}
+// if-goto Main.main.while.11
+@SP
+AM=M-1
+D=M
+@Main.main.while.11
+D;JNE
+// {line: 18355}
+// push constant 38
+@38
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18368}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.342
+D=A
+@call
+0;JMP
+(Main.main.call.342)
+// {line: 18374}
+// push constant 80
+@80
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18387}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.343
+D=A
+@call
+0;JMP
+(Main.main.call.343)
+// {line: 18393}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18406}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.344
+D=A
+@call
+0;JMP
+(Main.main.call.344)
+// {line: 18412}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18425}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.345
+D=A
+@call
+0;JMP
+(Main.main.call.345)
+// {line: 18431}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18444}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.346
+D=A
+@call
+0;JMP
+(Main.main.call.346)
+// {line: 18450}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18463}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.347
+D=A
+@call
+0;JMP
+(Main.main.call.347)
+// {line: 18469}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18482}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.348
+D=A
+@call
+0;JMP
+(Main.main.call.348)
+// {line: 18488}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18501}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.349
+D=A
+@call
+0;JMP
+(Main.main.call.349)
+// {line: 18507}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18520}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.350
+D=A
+@call
+0;JMP
+(Main.main.call.350)
+// {line: 18526}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18539}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.351
+D=A
+@call
+0;JMP
+(Main.main.call.351)
+// {line: 18545}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18558}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.352
+D=A
+@call
+0;JMP
+(Main.main.call.352)
+// {line: 18564}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18577}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.353
+D=A
+@call
+0;JMP
+(Main.main.call.353)
+// {line: 18583}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18596}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.354
+D=A
+@call
+0;JMP
+(Main.main.call.354)
+// {line: 18602}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18615}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.355
+D=A
+@call
+0;JMP
+(Main.main.call.355)
+// {line: 18621}
+// push constant 45
+@45
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18634}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.356
+D=A
+@call
+0;JMP
+(Main.main.call.356)
+// {line: 18640}
+// push constant 51
+@51
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18653}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.357
+D=A
+@call
+0;JMP
+(Main.main.call.357)
+// {line: 18659}
+// push constant 50
+@50
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18672}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.358
+D=A
+@call
+0;JMP
+(Main.main.call.358)
+// {line: 18678}
+// push constant 49
+@49
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18691}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.359
+D=A
+@call
+0;JMP
+(Main.main.call.359)
+// {line: 18697}
+// push constant 50
+@50
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18710}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.360
+D=A
+@call
+0;JMP
+(Main.main.call.360)
+// {line: 18716}
+// push constant 51
+@51
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18729}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.361
+D=A
+@call
+0;JMP
+(Main.main.call.361)
+// {line: 18735}
+// push constant 39
+@39
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18748}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.362
+D=A
+@call
+0;JMP
+(Main.main.call.362)
+// {line: 18754}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18767}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.363
+D=A
+@call
+0;JMP
+(Main.main.call.363)
+// {line: 18773}
+// push constant 97
+@97
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18786}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.364
+D=A
+@call
+0;JMP
+(Main.main.call.364)
+// {line: 18792}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18805}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.365
+D=A
+@call
+0;JMP
+(Main.main.call.365)
+// {line: 18811}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18824}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.366
+D=A
+@call
+0;JMP
+(Main.main.call.366)
+// {line: 18830}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18843}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.367
+D=A
+@call
+0;JMP
+(Main.main.call.367)
+// {line: 18849}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18862}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.368
+D=A
+@call
+0;JMP
+(Main.main.call.368)
+// {line: 18868}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18881}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.369
+D=A
+@call
+0;JMP
+(Main.main.call.369)
+// {line: 18887}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18900}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.370
+D=A
+@call
+0;JMP
+(Main.main.call.370)
+// {line: 18906}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18919}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.371
+D=A
+@call
+0;JMP
+(Main.main.call.371)
+// {line: 18925}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18938}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.372
+D=A
+@call
+0;JMP
+(Main.main.call.372)
+// {line: 18944}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18957}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.373
+D=A
+@call
+0;JMP
+(Main.main.call.373)
+// {line: 18963}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18976}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.374
+D=A
+@call
+0;JMP
+(Main.main.call.374)
+// {line: 18982}
+// push constant 110
+@110
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 18995}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.375
+D=A
+@call
+0;JMP
+(Main.main.call.375)
+// {line: 19001}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19014}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.376
+D=A
+@call
+0;JMP
+(Main.main.call.376)
+// {line: 19020}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19033}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.377
+D=A
+@call
+0;JMP
+(Main.main.call.377)
+// {line: 19039}
+// push constant 114
+@114
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19052}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.378
+D=A
+@call
+0;JMP
+(Main.main.call.378)
+// {line: 19058}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19071}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.379
+D=A
+@call
+0;JMP
+(Main.main.call.379)
+// {line: 19077}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19090}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.380
+D=A
+@call
+0;JMP
+(Main.main.call.380)
+// {line: 19103}
+// call Keyboard.readInt nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Keyboard.readInt
+D=A
+@R15
+M=D
+@Main.main.call.381
+D=A
+@call
+0;JMP
+(Main.main.call.381)
+// {line: 19112}
+// pop local 3
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 19125}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.382
+D=A
+@call
+0;JMP
+(Main.main.call.382)
+// {line: 19130}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 19139}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19145}
+// push constant 32123
+@32123
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19148}
+// neg
+@SP
+A=M-1
+M=-M
+// {line: 19155}
+// eq
+@Main.main.eq.9
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Main.main.eq.9)
+// {line: 19160}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 19166}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19172}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19175}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 19180}
+// if-goto Main.main.if.4
+@SP
+AM=M-1
+D=M
+@Main.main.if.4
+D;JNE
+// {line: 19186}
+// push constant 2
+@2
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19199}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.383
+D=A
+@call
+0;JMP
+(Main.main.call.383)
+// {line: 19205}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19218}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.384
+D=A
+@call
+0;JMP
+(Main.main.call.384)
+// {line: 19224}
+// push constant 107
+@107
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19237}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.385
+D=A
+@call
+0;JMP
+(Main.main.call.385)
+// {line: 19250}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.386
+D=A
+@call
+0;JMP
+(Main.main.call.386)
+// {line: 19255}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 19268}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.387
+D=A
+@call
+0;JMP
+(Main.main.call.387)
+// {line: 19273}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 19279}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19282}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 19292}
+// pop local 4
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 19293}
+(Main.main.if.4)
+// {line: 19298}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 19300}
+// goto Main.main.while.10
+@Main.main.while.10
+0;JMP
+// {line: 19301}
+(Main.main.while.11)
+// {line: 19314}
+// call Output.println nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.println
+D=A
+@R15
+M=D
+@Main.main.call.388
+D=A
+@call
+0;JMP
+(Main.main.call.388)
+// {line: 19319}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 19325}
+// push constant 27
+@27
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19338}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Main.main.call.389
+D=A
+@call
+0;JMP
+(Main.main.call.389)
+// {line: 19344}
+// push constant 84
+@84
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19357}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.390
+D=A
+@call
+0;JMP
+(Main.main.call.390)
+// {line: 19363}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19376}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.391
+D=A
+@call
+0;JMP
+(Main.main.call.391)
+// {line: 19382}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19395}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.392
+D=A
+@call
+0;JMP
+(Main.main.call.392)
+// {line: 19401}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19414}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.393
+D=A
+@call
+0;JMP
+(Main.main.call.393)
+// {line: 19420}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19433}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.394
+D=A
+@call
+0;JMP
+(Main.main.call.394)
+// {line: 19439}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19452}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.395
+D=A
+@call
+0;JMP
+(Main.main.call.395)
+// {line: 19458}
+// push constant 111
+@111
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19471}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.396
+D=A
+@call
+0;JMP
+(Main.main.call.396)
+// {line: 19477}
+// push constant 109
+@109
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19490}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.397
+D=A
+@call
+0;JMP
+(Main.main.call.397)
+// {line: 19496}
+// push constant 112
+@112
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19509}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.398
+D=A
+@call
+0;JMP
+(Main.main.call.398)
+// {line: 19515}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19528}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.399
+D=A
+@call
+0;JMP
+(Main.main.call.399)
+// {line: 19534}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19547}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.400
+D=A
+@call
+0;JMP
+(Main.main.call.400)
+// {line: 19553}
+// push constant 116
+@116
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19566}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.401
+D=A
+@call
+0;JMP
+(Main.main.call.401)
+// {line: 19572}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19585}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.402
+D=A
+@call
+0;JMP
+(Main.main.call.402)
+// {line: 19591}
+// push constant 100
+@100
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19604}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.403
+D=A
+@call
+0;JMP
+(Main.main.call.403)
+// {line: 19610}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19623}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.404
+D=A
+@call
+0;JMP
+(Main.main.call.404)
+// {line: 19629}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19642}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.405
+D=A
+@call
+0;JMP
+(Main.main.call.405)
+// {line: 19648}
+// push constant 117
+@117
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19661}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.406
+D=A
+@call
+0;JMP
+(Main.main.call.406)
+// {line: 19667}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19680}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.407
+D=A
+@call
+0;JMP
+(Main.main.call.407)
+// {line: 19686}
+// push constant 99
+@99
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19699}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.408
+D=A
+@call
+0;JMP
+(Main.main.call.408)
+// {line: 19705}
+// push constant 101
+@101
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19718}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.409
+D=A
+@call
+0;JMP
+(Main.main.call.409)
+// {line: 19724}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19737}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.410
+D=A
+@call
+0;JMP
+(Main.main.call.410)
+// {line: 19743}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19756}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.411
+D=A
+@call
+0;JMP
+(Main.main.call.411)
+// {line: 19762}
+// push constant 102
+@102
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19775}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.412
+D=A
+@call
+0;JMP
+(Main.main.call.412)
+// {line: 19781}
+// push constant 117
+@117
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19794}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.413
+D=A
+@call
+0;JMP
+(Main.main.call.413)
+// {line: 19800}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19813}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.414
+D=A
+@call
+0;JMP
+(Main.main.call.414)
+// {line: 19819}
+// push constant 108
+@108
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19832}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.415
+D=A
+@call
+0;JMP
+(Main.main.call.415)
+// {line: 19838}
+// push constant 121
+@121
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19851}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Main.main.call.416
+D=A
+@call
+0;JMP
+(Main.main.call.416)
+// {line: 19864}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Main.main.call.417
+D=A
+@call
+0;JMP
+(Main.main.call.417)
+// {line: 19869}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 19875}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 19877}
 // return
 @return
 0;JMP
-// {line: 11514}
+// {line: 19882}
 // function Array.new nLocals: 1
 (Array.new)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 11523}
+// {line: 19891}
 // push argument 0
 @0
 D=A
@@ -15240,7 +25427,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11536}
+// {line: 19904}
 // call Memory.alloc nArgs: 1
 @1
 D=A
@@ -15255,7 +25442,7 @@ D=A
 @call
 0;JMP
 (Array.new.call.0)
-// {line: 11542}
+// {line: 19910}
 // pop local 0
 @SP
 AM=M-1
@@ -15263,7 +25450,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 11551}
+// {line: 19919}
 // push local 0
 @0
 D=A
@@ -15274,18 +25461,18 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11553}
+// {line: 19921}
 // return
 @return
 0;JMP
-// {line: 11558}
+// {line: 19926}
 // function Array.dispose nLocals: 1
 (Array.dispose)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 11567}
+// {line: 19935}
 // push argument 0
 @0
 D=A
@@ -15296,14 +25483,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11572}
+// {line: 19940}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 11578}
+// {line: 19946}
 // push pointer 0
 @3
 D=M
@@ -15311,7 +25498,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11591}
+// {line: 19959}
 // call Memory.deAlloc nArgs: 1
 @1
 D=A
@@ -15326,25 +25513,25 @@ D=A
 @call
 0;JMP
 (Array.dispose.call.0)
-// {line: 11596}
+// {line: 19964}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 11598}
+// {line: 19966}
 // return
 @return
 0;JMP
-// {line: 11603}
+// {line: 19971}
 // function Memory.init nLocals: 1
 (Memory.init)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 11609}
+// {line: 19977}
 // push constant 2048
 @2048
 D=A
@@ -15352,14 +25539,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11614}
+// {line: 19982}
 // pop static 0
 @SP
 AM=M-1
 D=M
 @Memory.static.0
 M=D
-// {line: 11620}
+// {line: 19988}
 // push constant 16382
 @16382
 D=A
@@ -15367,14 +25554,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11625}
+// {line: 19993}
 // pop static 1
 @SP
 AM=M-1
 D=M
 @Memory.static.1
 M=D
-// {line: 11631}
+// {line: 19999}
 // push constant 16383
 @16383
 D=A
@@ -15382,14 +25569,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11636}
+// {line: 20004}
 // pop static 3
 @SP
 AM=M-1
 D=M
 @Memory.static.3
 M=D
-// {line: 11642}
+// {line: 20010}
 // push static 0
 @Memory.static.0
 D=M
@@ -15397,14 +25584,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11647}
+// {line: 20015}
 // pop static 2
 @SP
 AM=M-1
 D=M
 @Memory.static.2
 M=D
-// {line: 11653}
+// {line: 20021}
 // push static 0
 @Memory.static.0
 D=M
@@ -15412,7 +25599,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11659}
+// {line: 20027}
 // push static 1
 @Memory.static.1
 D=M
@@ -15420,7 +25607,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11665}
+// {line: 20033}
 // push static 0
 @Memory.static.0
 D=M
@@ -15428,14 +25615,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11670}
+// {line: 20038}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 11676}
+// {line: 20044}
 // push constant 1
 @1
 D=A
@@ -15443,14 +25630,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11681}
+// {line: 20049}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 11694}
+// {line: 20062}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -15465,14 +25652,14 @@ D=A
 @call
 0;JMP
 (Memory.init.call.0)
-// {line: 11699}
+// {line: 20067}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 11705}
+// {line: 20073}
 // push static 0
 @Memory.static.0
 D=M
@@ -15480,7 +25667,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11711}
+// {line: 20079}
 // push constant 1
 @1
 D=A
@@ -15488,14 +25675,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11716}
+// {line: 20084}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 11722}
+// {line: 20090}
 // push constant 0
 @0
 D=A
@@ -15503,7 +25690,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11735}
+// {line: 20103}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -15518,25 +25705,25 @@ D=A
 @call
 0;JMP
 (Memory.init.call.1)
-// {line: 11740}
+// {line: 20108}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 11742}
+// {line: 20110}
 // return
 @return
 0;JMP
-// {line: 11747}
+// {line: 20115}
 // function Memory.peek nLocals: 1
 (Memory.peek)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 11753}
+// {line: 20121}
 // push constant 0
 @0
 D=A
@@ -15544,7 +25731,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11759}
+// {line: 20127}
 // pop local 0
 @SP
 AM=M-1
@@ -15552,7 +25739,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 11765}
+// {line: 20133}
 // push pointer 1
 @4
 D=M
@@ -15560,7 +25747,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11774}
+// {line: 20142}
 // push local 0
 @0
 D=A
@@ -15571,7 +25758,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11783}
+// {line: 20151}
 // push argument 0
 @0
 D=A
@@ -15582,21 +25769,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11788}
+// {line: 20156}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 11793}
+// {line: 20161}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 11802}
+// {line: 20170}
 // push that 0
 @0
 D=A
@@ -15607,21 +25794,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11807}
+// {line: 20175}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 11812}
+// {line: 20180}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 11818}
+// {line: 20186}
 // push temp 2
 @7
 D=M
@@ -15629,18 +25816,18 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11820}
+// {line: 20188}
 // return
 @return
 0;JMP
-// {line: 11825}
+// {line: 20193}
 // function Memory.poke nLocals: 1
 (Memory.poke)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 11831}
+// {line: 20199}
 // push constant 0
 @0
 D=A
@@ -15648,7 +25835,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11837}
+// {line: 20205}
 // pop local 0
 @SP
 AM=M-1
@@ -15656,7 +25843,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 11846}
+// {line: 20214}
 // push local 0
 @0
 D=A
@@ -15667,7 +25854,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11855}
+// {line: 20223}
 // push argument 0
 @0
 D=A
@@ -15678,21 +25865,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11860}
+// {line: 20228}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 11865}
+// {line: 20233}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 11874}
+// {line: 20242}
 // push argument 1
 @1
 D=A
@@ -15703,7 +25890,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11880}
+// {line: 20248}
 // pop that 0
 @SP
 AM=M-1
@@ -15711,11 +25898,11 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 11882}
+// {line: 20250}
 // return
 @return
 0;JMP
-// {line: 11903}
+// {line: 20271}
 // function Memory.alloc nLocals: 5
 (Memory.alloc)
 @SP
@@ -15738,7 +25925,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 11912}
+// {line: 20280}
 // push argument 0
 @0
 D=A
@@ -15749,7 +25936,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11918}
+// {line: 20286}
 // push constant 0
 @0
 D=A
@@ -15757,7 +25944,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11925}
+// {line: 20293}
 // lt
 @Memory.alloc.lt.0
 D=A
@@ -15766,7 +25953,7 @@ M=D
 @lt
 0;JMP
 (Memory.alloc.lt.0)
-// {line: 11934}
+// {line: 20302}
 // push argument 0
 @0
 D=A
@@ -15777,7 +25964,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11940}
+// {line: 20308}
 // push constant 0
 @0
 D=A
@@ -15785,7 +25972,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 11947}
+// {line: 20315}
 // eq
 @Memory.alloc.eq.0
 D=A
@@ -15794,21 +25981,21 @@ M=D
 @eq
 0;JMP
 (Memory.alloc.eq.0)
-// {line: 11952}
+// {line: 20320}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 11957}
+// {line: 20325}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 11963}
+// {line: 20331}
 // push temp 1
 @6
 D=M
@@ -15816,7 +26003,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11969}
+// {line: 20337}
 // push temp 1
 @6
 D=M
@@ -15824,19 +26011,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11972}
+// {line: 20340}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 11977}
+// {line: 20345}
 // if-goto Memory.alloc.if.0
 @SP
 AM=M-1
 D=M
 @Memory.alloc.if.0
 D;JNE
-// {line: 11983}
+// {line: 20351}
 // push static 3
 @Memory.static.3
 D=M
@@ -15844,20 +26031,20 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 11985}
+// {line: 20353}
 // return
 @return
 0;JMP
-// {line: 11986}
+// {line: 20354}
 (Memory.alloc.if.0)
-// {line: 11991}
+// {line: 20359}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 11997}
+// {line: 20365}
 // push static 2
 @Memory.static.2
 D=M
@@ -15865,7 +26052,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12004}
+// {line: 20372}
 // pop local 1
 @SP
 AM=M-1
@@ -15874,7 +26061,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 12013}
+// {line: 20381}
 // push local 1
 @1
 D=A
@@ -15885,7 +26072,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12019}
+// {line: 20387}
 // pop local 0
 @SP
 AM=M-1
@@ -15893,7 +26080,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 12025}
+// {line: 20393}
 // push constant 1
 @1
 D=A
@@ -15901,7 +26088,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12035}
+// {line: 20403}
 // pop local 4
 @SP
 AM=M-1
@@ -15913,9 +26100,9 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 12036}
+// {line: 20404}
 (Memory.alloc.while.0)
-// {line: 12045}
+// {line: 20413}
 // push local 1
 @1
 D=A
@@ -15926,7 +26113,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12051}
+// {line: 20419}
 // push constant 0
 @0
 D=A
@@ -15934,7 +26121,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12058}
+// {line: 20426}
 // eq
 @Memory.alloc.eq.1
 D=A
@@ -15943,24 +26130,24 @@ M=D
 @eq
 0;JMP
 (Memory.alloc.eq.1)
-// {line: 12061}
+// {line: 20429}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12064}
+// {line: 20432}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12069}
+// {line: 20437}
 // if-goto Memory.alloc.while.1
 @SP
 AM=M-1
 D=M
 @Memory.alloc.while.1
 D;JNE
-// {line: 12078}
+// {line: 20446}
 // push local 1
 @1
 D=A
@@ -15971,7 +26158,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12091}
+// {line: 20459}
 // call Memory.peek nArgs: 1
 @1
 D=A
@@ -15986,7 +26173,7 @@ D=A
 @call
 0;JMP
 (Memory.alloc.call.0)
-// {line: 12099}
+// {line: 20467}
 // pop local 2
 @SP
 AM=M-1
@@ -15996,7 +26183,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 12108}
+// {line: 20476}
 // push local 2
 @2
 D=A
@@ -16007,7 +26194,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12117}
+// {line: 20485}
 // push argument 0
 @0
 D=A
@@ -16018,7 +26205,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12124}
+// {line: 20492}
 // eq
 @Memory.alloc.eq.2
 D=A
@@ -16027,14 +26214,14 @@ M=D
 @eq
 0;JMP
 (Memory.alloc.eq.2)
-// {line: 12129}
+// {line: 20497}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12135}
+// {line: 20503}
 // push temp 1
 @6
 D=M
@@ -16042,7 +26229,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12141}
+// {line: 20509}
 // push temp 1
 @6
 D=M
@@ -16050,19 +26237,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12144}
+// {line: 20512}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12149}
+// {line: 20517}
 // if-goto Memory.alloc.if.1
 @SP
 AM=M-1
 D=M
 @Memory.alloc.if.1
 D;JNE
-// {line: 12158}
+// {line: 20526}
 // push local 0
 @0
 D=A
@@ -16073,7 +26260,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12164}
+// {line: 20532}
 // push constant 1
 @1
 D=A
@@ -16081,14 +26268,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12169}
+// {line: 20537}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12178}
+// {line: 20546}
 // push local 1
 @1
 D=A
@@ -16099,7 +26286,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12184}
+// {line: 20552}
 // push constant 1
 @1
 D=A
@@ -16107,14 +26294,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12189}
+// {line: 20557}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12202}
+// {line: 20570}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -16129,14 +26316,14 @@ D=A
 @call
 0;JMP
 (Memory.alloc.call.1)
-// {line: 12207}
+// {line: 20575}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12216}
+// {line: 20584}
 // push local 1
 @1
 D=A
@@ -16147,20 +26334,20 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12218}
+// {line: 20586}
 // return
 @return
 0;JMP
-// {line: 12219}
+// {line: 20587}
 (Memory.alloc.if.1)
-// {line: 12224}
+// {line: 20592}
 // if-goto Memory.alloc.goto.0
 @SP
 AM=M-1
 D=M
 @Memory.alloc.goto.0
 D;JNE
-// {line: 12233}
+// {line: 20601}
 // push local 2
 @2
 D=A
@@ -16171,7 +26358,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12242}
+// {line: 20610}
 // push argument 0
 @0
 D=A
@@ -16182,7 +26369,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12249}
+// {line: 20617}
 // gt
 @Memory.alloc.gt.0
 D=A
@@ -16191,14 +26378,14 @@ M=D
 @gt
 0;JMP
 (Memory.alloc.gt.0)
-// {line: 12254}
+// {line: 20622}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12260}
+// {line: 20628}
 // push temp 1
 @6
 D=M
@@ -16206,7 +26393,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12266}
+// {line: 20634}
 // push temp 1
 @6
 D=M
@@ -16214,19 +26401,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12269}
+// {line: 20637}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12274}
+// {line: 20642}
 // if-goto Memory.alloc.if.2
 @SP
 AM=M-1
 D=M
 @Memory.alloc.if.2
 D;JNE
-// {line: 12283}
+// {line: 20651}
 // push local 1
 @1
 D=A
@@ -16237,7 +26424,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12292}
+// {line: 20660}
 // push local 2
 @2
 D=A
@@ -16248,14 +26435,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12297}
+// {line: 20665}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12303}
+// {line: 20671}
 // push constant 1
 @1
 D=A
@@ -16263,14 +26450,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12308}
+// {line: 20676}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12317}
+// {line: 20685}
 // push argument 0
 @0
 D=A
@@ -16281,14 +26468,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12322}
+// {line: 20690}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 12331}
+// {line: 20699}
 // pop local 3
 @SP
 AM=M-1
@@ -16299,7 +26486,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 12340}
+// {line: 20708}
 // push local 3
 @3
 D=A
@@ -16310,7 +26497,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12349}
+// {line: 20717}
 // push argument 0
 @0
 D=A
@@ -16321,7 +26508,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12362}
+// {line: 20730}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -16336,14 +26523,14 @@ D=A
 @call
 0;JMP
 (Memory.alloc.call.2)
-// {line: 12367}
+// {line: 20735}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12376}
+// {line: 20744}
 // push local 1
 @1
 D=A
@@ -16354,7 +26541,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12385}
+// {line: 20753}
 // push local 2
 @2
 D=A
@@ -16365,7 +26552,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12394}
+// {line: 20762}
 // push argument 0
 @0
 D=A
@@ -16376,14 +26563,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12399}
+// {line: 20767}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 12405}
+// {line: 20773}
 // push constant 1
 @1
 D=A
@@ -16391,14 +26578,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12410}
+// {line: 20778}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 12423}
+// {line: 20791}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -16413,14 +26600,14 @@ D=A
 @call
 0;JMP
 (Memory.alloc.call.3)
-// {line: 12428}
+// {line: 20796}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12437}
+// {line: 20805}
 // push local 3
 @3
 D=A
@@ -16431,7 +26618,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12443}
+// {line: 20811}
 // push constant 1
 @1
 D=A
@@ -16439,29 +26626,29 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12448}
+// {line: 20816}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12450}
+// {line: 20818}
 // return
 @return
 0;JMP
-// {line: 12451}
+// {line: 20819}
 (Memory.alloc.if.2)
-// {line: 12456}
+// {line: 20824}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12457}
+// {line: 20825}
 (Memory.alloc.goto.0)
-// {line: 12466}
+// {line: 20834}
 // push local 1
 @1
 D=A
@@ -16472,7 +26659,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12472}
+// {line: 20840}
 // pop local 0
 @SP
 AM=M-1
@@ -16480,7 +26667,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 12481}
+// {line: 20849}
 // push local 1
 @1
 D=A
@@ -16491,7 +26678,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12487}
+// {line: 20855}
 // push constant 1
 @1
 D=A
@@ -16499,14 +26686,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12492}
+// {line: 20860}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12505}
+// {line: 20873}
 // call Memory.peek nArgs: 1
 @1
 D=A
@@ -16521,7 +26708,7 @@ D=A
 @call
 0;JMP
 (Memory.alloc.call.4)
-// {line: 12512}
+// {line: 20880}
 // pop local 1
 @SP
 AM=M-1
@@ -16530,7 +26717,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 12521}
+// {line: 20889}
 // push local 4
 @4
 D=A
@@ -16541,7 +26728,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12527}
+// {line: 20895}
 // push constant 1
 @1
 D=A
@@ -16549,14 +26736,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12532}
+// {line: 20900}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12542}
+// {line: 20910}
 // pop local 4
 @SP
 AM=M-1
@@ -16568,13 +26755,13 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 12544}
+// {line: 20912}
 // goto Memory.alloc.while.0
 @Memory.alloc.while.0
 0;JMP
-// {line: 12545}
+// {line: 20913}
 (Memory.alloc.while.1)
-// {line: 12558}
+// {line: 20926}
 // call Memory.defrag nArgs: 0
 @0
 D=A
@@ -16589,21 +26776,21 @@ D=A
 @call
 0;JMP
 (Memory.alloc.call.5)
-// {line: 12563}
+// {line: 20931}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12565}
+// {line: 20933}
 // return
 @return
 0;JMP
-// {line: 12566}
+// {line: 20934}
 // function Memory.defrag nLocals: 0
 (Memory.defrag)
-// {line: 12572}
+// {line: 20940}
 // push constant 6
 @6
 D=A
@@ -16611,7 +26798,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12585}
+// {line: 20953}
 // call Sys.error nArgs: 1
 @1
 D=A
@@ -16626,25 +26813,25 @@ D=A
 @call
 0;JMP
 (Memory.defrag.call.0)
-// {line: 12590}
+// {line: 20958}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12592}
+// {line: 20960}
 // return
 @return
 0;JMP
-// {line: 12597}
+// {line: 20965}
 // function Memory.deAlloc nLocals: 1
 (Memory.deAlloc)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 12606}
+// {line: 20974}
 // push argument 0
 @0
 D=A
@@ -16655,7 +26842,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12612}
+// {line: 20980}
 // push static 3
 @Memory.static.3
 D=M
@@ -16663,7 +26850,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12619}
+// {line: 20987}
 // eq
 @Memory.deAlloc.eq.0
 D=A
@@ -16672,14 +26859,14 @@ M=D
 @eq
 0;JMP
 (Memory.deAlloc.eq.0)
-// {line: 12624}
+// {line: 20992}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12630}
+// {line: 20998}
 // push temp 1
 @6
 D=M
@@ -16687,7 +26874,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12636}
+// {line: 21004}
 // push temp 1
 @6
 D=M
@@ -16695,19 +26882,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12639}
+// {line: 21007}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12644}
+// {line: 21012}
 // if-goto Memory.deAlloc.if.0
 @SP
 AM=M-1
 D=M
 @Memory.deAlloc.if.0
 D;JNE
-// {line: 12650}
+// {line: 21018}
 // push constant 0
 @0
 D=A
@@ -16715,20 +26902,20 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12652}
+// {line: 21020}
 // return
 @return
 0;JMP
-// {line: 12653}
+// {line: 21021}
 (Memory.deAlloc.if.0)
-// {line: 12658}
+// {line: 21026}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12667}
+// {line: 21035}
 // push argument 0
 @0
 D=A
@@ -16739,7 +26926,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12673}
+// {line: 21041}
 // pop local 0
 @SP
 AM=M-1
@@ -16747,7 +26934,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 12682}
+// {line: 21050}
 // push argument 0
 @0
 D=A
@@ -16758,7 +26945,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12688}
+// {line: 21056}
 // push static 2
 @Memory.static.2
 D=M
@@ -16766,7 +26953,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12694}
+// {line: 21062}
 // push constant 1
 @1
 D=A
@@ -16774,14 +26961,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12699}
+// {line: 21067}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12712}
+// {line: 21080}
 // call Memory.peek nArgs: 1
 @1
 D=A
@@ -16796,7 +26983,7 @@ D=A
 @call
 0;JMP
 (Memory.deAlloc.call.0)
-// {line: 12725}
+// {line: 21093}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -16811,14 +26998,14 @@ D=A
 @call
 0;JMP
 (Memory.deAlloc.call.1)
-// {line: 12730}
+// {line: 21098}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12736}
+// {line: 21104}
 // push static 2
 @Memory.static.2
 D=M
@@ -16826,7 +27013,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12742}
+// {line: 21110}
 // push constant 1
 @1
 D=A
@@ -16834,14 +27021,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12747}
+// {line: 21115}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 12756}
+// {line: 21124}
 // push local 0
 @0
 D=A
@@ -16852,7 +27039,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12769}
+// {line: 21137}
 // call Memory.poke nArgs: 2
 @2
 D=A
@@ -16867,21 +27054,21 @@ D=A
 @call
 0;JMP
 (Memory.deAlloc.call.2)
-// {line: 12774}
+// {line: 21142}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 12776}
+// {line: 21144}
 // return
 @return
 0;JMP
-// {line: 12777}
+// {line: 21145}
 // function Memory.isValid nLocals: 0
 (Memory.isValid)
-// {line: 12786}
+// {line: 21154}
 // push argument 0
 @0
 D=A
@@ -16892,7 +27079,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12792}
+// {line: 21160}
 // push static 0
 @Memory.static.0
 D=M
@@ -16900,7 +27087,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12799}
+// {line: 21167}
 // gt
 @Memory.isValid.gt.0
 D=A
@@ -16909,7 +27096,7 @@ M=D
 @gt
 0;JMP
 (Memory.isValid.gt.0)
-// {line: 12808}
+// {line: 21176}
 // push argument 0
 @0
 D=A
@@ -16920,7 +27107,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12814}
+// {line: 21182}
 // push static 0
 @Memory.static.0
 D=M
@@ -16928,7 +27115,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12821}
+// {line: 21189}
 // eq
 @Memory.isValid.eq.0
 D=A
@@ -16937,14 +27124,14 @@ M=D
 @eq
 0;JMP
 (Memory.isValid.eq.0)
-// {line: 12826}
+// {line: 21194}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 12835}
+// {line: 21203}
 // push argument 0
 @0
 D=A
@@ -16955,7 +27142,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12841}
+// {line: 21209}
 // push static 1
 @Memory.static.1
 D=M
@@ -16963,7 +27150,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12848}
+// {line: 21216}
 // lt
 @Memory.isValid.lt.0
 D=A
@@ -16972,7 +27159,7 @@ M=D
 @lt
 0;JMP
 (Memory.isValid.lt.0)
-// {line: 12857}
+// {line: 21225}
 // push argument 0
 @0
 D=A
@@ -16983,7 +27170,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12863}
+// {line: 21231}
 // push static 1
 @Memory.static.1
 D=M
@@ -16991,7 +27178,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12870}
+// {line: 21238}
 // eq
 @Memory.isValid.eq.1
 D=A
@@ -17000,28 +27187,28 @@ M=D
 @eq
 0;JMP
 (Memory.isValid.eq.1)
-// {line: 12875}
+// {line: 21243}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 12880}
+// {line: 21248}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 12885}
+// {line: 21253}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12891}
+// {line: 21259}
 // push temp 1
 @6
 D=M
@@ -17029,7 +27216,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12897}
+// {line: 21265}
 // push temp 1
 @6
 D=M
@@ -17037,19 +27224,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12900}
+// {line: 21268}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12905}
+// {line: 21273}
 // if-goto Memory.isValid.if.0
 @SP
 AM=M-1
 D=M
 @Memory.isValid.if.0
 D;JNE
-// {line: 12911}
+// {line: 21279}
 // push constant 0
 @0
 D=A
@@ -17057,25 +27244,25 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12914}
+// {line: 21282}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 12916}
+// {line: 21284}
 // return
 @return
 0;JMP
-// {line: 12917}
+// {line: 21285}
 (Memory.isValid.if.0)
-// {line: 12922}
+// {line: 21290}
 // if-goto Memory.isValid.goto.0
 @SP
 AM=M-1
 D=M
 @Memory.isValid.goto.0
 D;JNE
-// {line: 12928}
+// {line: 21296}
 // push constant 0
 @0
 D=A
@@ -17083,24 +27270,24 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12930}
+// {line: 21298}
 // return
 @return
 0;JMP
-// {line: 12931}
+// {line: 21299}
 (Memory.isValid.goto.0)
-// {line: 12933}
+// {line: 21301}
 // return
 @return
 0;JMP
-// {line: 12938}
+// {line: 21306}
 // function String.new nLocals: 1
 (String.new)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 12944}
+// {line: 21312}
 // push constant 3
 @3
 D=A
@@ -17108,7 +27295,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12957}
+// {line: 21325}
 // call Memory.alloc nArgs: 1
 @1
 D=A
@@ -17123,14 +27310,14 @@ D=A
 @call
 0;JMP
 (String.new.call.0)
-// {line: 12962}
+// {line: 21330}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 12971}
+// {line: 21339}
 // push argument 0
 @0
 D=A
@@ -17141,7 +27328,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 12977}
+// {line: 21345}
 // push constant 0
 @0
 D=A
@@ -17149,7 +27336,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 12984}
+// {line: 21352}
 // lt
 @String.new.lt.0
 D=A
@@ -17158,14 +27345,14 @@ M=D
 @lt
 0;JMP
 (String.new.lt.0)
-// {line: 12989}
+// {line: 21357}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 12995}
+// {line: 21363}
 // push temp 1
 @6
 D=M
@@ -17173,7 +27360,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13001}
+// {line: 21369}
 // push temp 1
 @6
 D=M
@@ -17181,19 +27368,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13004}
+// {line: 21372}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13009}
+// {line: 21377}
 // if-goto String.new.if.0
 @SP
 AM=M-1
 D=M
 @String.new.if.0
 D;JNE
-// {line: 13015}
+// {line: 21383}
 // push constant 1
 @1
 D=A
@@ -17201,7 +27388,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13021}
+// {line: 21389}
 // pop argument 0
 @SP
 AM=M-1
@@ -17209,16 +27396,16 @@ D=M
 @ARG
 A=M
 M=D
-// {line: 13022}
+// {line: 21390}
 (String.new.if.0)
-// {line: 13027}
+// {line: 21395}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13033}
+// {line: 21401}
 // push constant 0
 @0
 D=A
@@ -17226,7 +27413,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13041}
+// {line: 21409}
 // pop this 2
 @SP
 AM=M-1
@@ -17236,7 +27423,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 13050}
+// {line: 21418}
 // push argument 0
 @0
 D=A
@@ -17247,7 +27434,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13057}
+// {line: 21425}
 // pop this 1
 @SP
 AM=M-1
@@ -17256,7 +27443,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 13066}
+// {line: 21434}
 // push argument 0
 @0
 D=A
@@ -17267,7 +27454,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13079}
+// {line: 21447}
 // call Array.new nArgs: 1
 @1
 D=A
@@ -17282,7 +27469,7 @@ D=A
 @call
 0;JMP
 (String.new.call.1)
-// {line: 13085}
+// {line: 21453}
 // pop this 0
 @SP
 AM=M-1
@@ -17290,7 +27477,7 @@ D=M
 @THIS
 A=M
 M=D
-// {line: 13091}
+// {line: 21459}
 // push constant 0
 @0
 D=A
@@ -17298,7 +27485,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13097}
+// {line: 21465}
 // pop local 0
 @SP
 AM=M-1
@@ -17306,9 +27493,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 13098}
+// {line: 21466}
 (String.new.while.0)
-// {line: 13107}
+// {line: 21475}
 // push local 0
 @0
 D=A
@@ -17319,7 +27506,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13116}
+// {line: 21484}
 // push argument 0
 @0
 D=A
@@ -17330,7 +27517,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13123}
+// {line: 21491}
 // lt
 @String.new.lt.1
 D=A
@@ -17339,19 +27526,19 @@ M=D
 @lt
 0;JMP
 (String.new.lt.1)
-// {line: 13126}
+// {line: 21494}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13131}
+// {line: 21499}
 // if-goto String.new.while.1
 @SP
 AM=M-1
 D=M
 @String.new.while.1
 D;JNE
-// {line: 13140}
+// {line: 21508}
 // push this 0
 @0
 D=A
@@ -17362,7 +27549,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13149}
+// {line: 21517}
 // push local 0
 @0
 D=A
@@ -17373,21 +27560,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13154}
+// {line: 21522}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 13159}
+// {line: 21527}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 13165}
+// {line: 21533}
 // push constant 32
 @32
 D=A
@@ -17395,7 +27582,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13171}
+// {line: 21539}
 // pop that 0
 @SP
 AM=M-1
@@ -17403,7 +27590,7 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 13180}
+// {line: 21548}
 // push local 0
 @0
 D=A
@@ -17414,7 +27601,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13186}
+// {line: 21554}
 // push constant 1
 @1
 D=A
@@ -17422,14 +27609,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13191}
+// {line: 21559}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 13197}
+// {line: 21565}
 // pop local 0
 @SP
 AM=M-1
@@ -17437,13 +27624,13 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 13199}
+// {line: 21567}
 // goto String.new.while.0
 @String.new.while.0
 0;JMP
-// {line: 13200}
+// {line: 21568}
 (String.new.while.1)
-// {line: 13206}
+// {line: 21574}
 // push pointer 0
 @3
 D=M
@@ -17451,18 +27638,18 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13208}
+// {line: 21576}
 // return
 @return
 0;JMP
-// {line: 13213}
+// {line: 21581}
 // function String.dispose nLocals: 1
 (String.dispose)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 13222}
+// {line: 21590}
 // push argument 0
 @0
 D=A
@@ -17473,14 +27660,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13227}
+// {line: 21595}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 13233}
+// {line: 21601}
 // push constant 0
 @0
 D=A
@@ -17488,7 +27675,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13240}
+// {line: 21608}
 // pop this 1
 @SP
 AM=M-1
@@ -17497,7 +27684,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 13246}
+// {line: 21614}
 // push constant 0
 @0
 D=A
@@ -17505,7 +27692,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13254}
+// {line: 21622}
 // pop this 2
 @SP
 AM=M-1
@@ -17515,7 +27702,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 13263}
+// {line: 21631}
 // push this 0
 @0
 D=A
@@ -17526,7 +27713,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13276}
+// {line: 21644}
 // call Array.dispose nArgs: 1
 @1
 D=A
@@ -17541,25 +27728,25 @@ D=A
 @call
 0;JMP
 (String.dispose.call.0)
-// {line: 13281}
+// {line: 21649}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 13283}
+// {line: 21651}
 // return
 @return
 0;JMP
-// {line: 13288}
+// {line: 21656}
 // function String.length nLocals: 1
 (String.length)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 13297}
+// {line: 21665}
 // push argument 0
 @0
 D=A
@@ -17570,14 +27757,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13302}
+// {line: 21670}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 13311}
+// {line: 21679}
 // push this 1
 @1
 D=A
@@ -17588,18 +27775,18 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13313}
+// {line: 21681}
 // return
 @return
 0;JMP
-// {line: 13318}
+// {line: 21686}
 // function String.charAt nLocals: 1
 (String.charAt)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 13327}
+// {line: 21695}
 // push argument 0
 @0
 D=A
@@ -17610,14 +27797,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13332}
+// {line: 21700}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 13341}
+// {line: 21709}
 // push argument 1
 @1
 D=A
@@ -17628,7 +27815,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13347}
+// {line: 21715}
 // push constant 0
 @0
 D=A
@@ -17636,7 +27823,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13354}
+// {line: 21722}
 // lt
 @String.charAt.lt.0
 D=A
@@ -17645,14 +27832,14 @@ M=D
 @lt
 0;JMP
 (String.charAt.lt.0)
-// {line: 13359}
+// {line: 21727}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13365}
+// {line: 21733}
 // push temp 1
 @6
 D=M
@@ -17660,7 +27847,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13371}
+// {line: 21739}
 // push temp 1
 @6
 D=M
@@ -17668,19 +27855,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13374}
+// {line: 21742}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13379}
+// {line: 21747}
 // if-goto String.charAt.if.0
 @SP
 AM=M-1
 D=M
 @String.charAt.if.0
 D;JNE
-// {line: 13388}
+// {line: 21756}
 // push this 1
 @1
 D=A
@@ -17691,7 +27878,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13397}
+// {line: 21765}
 // push argument 1
 @1
 D=A
@@ -17702,14 +27889,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13402}
+// {line: 21770}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 13415}
+// {line: 21783}
 // call Math.abs nArgs: 1
 @1
 D=A
@@ -17724,7 +27911,7 @@ D=A
 @call
 0;JMP
 (String.charAt.call.0)
-// {line: 13422}
+// {line: 21790}
 // pop argument 1
 @SP
 AM=M-1
@@ -17733,16 +27920,16 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 13423}
+// {line: 21791}
 (String.charAt.if.0)
-// {line: 13428}
+// {line: 21796}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13437}
+// {line: 21805}
 // push argument 1
 @1
 D=A
@@ -17753,7 +27940,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13446}
+// {line: 21814}
 // push this 1
 @1
 D=A
@@ -17764,7 +27951,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13453}
+// {line: 21821}
 // gt
 @String.charAt.gt.0
 D=A
@@ -17773,7 +27960,7 @@ M=D
 @gt
 0;JMP
 (String.charAt.gt.0)
-// {line: 13462}
+// {line: 21830}
 // push argument 1
 @1
 D=A
@@ -17784,7 +27971,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13471}
+// {line: 21839}
 // push this 1
 @1
 D=A
@@ -17795,7 +27982,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13478}
+// {line: 21846}
 // eq
 @String.charAt.eq.0
 D=A
@@ -17804,21 +27991,21 @@ M=D
 @eq
 0;JMP
 (String.charAt.eq.0)
-// {line: 13483}
+// {line: 21851}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 13488}
+// {line: 21856}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13494}
+// {line: 21862}
 // push temp 1
 @6
 D=M
@@ -17826,7 +28013,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13500}
+// {line: 21868}
 // push temp 1
 @6
 D=M
@@ -17834,19 +28021,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13503}
+// {line: 21871}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13508}
+// {line: 21876}
 // if-goto String.charAt.if.1
 @SP
 AM=M-1
 D=M
 @String.charAt.if.1
 D;JNE
-// {line: 13517}
+// {line: 21885}
 // push argument 1
 @1
 D=A
@@ -17857,7 +28044,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13526}
+// {line: 21894}
 // push this 1
 @1
 D=A
@@ -17868,7 +28055,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13539}
+// {line: 21907}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -17883,7 +28070,7 @@ D=A
 @call
 0;JMP
 (String.charAt.call.1)
-// {line: 13546}
+// {line: 21914}
 // pop argument 1
 @SP
 AM=M-1
@@ -17892,16 +28079,16 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 13547}
+// {line: 21915}
 (String.charAt.if.1)
-// {line: 13552}
+// {line: 21920}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13558}
+// {line: 21926}
 // push pointer 1
 @4
 D=M
@@ -17909,7 +28096,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13567}
+// {line: 21935}
 // push this 0
 @0
 D=A
@@ -17920,7 +28107,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13576}
+// {line: 21944}
 // push argument 1
 @1
 D=A
@@ -17931,21 +28118,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13581}
+// {line: 21949}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 13586}
+// {line: 21954}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 13595}
+// {line: 21963}
 // push that 0
 @0
 D=A
@@ -17956,21 +28143,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13600}
+// {line: 21968}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 13605}
+// {line: 21973}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 13611}
+// {line: 21979}
 // push temp 2
 @7
 D=M
@@ -17978,18 +28165,18 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13613}
+// {line: 21981}
 // return
 @return
 0;JMP
-// {line: 13618}
+// {line: 21986}
 // function String.setCharAt nLocals: 1
 (String.setCharAt)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 13627}
+// {line: 21995}
 // push argument 0
 @0
 D=A
@@ -18000,14 +28187,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13632}
+// {line: 22000}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 13641}
+// {line: 22009}
 // push argument 1
 @1
 D=A
@@ -18018,7 +28205,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13647}
+// {line: 22015}
 // push constant 0
 @0
 D=A
@@ -18026,7 +28213,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13654}
+// {line: 22022}
 // lt
 @String.setCharAt.lt.0
 D=A
@@ -18035,14 +28222,14 @@ M=D
 @lt
 0;JMP
 (String.setCharAt.lt.0)
-// {line: 13659}
+// {line: 22027}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13665}
+// {line: 22033}
 // push temp 1
 @6
 D=M
@@ -18050,7 +28237,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13671}
+// {line: 22039}
 // push temp 1
 @6
 D=M
@@ -18058,19 +28245,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13674}
+// {line: 22042}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13679}
+// {line: 22047}
 // if-goto String.setCharAt.if.0
 @SP
 AM=M-1
 D=M
 @String.setCharAt.if.0
 D;JNE
-// {line: 13688}
+// {line: 22056}
 // push this 1
 @1
 D=A
@@ -18081,7 +28268,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13697}
+// {line: 22065}
 // push argument 1
 @1
 D=A
@@ -18092,14 +28279,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13702}
+// {line: 22070}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 13715}
+// {line: 22083}
 // call Math.abs nArgs: 1
 @1
 D=A
@@ -18114,7 +28301,7 @@ D=A
 @call
 0;JMP
 (String.setCharAt.call.0)
-// {line: 13722}
+// {line: 22090}
 // pop argument 1
 @SP
 AM=M-1
@@ -18123,16 +28310,16 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 13723}
+// {line: 22091}
 (String.setCharAt.if.0)
-// {line: 13728}
+// {line: 22096}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13737}
+// {line: 22105}
 // push argument 1
 @1
 D=A
@@ -18143,7 +28330,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13746}
+// {line: 22114}
 // push this 1
 @1
 D=A
@@ -18154,7 +28341,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13753}
+// {line: 22121}
 // gt
 @String.setCharAt.gt.0
 D=A
@@ -18163,7 +28350,7 @@ M=D
 @gt
 0;JMP
 (String.setCharAt.gt.0)
-// {line: 13762}
+// {line: 22130}
 // push argument 1
 @1
 D=A
@@ -18174,7 +28361,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13771}
+// {line: 22139}
 // push this 1
 @1
 D=A
@@ -18185,7 +28372,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13778}
+// {line: 22146}
 // eq
 @String.setCharAt.eq.0
 D=A
@@ -18194,21 +28381,21 @@ M=D
 @eq
 0;JMP
 (String.setCharAt.eq.0)
-// {line: 13783}
+// {line: 22151}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 13788}
+// {line: 22156}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13794}
+// {line: 22162}
 // push temp 1
 @6
 D=M
@@ -18216,7 +28403,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13800}
+// {line: 22168}
 // push temp 1
 @6
 D=M
@@ -18224,19 +28411,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13803}
+// {line: 22171}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13808}
+// {line: 22176}
 // if-goto String.setCharAt.if.1
 @SP
 AM=M-1
 D=M
 @String.setCharAt.if.1
 D;JNE
-// {line: 13817}
+// {line: 22185}
 // push argument 1
 @1
 D=A
@@ -18247,7 +28434,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13826}
+// {line: 22194}
 // push this 1
 @1
 D=A
@@ -18258,7 +28445,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13839}
+// {line: 22207}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -18273,7 +28460,7 @@ D=A
 @call
 0;JMP
 (String.setCharAt.call.1)
-// {line: 13846}
+// {line: 22214}
 // pop argument 1
 @SP
 AM=M-1
@@ -18282,16 +28469,16 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 13847}
+// {line: 22215}
 (String.setCharAt.if.1)
-// {line: 13852}
+// {line: 22220}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13861}
+// {line: 22229}
 // push this 0
 @0
 D=A
@@ -18302,7 +28489,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13870}
+// {line: 22238}
 // push argument 1
 @1
 D=A
@@ -18313,21 +28500,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13875}
+// {line: 22243}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 13880}
+// {line: 22248}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 13889}
+// {line: 22257}
 // push argument 2
 @2
 D=A
@@ -18338,7 +28525,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13895}
+// {line: 22263}
 // pop that 0
 @SP
 AM=M-1
@@ -18346,18 +28533,18 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 13897}
+// {line: 22265}
 // return
 @return
 0;JMP
-// {line: 13902}
+// {line: 22270}
 // function String.appendChar nLocals: 1
 (String.appendChar)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 13911}
+// {line: 22279}
 // push argument 0
 @0
 D=A
@@ -18368,14 +28555,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13916}
+// {line: 22284}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 13925}
+// {line: 22293}
 // push this 2
 @2
 D=A
@@ -18386,7 +28573,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13934}
+// {line: 22302}
 // push this 1
 @1
 D=A
@@ -18397,7 +28584,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13941}
+// {line: 22309}
 // eq
 @String.appendChar.eq.0
 D=A
@@ -18406,14 +28593,14 @@ M=D
 @eq
 0;JMP
 (String.appendChar.eq.0)
-// {line: 13946}
+// {line: 22314}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 13952}
+// {line: 22320}
 // push temp 1
 @6
 D=M
@@ -18421,7 +28608,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13958}
+// {line: 22326}
 // push temp 1
 @6
 D=M
@@ -18429,19 +28616,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13961}
+// {line: 22329}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 13966}
+// {line: 22334}
 // if-goto String.appendChar.if.0
 @SP
 AM=M-1
 D=M
 @String.appendChar.if.0
 D;JNE
-// {line: 13972}
+// {line: 22340}
 // push pointer 0
 @3
 D=M
@@ -18449,7 +28636,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 13978}
+// {line: 22346}
 // push constant 1
 @1
 D=A
@@ -18457,7 +28644,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 13991}
+// {line: 22359}
 // call String.grow nArgs: 2
 @2
 D=A
@@ -18472,23 +28659,23 @@ D=A
 @call
 0;JMP
 (String.appendChar.call.0)
-// {line: 13996}
+// {line: 22364}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 13997}
+// {line: 22365}
 (String.appendChar.if.0)
-// {line: 14002}
+// {line: 22370}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 14011}
+// {line: 22379}
 // push this 0
 @0
 D=A
@@ -18499,7 +28686,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14020}
+// {line: 22388}
 // push this 2
 @2
 D=A
@@ -18510,21 +28697,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14025}
+// {line: 22393}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14030}
+// {line: 22398}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 14039}
+// {line: 22407}
 // push argument 1
 @1
 D=A
@@ -18535,7 +28722,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14045}
+// {line: 22413}
 // pop that 0
 @SP
 AM=M-1
@@ -18543,7 +28730,7 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 14054}
+// {line: 22422}
 // push this 2
 @2
 D=A
@@ -18554,7 +28741,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14060}
+// {line: 22428}
 // push constant 1
 @1
 D=A
@@ -18562,14 +28749,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14065}
+// {line: 22433}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14073}
+// {line: 22441}
 // pop this 2
 @SP
 AM=M-1
@@ -18579,7 +28766,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 14079}
+// {line: 22447}
 // push pointer 0
 @3
 D=M
@@ -18587,11 +28774,11 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14081}
+// {line: 22449}
 // return
 @return
 0;JMP
-// {line: 14090}
+// {line: 22458}
 // function String.slice nLocals: 2
 (String.slice)
 @SP
@@ -18602,7 +28789,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 14099}
+// {line: 22467}
 // push argument 0
 @0
 D=A
@@ -18613,14 +28800,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14104}
+// {line: 22472}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 14113}
+// {line: 22481}
 // push argument 1
 @1
 D=A
@@ -18631,7 +28818,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14122}
+// {line: 22490}
 // push argument 2
 @2
 D=A
@@ -18642,7 +28829,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14129}
+// {line: 22497}
 // eq
 @String.slice.eq.0
 D=A
@@ -18651,14 +28838,14 @@ M=D
 @eq
 0;JMP
 (String.slice.eq.0)
-// {line: 14134}
+// {line: 22502}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 14140}
+// {line: 22508}
 // push temp 1
 @6
 D=M
@@ -18666,7 +28853,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14146}
+// {line: 22514}
 // push temp 1
 @6
 D=M
@@ -18674,19 +28861,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14149}
+// {line: 22517}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 14154}
+// {line: 22522}
 // if-goto String.slice.if.0
 @SP
 AM=M-1
 D=M
 @String.slice.if.0
 D;JNE
-// {line: 14160}
+// {line: 22528}
 // push constant 1
 @1
 D=A
@@ -18694,7 +28881,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14173}
+// {line: 22541}
 // call String.new nArgs: 1
 @1
 D=A
@@ -18709,7 +28896,7 @@ D=A
 @call
 0;JMP
 (String.slice.call.0)
-// {line: 14179}
+// {line: 22547}
 // pop local 0
 @SP
 AM=M-1
@@ -18717,7 +28904,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 14188}
+// {line: 22556}
 // push local 0
 @0
 D=A
@@ -18728,7 +28915,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14194}
+// {line: 22562}
 // push pointer 0
 @3
 D=M
@@ -18736,7 +28923,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14203}
+// {line: 22571}
 // push argument 1
 @1
 D=A
@@ -18747,7 +28934,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14216}
+// {line: 22584}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -18762,7 +28949,7 @@ D=A
 @call
 0;JMP
 (String.slice.call.1)
-// {line: 14229}
+// {line: 22597}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -18777,23 +28964,23 @@ D=A
 @call
 0;JMP
 (String.slice.call.2)
-// {line: 14234}
+// {line: 22602}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 14235}
+// {line: 22603}
 (String.slice.if.0)
-// {line: 14240}
+// {line: 22608}
 // if-goto String.slice.goto.0
 @SP
 AM=M-1
 D=M
 @String.slice.goto.0
 D;JNE
-// {line: 14249}
+// {line: 22617}
 // push argument 1
 @1
 D=A
@@ -18804,7 +28991,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14258}
+// {line: 22626}
 // push argument 2
 @2
 D=A
@@ -18815,7 +29002,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14265}
+// {line: 22633}
 // lt
 @String.slice.lt.0
 D=A
@@ -18824,14 +29011,14 @@ M=D
 @lt
 0;JMP
 (String.slice.lt.0)
-// {line: 14270}
+// {line: 22638}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 14276}
+// {line: 22644}
 // push temp 1
 @6
 D=M
@@ -18839,7 +29026,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14282}
+// {line: 22650}
 // push temp 1
 @6
 D=M
@@ -18847,19 +29034,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14285}
+// {line: 22653}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 14290}
+// {line: 22658}
 // if-goto String.slice.if.1
 @SP
 AM=M-1
 D=M
 @String.slice.if.1
 D;JNE
-// {line: 14299}
+// {line: 22667}
 // push argument 2
 @2
 D=A
@@ -18870,7 +29057,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14308}
+// {line: 22676}
 // push argument 1
 @1
 D=A
@@ -18881,14 +29068,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14313}
+// {line: 22681}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 14319}
+// {line: 22687}
 // push constant 1
 @1
 D=A
@@ -18896,14 +29083,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14324}
+// {line: 22692}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14337}
+// {line: 22705}
 // call String.new nArgs: 1
 @1
 D=A
@@ -18918,7 +29105,7 @@ D=A
 @call
 0;JMP
 (String.slice.call.3)
-// {line: 14343}
+// {line: 22711}
 // pop local 0
 @SP
 AM=M-1
@@ -18926,9 +29113,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 14344}
+// {line: 22712}
 (String.slice.while.0)
-// {line: 14353}
+// {line: 22721}
 // push argument 1
 @1
 D=A
@@ -18939,7 +29126,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14362}
+// {line: 22730}
 // push argument 2
 @2
 D=A
@@ -18950,7 +29137,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14369}
+// {line: 22737}
 // lt
 @String.slice.lt.1
 D=A
@@ -18959,7 +29146,7 @@ M=D
 @lt
 0;JMP
 (String.slice.lt.1)
-// {line: 14378}
+// {line: 22746}
 // push argument 1
 @1
 D=A
@@ -18970,7 +29157,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14387}
+// {line: 22755}
 // push argument 2
 @2
 D=A
@@ -18981,7 +29168,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14394}
+// {line: 22762}
 // eq
 @String.slice.eq.1
 D=A
@@ -18990,26 +29177,26 @@ M=D
 @eq
 0;JMP
 (String.slice.eq.1)
-// {line: 14399}
+// {line: 22767}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 14402}
+// {line: 22770}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 14407}
+// {line: 22775}
 // if-goto String.slice.while.1
 @SP
 AM=M-1
 D=M
 @String.slice.while.1
 D;JNE
-// {line: 14416}
+// {line: 22784}
 // push local 0
 @0
 D=A
@@ -19020,7 +29207,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14422}
+// {line: 22790}
 // push pointer 0
 @3
 D=M
@@ -19028,7 +29215,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14431}
+// {line: 22799}
 // push argument 1
 @1
 D=A
@@ -19039,7 +29226,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14444}
+// {line: 22812}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -19054,7 +29241,7 @@ D=A
 @call
 0;JMP
 (String.slice.call.4)
-// {line: 14457}
+// {line: 22825}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -19069,14 +29256,14 @@ D=A
 @call
 0;JMP
 (String.slice.call.5)
-// {line: 14462}
+// {line: 22830}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 14471}
+// {line: 22839}
 // push argument 1
 @1
 D=A
@@ -19087,7 +29274,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14477}
+// {line: 22845}
 // push constant 1
 @1
 D=A
@@ -19095,14 +29282,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14482}
+// {line: 22850}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14489}
+// {line: 22857}
 // pop argument 1
 @SP
 AM=M-1
@@ -19111,22 +29298,22 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 14491}
+// {line: 22859}
 // goto String.slice.while.0
 @String.slice.while.0
 0;JMP
-// {line: 14492}
+// {line: 22860}
 (String.slice.while.1)
-// {line: 14493}
+// {line: 22861}
 (String.slice.if.1)
-// {line: 14498}
+// {line: 22866}
 // if-goto String.slice.goto.1
 @SP
 AM=M-1
 D=M
 @String.slice.goto.1
 D;JNE
-// {line: 14507}
+// {line: 22875}
 // push argument 1
 @1
 D=A
@@ -19137,7 +29324,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14516}
+// {line: 22884}
 // push argument 2
 @2
 D=A
@@ -19148,14 +29335,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14521}
+// {line: 22889}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 14527}
+// {line: 22895}
 // push constant 1
 @1
 D=A
@@ -19163,14 +29350,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14532}
+// {line: 22900}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14545}
+// {line: 22913}
 // call String.new nArgs: 1
 @1
 D=A
@@ -19185,7 +29372,7 @@ D=A
 @call
 0;JMP
 (String.slice.call.6)
-// {line: 14551}
+// {line: 22919}
 // pop local 0
 @SP
 AM=M-1
@@ -19193,9 +29380,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 14552}
+// {line: 22920}
 (String.slice.while.2)
-// {line: 14561}
+// {line: 22929}
 // push argument 1
 @1
 D=A
@@ -19206,7 +29393,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14570}
+// {line: 22938}
 // push argument 2
 @2
 D=A
@@ -19217,7 +29404,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14577}
+// {line: 22945}
 // gt
 @String.slice.gt.0
 D=A
@@ -19226,7 +29413,7 @@ M=D
 @gt
 0;JMP
 (String.slice.gt.0)
-// {line: 14586}
+// {line: 22954}
 // push argument 1
 @1
 D=A
@@ -19237,7 +29424,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14595}
+// {line: 22963}
 // push argument 2
 @2
 D=A
@@ -19248,7 +29435,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14602}
+// {line: 22970}
 // eq
 @String.slice.eq.2
 D=A
@@ -19257,26 +29444,26 @@ M=D
 @eq
 0;JMP
 (String.slice.eq.2)
-// {line: 14607}
+// {line: 22975}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 14610}
+// {line: 22978}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 14615}
+// {line: 22983}
 // if-goto String.slice.while.3
 @SP
 AM=M-1
 D=M
 @String.slice.while.3
 D;JNE
-// {line: 14624}
+// {line: 22992}
 // push local 0
 @0
 D=A
@@ -19287,7 +29474,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14630}
+// {line: 22998}
 // push pointer 0
 @3
 D=M
@@ -19295,7 +29482,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14639}
+// {line: 23007}
 // push argument 1
 @1
 D=A
@@ -19306,7 +29493,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14652}
+// {line: 23020}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -19321,7 +29508,7 @@ D=A
 @call
 0;JMP
 (String.slice.call.7)
-// {line: 14665}
+// {line: 23033}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -19336,14 +29523,14 @@ D=A
 @call
 0;JMP
 (String.slice.call.8)
-// {line: 14670}
+// {line: 23038}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 14679}
+// {line: 23047}
 // push argument 1
 @1
 D=A
@@ -19354,7 +29541,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14685}
+// {line: 23053}
 // push constant 1
 @1
 D=A
@@ -19362,14 +29549,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14690}
+// {line: 23058}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 14697}
+// {line: 23065}
 // pop argument 1
 @SP
 AM=M-1
@@ -19378,17 +29565,17 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 14699}
+// {line: 23067}
 // goto String.slice.while.2
 @String.slice.while.2
 0;JMP
-// {line: 14700}
+// {line: 23068}
 (String.slice.while.3)
-// {line: 14701}
+// {line: 23069}
 (String.slice.goto.1)
-// {line: 14702}
+// {line: 23070}
 (String.slice.goto.0)
-// {line: 14711}
+// {line: 23079}
 // push local 0
 @0
 D=A
@@ -19399,11 +29586,11 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14713}
+// {line: 23081}
 // return
 @return
 0;JMP
-// {line: 14726}
+// {line: 23094}
 // function String.grow nLocals: 3
 (String.grow)
 @SP
@@ -19418,7 +29605,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 14735}
+// {line: 23103}
 // push argument 0
 @0
 D=A
@@ -19429,14 +29616,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14740}
+// {line: 23108}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 14749}
+// {line: 23117}
 // push this 1
 @1
 D=A
@@ -19447,7 +29634,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14755}
+// {line: 23123}
 // push constant 1
 @1
 D=A
@@ -19455,14 +29642,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14760}
+// {line: 23128}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14773}
+// {line: 23141}
 // call Array.new nArgs: 1
 @1
 D=A
@@ -19477,7 +29664,7 @@ D=A
 @call
 0;JMP
 (String.grow.call.0)
-// {line: 14780}
+// {line: 23148}
 // pop local 1
 @SP
 AM=M-1
@@ -19486,7 +29673,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 14786}
+// {line: 23154}
 // push constant 0
 @0
 D=A
@@ -19494,7 +29681,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14792}
+// {line: 23160}
 // pop local 0
 @SP
 AM=M-1
@@ -19502,9 +29689,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 14793}
+// {line: 23161}
 (String.grow.while.0)
-// {line: 14802}
+// {line: 23170}
 // push local 0
 @0
 D=A
@@ -19515,7 +29702,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14811}
+// {line: 23179}
 // push this 1
 @1
 D=A
@@ -19526,7 +29713,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14818}
+// {line: 23186}
 // lt
 @String.grow.lt.0
 D=A
@@ -19535,19 +29722,19 @@ M=D
 @lt
 0;JMP
 (String.grow.lt.0)
-// {line: 14821}
+// {line: 23189}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 14826}
+// {line: 23194}
 // if-goto String.grow.while.1
 @SP
 AM=M-1
 D=M
 @String.grow.while.1
 D;JNE
-// {line: 14835}
+// {line: 23203}
 // push local 1
 @1
 D=A
@@ -19558,7 +29745,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14844}
+// {line: 23212}
 // push local 0
 @0
 D=A
@@ -19569,21 +29756,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14849}
+// {line: 23217}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14854}
+// {line: 23222}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 14860}
+// {line: 23228}
 // push pointer 0
 @3
 D=M
@@ -19591,7 +29778,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14869}
+// {line: 23237}
 // push local 0
 @0
 D=A
@@ -19602,7 +29789,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14882}
+// {line: 23250}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -19617,7 +29804,7 @@ D=A
 @call
 0;JMP
 (String.grow.call.1)
-// {line: 14888}
+// {line: 23256}
 // pop that 0
 @SP
 AM=M-1
@@ -19625,7 +29812,7 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 14897}
+// {line: 23265}
 // push local 0
 @0
 D=A
@@ -19636,7 +29823,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14903}
+// {line: 23271}
 // push constant 1
 @1
 D=A
@@ -19644,14 +29831,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14908}
+// {line: 23276}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14914}
+// {line: 23282}
 // pop local 0
 @SP
 AM=M-1
@@ -19659,13 +29846,13 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 14916}
+// {line: 23284}
 // goto String.grow.while.0
 @String.grow.while.0
 0;JMP
-// {line: 14917}
+// {line: 23285}
 (String.grow.while.1)
-// {line: 14926}
+// {line: 23294}
 // push this 0
 @0
 D=A
@@ -19676,7 +29863,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14939}
+// {line: 23307}
 // call Array.dispose nArgs: 1
 @1
 D=A
@@ -19691,14 +29878,14 @@ D=A
 @call
 0;JMP
 (String.grow.call.2)
-// {line: 14944}
+// {line: 23312}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 14953}
+// {line: 23321}
 // push local 1
 @1
 D=A
@@ -19709,7 +29896,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14959}
+// {line: 23327}
 // pop this 0
 @SP
 AM=M-1
@@ -19717,7 +29904,7 @@ D=M
 @THIS
 A=M
 M=D
-// {line: 14968}
+// {line: 23336}
 // push this 1
 @1
 D=A
@@ -19728,7 +29915,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 14974}
+// {line: 23342}
 // push constant 1
 @1
 D=A
@@ -19736,14 +29923,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 14979}
+// {line: 23347}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 14986}
+// {line: 23354}
 // pop this 1
 @SP
 AM=M-1
@@ -19752,18 +29939,18 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 14988}
+// {line: 23356}
 // return
 @return
 0;JMP
-// {line: 14993}
+// {line: 23361}
 // function String.eraseLastChar nLocals: 1
 (String.eraseLastChar)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 15002}
+// {line: 23370}
 // push argument 0
 @0
 D=A
@@ -19774,14 +29961,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15007}
+// {line: 23375}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 15016}
+// {line: 23384}
 // push this 2
 @2
 D=A
@@ -19792,7 +29979,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15022}
+// {line: 23390}
 // push constant 0
 @0
 D=A
@@ -19800,7 +29987,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15029}
+// {line: 23397}
 // gt
 @String.eraseLastChar.gt.0
 D=A
@@ -19809,14 +29996,14 @@ M=D
 @gt
 0;JMP
 (String.eraseLastChar.gt.0)
-// {line: 15034}
+// {line: 23402}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15040}
+// {line: 23408}
 // push temp 1
 @6
 D=M
@@ -19824,7 +30011,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15046}
+// {line: 23414}
 // push temp 1
 @6
 D=M
@@ -19832,19 +30019,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15049}
+// {line: 23417}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 15054}
+// {line: 23422}
 // if-goto String.eraseLastChar.if.0
 @SP
 AM=M-1
 D=M
 @String.eraseLastChar.if.0
 D;JNE
-// {line: 15063}
+// {line: 23431}
 // push this 2
 @2
 D=A
@@ -19855,7 +30042,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15069}
+// {line: 23437}
 // push constant 1
 @1
 D=A
@@ -19863,14 +30050,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15074}
+// {line: 23442}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 15082}
+// {line: 23450}
 // pop this 2
 @SP
 AM=M-1
@@ -19880,7 +30067,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 15091}
+// {line: 23459}
 // push this 1
 @1
 D=A
@@ -19891,7 +30078,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15097}
+// {line: 23465}
 // push constant 1
 @1
 D=A
@@ -19899,14 +30086,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15102}
+// {line: 23470}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 15109}
+// {line: 23477}
 // pop this 1
 @SP
 AM=M-1
@@ -19915,21 +30102,21 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 15110}
+// {line: 23478}
 (String.eraseLastChar.if.0)
-// {line: 15115}
+// {line: 23483}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15117}
+// {line: 23485}
 // return
 @return
 0;JMP
-// {line: 15134}
-// function String.intValue nLocals: 4
+// {line: 23506}
+// function String.intValue nLocals: 5
 (String.intValue)
 @SP
 AM=M+1
@@ -19947,7 +30134,11 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 15143}
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 23515}
 // push argument 0
 @0
 D=A
@@ -19958,14 +30149,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15148}
+// {line: 23520}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 15154}
+// {line: 23526}
 // push pointer 0
 @3
 D=M
@@ -19973,7 +30164,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15160}
+// {line: 23532}
 // push constant 0
 @0
 D=A
@@ -19981,7 +30172,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15173}
+// {line: 23545}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -19996,7 +30187,7 @@ D=A
 @call
 0;JMP
 (String.intValue.call.0)
-// {line: 15179}
+// {line: 23551}
 // push constant 45
 @45
 D=A
@@ -20004,7 +30195,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15186}
+// {line: 23558}
 // eq
 @String.intValue.eq.0
 D=A
@@ -20013,14 +30204,14 @@ M=D
 @eq
 0;JMP
 (String.intValue.eq.0)
-// {line: 15191}
+// {line: 23563}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15197}
+// {line: 23569}
 // push temp 1
 @6
 D=M
@@ -20028,7 +30219,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15203}
+// {line: 23575}
 // push temp 1
 @6
 D=M
@@ -20036,19 +30227,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15206}
+// {line: 23578}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 15211}
+// {line: 23583}
 // if-goto String.intValue.if.0
 @SP
 AM=M-1
 D=M
 @String.intValue.if.0
 D;JNE
-// {line: 15217}
+// {line: 23589}
 // push constant 1
 @1
 D=A
@@ -20056,7 +30247,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15223}
+// {line: 23595}
 // pop local 0
 @SP
 AM=M-1
@@ -20064,16 +30255,16 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 15224}
+// {line: 23596}
 (String.intValue.if.0)
-// {line: 15229}
+// {line: 23601}
 // if-goto String.intValue.goto.0
 @SP
 AM=M-1
 D=M
 @String.intValue.goto.0
 D;JNE
-// {line: 15235}
+// {line: 23607}
 // push constant 0
 @0
 D=A
@@ -20081,7 +30272,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15241}
+// {line: 23613}
 // pop local 0
 @SP
 AM=M-1
@@ -20089,9 +30280,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 15242}
+// {line: 23614}
 (String.intValue.goto.0)
-// {line: 15248}
+// {line: 23620}
 // push constant 0
 @0
 D=A
@@ -20099,7 +30290,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15255}
+// {line: 23627}
 // pop local 1
 @SP
 AM=M-1
@@ -20108,9 +30299,26 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 15256}
-(String.intValue.while.0)
-// {line: 15265}
+// {line: 23633}
+// push pointer 1
+@4
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23642}
+// push this 0
+@0
+D=A
+@THIS
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23651}
 // push local 0
 @0
 D=A
@@ -20121,7 +30329,78 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15274}
+// {line: 23656}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 23661}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 23670}
+// push that 0
+@0
+D=A
+@THAT
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23675}
+// pop temp 2
+@SP
+AM=M-1
+D=M
+@R7
+M=D
+// {line: 23680}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 23686}
+// push temp 2
+@7
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23695}
+// pop local 3
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 23696}
+(String.intValue.while.0)
+// {line: 23705}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23714}
 // push this 1
 @1
 D=A
@@ -20132,7 +30411,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15281}
+// {line: 23721}
 // lt
 @String.intValue.lt.0
 D=A
@@ -20141,19 +30420,89 @@ M=D
 @lt
 0;JMP
 (String.intValue.lt.0)
-// {line: 15284}
+// {line: 23730}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23736}
+// push constant 47
+@47
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23743}
+// gt
+@String.intValue.gt.0
+D=A
+@R14
+M=D
+@gt
+0;JMP
+(String.intValue.gt.0)
+// {line: 23752}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23758}
+// push constant 58
+@58
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23765}
+// lt
+@String.intValue.lt.1
+D=A
+@R14
+M=D
+@lt
+0;JMP
+(String.intValue.lt.1)
+// {line: 23770}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 23775}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 23778}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 15289}
+// {line: 23783}
 // if-goto String.intValue.while.1
 @SP
 AM=M-1
 D=M
 @String.intValue.while.1
 D;JNE
-// {line: 15298}
+// {line: 23792}
 // push local 1
 @1
 D=A
@@ -20164,7 +30513,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15304}
+// {line: 23798}
 // push constant 10
 @10
 D=A
@@ -20172,7 +30521,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15317}
+// {line: 23811}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -20187,7 +30536,83 @@ D=A
 @call
 0;JMP
 (String.intValue.call.1)
-// {line: 15323}
+// {line: 23820}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23826}
+// push constant 48
+@48
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23831}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 23836}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 23843}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 23852}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23858}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 23863}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 23869}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 23875}
 // push pointer 1
 @4
 D=M
@@ -20195,7 +30620,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15332}
+// {line: 23884}
 // push this 0
 @0
 D=A
@@ -20206,7 +30631,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15341}
+// {line: 23893}
 // push local 0
 @0
 D=A
@@ -20217,21 +30642,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15346}
+// {line: 23898}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 15351}
+// {line: 23903}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 15360}
+// {line: 23912}
 // push that 0
 @0
 D=A
@@ -20242,21 +30667,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15365}
+// {line: 23917}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 15370}
+// {line: 23922}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 15376}
+// {line: 23928}
 // push temp 2
 @7
 D=M
@@ -20264,78 +30689,24 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15382}
-// push constant 48
-@48
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 15387}
-// sub
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M-D
-// {line: 15392}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 15399}
-// pop local 1
+// {line: 23937}
+// pop local 3
 @SP
 AM=M-1
 D=M
 @LCL
 A=M
 A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 15408}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 15414}
-// push constant 1
-@1
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 15419}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 15425}
-// pop local 0
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-M=D
-// {line: 15427}
+// {line: 23939}
 // goto String.intValue.while.0
 @String.intValue.while.0
 0;JMP
-// {line: 15428}
+// {line: 23940}
 (String.intValue.while.1)
-// {line: 15434}
+// {line: 23946}
 // push pointer 0
 @3
 D=M
@@ -20343,7 +30714,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15440}
+// {line: 23952}
 // push constant 0
 @0
 D=A
@@ -20351,7 +30722,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15453}
+// {line: 23965}
 // call String.charAt nArgs: 2
 @2
 D=A
@@ -20366,7 +30737,7 @@ D=A
 @call
 0;JMP
 (String.intValue.call.2)
-// {line: 15459}
+// {line: 23971}
 // push constant 45
 @45
 D=A
@@ -20374,7 +30745,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15466}
+// {line: 23978}
 // eq
 @String.intValue.eq.1
 D=A
@@ -20383,14 +30754,14 @@ M=D
 @eq
 0;JMP
 (String.intValue.eq.1)
-// {line: 15471}
+// {line: 23983}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15477}
+// {line: 23989}
 // push temp 1
 @6
 D=M
@@ -20398,7 +30769,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15483}
+// {line: 23995}
 // push temp 1
 @6
 D=M
@@ -20406,19 +30777,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15486}
+// {line: 23998}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 15491}
+// {line: 24003}
 // if-goto String.intValue.if.1
 @SP
 AM=M-1
 D=M
 @String.intValue.if.1
 D;JNE
-// {line: 15500}
+// {line: 24012}
 // push local 1
 @1
 D=A
@@ -20429,25 +30800,25 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15503}
+// {line: 24015}
 // neg
 @SP
 A=M-1
 M=-M
-// {line: 15505}
+// {line: 24017}
 // return
 @return
 0;JMP
-// {line: 15506}
+// {line: 24018}
 (String.intValue.if.1)
-// {line: 15511}
+// {line: 24023}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15520}
+// {line: 24032}
 // push local 1
 @1
 D=A
@@ -20458,11 +30829,11 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15522}
+// {line: 24034}
 // return
 @return
 0;JMP
-// {line: 15539}
+// {line: 24051}
 // function String.setInt nLocals: 4
 (String.setInt)
 @SP
@@ -20481,7 +30852,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 15548}
+// {line: 24060}
 // push argument 0
 @0
 D=A
@@ -20492,14 +30863,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15553}
+// {line: 24065}
 // pop pointer 0
 @SP
 AM=M-1
 D=M
 @THIS
 M=D
-// {line: 15562}
+// {line: 24074}
 // push argument 1
 @1
 D=A
@@ -20510,7 +30881,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15575}
+// {line: 24087}
 // call Math.abs nArgs: 1
 @1
 D=A
@@ -20525,7 +30896,7 @@ D=A
 @call
 0;JMP
 (String.setInt.call.0)
-// {line: 15582}
+// {line: 24094}
 // pop local 1
 @SP
 AM=M-1
@@ -20534,7 +30905,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 15591}
+// {line: 24103}
 // push local 1
 @1
 D=A
@@ -20545,7 +30916,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15597}
+// {line: 24109}
 // push constant 10
 @10
 D=A
@@ -20553,7 +30924,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15610}
+// {line: 24122}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -20568,7 +30939,7 @@ D=A
 @call
 0;JMP
 (String.setInt.call.1)
-// {line: 15616}
+// {line: 24128}
 // pop local 0
 @SP
 AM=M-1
@@ -20576,7 +30947,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 15625}
+// {line: 24137}
 // push local 0
 @0
 D=A
@@ -20587,7 +30958,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15631}
+// {line: 24143}
 // push constant 48
 @48
 D=A
@@ -20595,14 +30966,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15636}
+// {line: 24148}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 15644}
+// {line: 24156}
 // pop local 2
 @SP
 AM=M-1
@@ -20612,7 +30983,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 15653}
+// {line: 24165}
 // push local 1
 @1
 D=A
@@ -20623,7 +30994,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15659}
+// {line: 24171}
 // push constant 10
 @10
 D=A
@@ -20631,7 +31002,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15666}
+// {line: 24178}
 // lt
 @String.setInt.lt.0
 D=A
@@ -20640,14 +31011,14 @@ M=D
 @lt
 0;JMP
 (String.setInt.lt.0)
-// {line: 15671}
+// {line: 24183}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15677}
+// {line: 24189}
 // push temp 1
 @6
 D=M
@@ -20655,7 +31026,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15683}
+// {line: 24195}
 // push temp 1
 @6
 D=M
@@ -20663,19 +31034,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15686}
+// {line: 24198}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 15691}
+// {line: 24203}
 // if-goto String.setInt.if.0
 @SP
 AM=M-1
 D=M
 @String.setInt.if.0
 D;JNE
-// {line: 15697}
+// {line: 24209}
 // push constant 1
 @1
 D=A
@@ -20683,7 +31054,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15704}
+// {line: 24216}
 // pop this 1
 @SP
 AM=M-1
@@ -20692,7 +31063,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 15710}
+// {line: 24222}
 // push constant 0
 @0
 D=A
@@ -20700,7 +31071,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15718}
+// {line: 24230}
 // pop this 2
 @SP
 AM=M-1
@@ -20710,7 +31081,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 15727}
+// {line: 24239}
 // push argument 1
 @1
 D=A
@@ -20721,7 +31092,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15733}
+// {line: 24245}
 // push constant 0
 @0
 D=A
@@ -20729,7 +31100,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15740}
+// {line: 24252}
 // lt
 @String.setInt.lt.1
 D=A
@@ -20738,14 +31109,14 @@ M=D
 @lt
 0;JMP
 (String.setInt.lt.1)
-// {line: 15745}
+// {line: 24257}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15751}
+// {line: 24263}
 // push temp 1
 @6
 D=M
@@ -20753,7 +31124,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15757}
+// {line: 24269}
 // push temp 1
 @6
 D=M
@@ -20761,19 +31132,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15760}
+// {line: 24272}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 15765}
+// {line: 24277}
 // if-goto String.setInt.if.1
 @SP
 AM=M-1
 D=M
 @String.setInt.if.1
 D;JNE
-// {line: 15771}
+// {line: 24283}
 // push pointer 0
 @3
 D=M
@@ -20781,7 +31152,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15777}
+// {line: 24289}
 // push constant 45
 @45
 D=A
@@ -20789,7 +31160,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15790}
+// {line: 24302}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -20804,23 +31175,23 @@ D=A
 @call
 0;JMP
 (String.setInt.call.2)
-// {line: 15795}
+// {line: 24307}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 15796}
+// {line: 24308}
 (String.setInt.if.1)
-// {line: 15801}
+// {line: 24313}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 15807}
+// {line: 24319}
 // push pointer 0
 @3
 D=M
@@ -20828,7 +31199,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15816}
+// {line: 24328}
 // push local 2
 @2
 D=A
@@ -20839,7 +31210,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15829}
+// {line: 24341}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -20854,23 +31225,23 @@ D=A
 @call
 0;JMP
 (String.setInt.call.3)
-// {line: 15834}
+// {line: 24346}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 15835}
+// {line: 24347}
 (String.setInt.if.0)
-// {line: 15840}
+// {line: 24352}
 // if-goto String.setInt.goto.0
 @SP
 AM=M-1
 D=M
 @String.setInt.goto.0
 D;JNE
-// {line: 15846}
+// {line: 24358}
 // push pointer 0
 @3
 D=M
@@ -20878,7 +31249,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15855}
+// {line: 24367}
 // push argument 1
 @1
 D=A
@@ -20889,7 +31260,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15861}
+// {line: 24373}
 // push constant 10
 @10
 D=A
@@ -20897,7 +31268,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15874}
+// {line: 24386}
 // call Math.divide nArgs: 2
 @2
 D=A
@@ -20912,7 +31283,7 @@ D=A
 @call
 0;JMP
 (String.setInt.call.4)
-// {line: 15887}
+// {line: 24399}
 // call String.setInt nArgs: 2
 @2
 D=A
@@ -20927,14 +31298,14 @@ D=A
 @call
 0;JMP
 (String.setInt.call.5)
-// {line: 15892}
+// {line: 24404}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 15898}
+// {line: 24410}
 // push pointer 0
 @3
 D=M
@@ -20942,7 +31313,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15907}
+// {line: 24419}
 // push local 2
 @2
 D=A
@@ -20953,7 +31324,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15920}
+// {line: 24432}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -20968,23 +31339,23 @@ D=A
 @call
 0;JMP
 (String.setInt.call.6)
-// {line: 15925}
+// {line: 24437}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 15926}
+// {line: 24438}
 (String.setInt.goto.0)
-// {line: 15928}
+// {line: 24440}
 // return
 @return
 0;JMP
-// {line: 15929}
+// {line: 24441}
 // function String.newLine nLocals: 0
 (String.newLine)
-// {line: 15935}
+// {line: 24447}
 // push constant 128
 @128
 D=A
@@ -20992,14 +31363,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15937}
+// {line: 24449}
 // return
 @return
 0;JMP
-// {line: 15938}
+// {line: 24450}
 // function String.backSpace nLocals: 0
 (String.backSpace)
-// {line: 15944}
+// {line: 24456}
 // push constant 129
 @129
 D=A
@@ -21007,14 +31378,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15946}
+// {line: 24458}
 // return
 @return
 0;JMP
-// {line: 15947}
+// {line: 24459}
 // function String.doubleQuote nLocals: 0
 (String.doubleQuote)
-// {line: 15953}
+// {line: 24465}
 // push constant 34
 @34
 D=A
@@ -21022,18 +31393,18 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15955}
+// {line: 24467}
 // return
 @return
 0;JMP
-// {line: 15960}
+// {line: 24472}
 // function Math.init nLocals: 1
 (Math.init)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 15966}
+// {line: 24478}
 // push constant 16
 @16
 D=A
@@ -21041,14 +31412,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15971}
+// {line: 24483}
 // pop static 5
 @SP
 AM=M-1
 D=M
 @Math.static.5
 M=D
-// {line: 15977}
+// {line: 24489}
 // push static 5
 @Math.static.5
 D=M
@@ -21056,7 +31427,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 15983}
+// {line: 24495}
 // push constant 2
 @2
 D=A
@@ -21064,7 +31435,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 15996}
+// {line: 24508}
 // call Math.divide nArgs: 2
 @2
 D=A
@@ -21079,7 +31450,7 @@ D=A
 @call
 0;JMP
 (Math.init.call.0)
-// {line: 16002}
+// {line: 24514}
 // push constant 1
 @1
 D=A
@@ -21087,21 +31458,21 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16007}
+// {line: 24519}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 16012}
+// {line: 24524}
 // pop static 6
 @SP
 AM=M-1
 D=M
 @Math.static.6
 M=D
-// {line: 16018}
+// {line: 24530}
 // push static 5
 @Math.static.5
 D=M
@@ -21109,7 +31480,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16031}
+// {line: 24543}
 // call Array.new nArgs: 1
 @1
 D=A
@@ -21124,14 +31495,14 @@ D=A
 @call
 0;JMP
 (Math.init.call.1)
-// {line: 16036}
+// {line: 24548}
 // pop static 4
 @SP
 AM=M-1
 D=M
 @Math.static.4
 M=D
-// {line: 16042}
+// {line: 24554}
 // push constant 1
 @1
 D=A
@@ -21139,7 +31510,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16048}
+// {line: 24560}
 // pop local 0
 @SP
 AM=M-1
@@ -21147,7 +31518,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 16054}
+// {line: 24566}
 // push static 4
 @Math.static.4
 D=M
@@ -21155,7 +31526,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16060}
+// {line: 24572}
 // push constant 0
 @0
 D=A
@@ -21163,21 +31534,21 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16065}
+// {line: 24577}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16070}
+// {line: 24582}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16076}
+// {line: 24588}
 // push constant 1
 @1
 D=A
@@ -21185,7 +31556,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16082}
+// {line: 24594}
 // pop that 0
 @SP
 AM=M-1
@@ -21193,9 +31564,9 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 16083}
+// {line: 24595}
 (Math.init.while.0)
-// {line: 16092}
+// {line: 24604}
 // push local 0
 @0
 D=A
@@ -21206,7 +31577,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16098}
+// {line: 24610}
 // push static 5
 @Math.static.5
 D=M
@@ -21214,7 +31585,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16104}
+// {line: 24616}
 // push constant 1
 @1
 D=A
@@ -21222,14 +31593,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16109}
+// {line: 24621}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16116}
+// {line: 24628}
 // lt
 @Math.init.lt.0
 D=A
@@ -21238,19 +31609,19 @@ M=D
 @lt
 0;JMP
 (Math.init.lt.0)
-// {line: 16119}
+// {line: 24631}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16124}
+// {line: 24636}
 // if-goto Math.init.while.1
 @SP
 AM=M-1
 D=M
 @Math.init.while.1
 D;JNE
-// {line: 16130}
+// {line: 24642}
 // push static 4
 @Math.static.4
 D=M
@@ -21258,7 +31629,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16139}
+// {line: 24651}
 // push local 0
 @0
 D=A
@@ -21269,21 +31640,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16144}
+// {line: 24656}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16149}
+// {line: 24661}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16155}
+// {line: 24667}
 // push pointer 1
 @4
 D=M
@@ -21291,7 +31662,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16161}
+// {line: 24673}
 // push static 4
 @Math.static.4
 D=M
@@ -21299,7 +31670,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16170}
+// {line: 24682}
 // push local 0
 @0
 D=A
@@ -21310,7 +31681,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16176}
+// {line: 24688}
 // push constant 1
 @1
 D=A
@@ -21318,28 +31689,28 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16181}
+// {line: 24693}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 16186}
+// {line: 24698}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16191}
+// {line: 24703}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16200}
+// {line: 24712}
 // push that 0
 @0
 D=A
@@ -21350,21 +31721,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16205}
+// {line: 24717}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 16210}
+// {line: 24722}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16216}
+// {line: 24728}
 // push temp 2
 @7
 D=M
@@ -21372,7 +31743,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16222}
+// {line: 24734}
 // push pointer 1
 @4
 D=M
@@ -21380,7 +31751,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16228}
+// {line: 24740}
 // push static 4
 @Math.static.4
 D=M
@@ -21388,7 +31759,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16237}
+// {line: 24749}
 // push local 0
 @0
 D=A
@@ -21399,7 +31770,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16243}
+// {line: 24755}
 // push constant 1
 @1
 D=A
@@ -21407,28 +31778,28 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16248}
+// {line: 24760}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 16253}
+// {line: 24765}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16258}
+// {line: 24770}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16267}
+// {line: 24779}
 // push that 0
 @0
 D=A
@@ -21439,21 +31810,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16272}
+// {line: 24784}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 16277}
+// {line: 24789}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16283}
+// {line: 24795}
 // push temp 2
 @7
 D=M
@@ -21461,14 +31832,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16288}
+// {line: 24800}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16294}
+// {line: 24806}
 // pop that 0
 @SP
 AM=M-1
@@ -21476,7 +31847,7 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 16303}
+// {line: 24815}
 // push local 0
 @0
 D=A
@@ -21487,7 +31858,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16309}
+// {line: 24821}
 // push constant 1
 @1
 D=A
@@ -21495,14 +31866,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16314}
+// {line: 24826}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16320}
+// {line: 24832}
 // pop local 0
 @SP
 AM=M-1
@@ -21510,20 +31881,20 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 16322}
+// {line: 24834}
 // goto Math.init.while.0
 @Math.init.while.0
 0;JMP
-// {line: 16323}
+// {line: 24835}
 (Math.init.while.1)
-// {line: 16325}
+// {line: 24837}
 // return
 @return
 0;JMP
-// {line: 16326}
+// {line: 24838}
 // function Math.twoToThe nLocals: 0
 (Math.twoToThe)
-// {line: 16332}
+// {line: 24844}
 // push pointer 1
 @4
 D=M
@@ -21531,7 +31902,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16338}
+// {line: 24850}
 // push static 4
 @Math.static.4
 D=M
@@ -21539,7 +31910,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16347}
+// {line: 24859}
 // push argument 0
 @0
 D=A
@@ -21550,21 +31921,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16352}
+// {line: 24864}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16357}
+// {line: 24869}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16366}
+// {line: 24878}
 // push that 0
 @0
 D=A
@@ -21575,21 +31946,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16371}
+// {line: 24883}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 16376}
+// {line: 24888}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16382}
+// {line: 24894}
 // push temp 2
 @7
 D=M
@@ -21597,14 +31968,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16384}
+// {line: 24896}
 // return
 @return
 0;JMP
-// {line: 16385}
+// {line: 24897}
 // function Math.abs nLocals: 0
 (Math.abs)
-// {line: 16394}
+// {line: 24906}
 // push argument 0
 @0
 D=A
@@ -21615,7 +31986,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16400}
+// {line: 24912}
 // push constant 0
 @0
 D=A
@@ -21623,7 +31994,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16407}
+// {line: 24919}
 // lt
 @Math.abs.lt.0
 D=A
@@ -21632,14 +32003,14 @@ M=D
 @lt
 0;JMP
 (Math.abs.lt.0)
-// {line: 16412}
+// {line: 24924}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16418}
+// {line: 24930}
 // push temp 1
 @6
 D=M
@@ -21647,7 +32018,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16424}
+// {line: 24936}
 // push temp 1
 @6
 D=M
@@ -21655,19 +32026,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16427}
+// {line: 24939}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16432}
+// {line: 24944}
 // if-goto Math.abs.if.0
 @SP
 AM=M-1
 D=M
 @Math.abs.if.0
 D;JNE
-// {line: 16441}
+// {line: 24953}
 // push argument 0
 @0
 D=A
@@ -21678,25 +32049,25 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16444}
+// {line: 24956}
 // neg
 @SP
 A=M-1
 M=-M
-// {line: 16446}
+// {line: 24958}
 // return
 @return
 0;JMP
-// {line: 16447}
+// {line: 24959}
 (Math.abs.if.0)
-// {line: 16452}
+// {line: 24964}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16461}
+// {line: 24973}
 // push argument 0
 @0
 D=A
@@ -21707,11 +32078,11 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16463}
+// {line: 24975}
 // return
 @return
 0;JMP
-// {line: 16476}
+// {line: 24988}
 // function Math.multiply nLocals: 3
 (Math.multiply)
 @SP
@@ -21726,7 +32097,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 16482}
+// {line: 24994}
 // push constant 0
 @0
 D=A
@@ -21734,7 +32105,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16490}
+// {line: 25002}
 // pop local 2
 @SP
 AM=M-1
@@ -21744,7 +32115,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 16496}
+// {line: 25008}
 // push constant 0
 @0
 D=A
@@ -21752,7 +32123,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16502}
+// {line: 25014}
 // pop local 0
 @SP
 AM=M-1
@@ -21760,7 +32131,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 16511}
+// {line: 25023}
 // push argument 0
 @0
 D=A
@@ -21771,7 +32142,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16518}
+// {line: 25030}
 // pop local 1
 @SP
 AM=M-1
@@ -21780,9 +32151,9 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 16519}
+// {line: 25031}
 (Math.multiply.while.0)
-// {line: 16528}
+// {line: 25040}
 // push local 2
 @2
 D=A
@@ -21793,7 +32164,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16534}
+// {line: 25046}
 // push static 5
 @Math.static.5
 D=M
@@ -21801,7 +32172,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16541}
+// {line: 25053}
 // lt
 @Math.multiply.lt.0
 D=A
@@ -21810,19 +32181,19 @@ M=D
 @lt
 0;JMP
 (Math.multiply.lt.0)
-// {line: 16544}
+// {line: 25056}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16549}
+// {line: 25061}
 // if-goto Math.multiply.while.1
 @SP
 AM=M-1
 D=M
 @Math.multiply.while.1
 D;JNE
-// {line: 16558}
+// {line: 25070}
 // push argument 1
 @1
 D=A
@@ -21833,7 +32204,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16567}
+// {line: 25079}
 // push local 2
 @2
 D=A
@@ -21844,7 +32215,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16580}
+// {line: 25092}
 // call Math.bit nArgs: 2
 @2
 D=A
@@ -21859,14 +32230,14 @@ D=A
 @call
 0;JMP
 (Math.multiply.call.0)
-// {line: 16585}
+// {line: 25097}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16591}
+// {line: 25103}
 // push temp 1
 @6
 D=M
@@ -21874,7 +32245,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16597}
+// {line: 25109}
 // push temp 1
 @6
 D=M
@@ -21882,19 +32253,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16600}
+// {line: 25112}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16605}
+// {line: 25117}
 // if-goto Math.multiply.if.0
 @SP
 AM=M-1
 D=M
 @Math.multiply.if.0
 D;JNE
-// {line: 16614}
+// {line: 25126}
 // push local 0
 @0
 D=A
@@ -21905,7 +32276,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16623}
+// {line: 25135}
 // push local 1
 @1
 D=A
@@ -21916,14 +32287,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16628}
+// {line: 25140}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16634}
+// {line: 25146}
 // pop local 0
 @SP
 AM=M-1
@@ -21931,16 +32302,16 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 16635}
+// {line: 25147}
 (Math.multiply.if.0)
-// {line: 16640}
+// {line: 25152}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16649}
+// {line: 25161}
 // push local 1
 @1
 D=A
@@ -21951,7 +32322,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16658}
+// {line: 25170}
 // push local 1
 @1
 D=A
@@ -21962,14 +32333,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16663}
+// {line: 25175}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16670}
+// {line: 25182}
 // pop local 1
 @SP
 AM=M-1
@@ -21978,7 +32349,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 16679}
+// {line: 25191}
 // push local 2
 @2
 D=A
@@ -21989,7 +32360,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16685}
+// {line: 25197}
 // push constant 1
 @1
 D=A
@@ -21997,14 +32368,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16690}
+// {line: 25202}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16698}
+// {line: 25210}
 // pop local 2
 @SP
 AM=M-1
@@ -22014,13 +32385,13 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 16700}
+// {line: 25212}
 // goto Math.multiply.while.0
 @Math.multiply.while.0
 0;JMP
-// {line: 16701}
+// {line: 25213}
 (Math.multiply.while.1)
-// {line: 16710}
+// {line: 25222}
 // push local 0
 @0
 D=A
@@ -22031,14 +32402,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16712}
+// {line: 25224}
 // return
 @return
 0;JMP
-// {line: 16713}
+// {line: 25225}
 // function Math.bit nLocals: 0
 (Math.bit)
-// {line: 16722}
+// {line: 25234}
 // push argument 0
 @0
 D=A
@@ -22049,7 +32420,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16728}
+// {line: 25240}
 // push pointer 1
 @4
 D=M
@@ -22057,7 +32428,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16734}
+// {line: 25246}
 // push static 4
 @Math.static.4
 D=M
@@ -22065,7 +32436,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16743}
+// {line: 25255}
 // push argument 1
 @1
 D=A
@@ -22076,21 +32447,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16748}
+// {line: 25260}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 16753}
+// {line: 25265}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16762}
+// {line: 25274}
 // push that 0
 @0
 D=A
@@ -22101,21 +32472,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16767}
+// {line: 25279}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 16772}
+// {line: 25284}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 16778}
+// {line: 25290}
 // push temp 2
 @7
 D=M
@@ -22123,14 +32494,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16783}
+// {line: 25295}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 16789}
+// {line: 25301}
 // push constant 0
 @0
 D=A
@@ -22138,7 +32509,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16796}
+// {line: 25308}
 // eq
 @Math.bit.eq.0
 D=A
@@ -22147,19 +32518,19 @@ M=D
 @eq
 0;JMP
 (Math.bit.eq.0)
-// {line: 16799}
+// {line: 25311}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16804}
+// {line: 25316}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16810}
+// {line: 25322}
 // push temp 1
 @6
 D=M
@@ -22167,7 +32538,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16816}
+// {line: 25328}
 // push temp 1
 @6
 D=M
@@ -22175,19 +32546,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16819}
+// {line: 25331}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16824}
+// {line: 25336}
 // if-goto Math.bit.if.0
 @SP
 AM=M-1
 D=M
 @Math.bit.if.0
 D;JNE
-// {line: 16830}
+// {line: 25342}
 // push constant 0
 @0
 D=A
@@ -22195,25 +32566,25 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16833}
+// {line: 25345}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16835}
+// {line: 25347}
 // return
 @return
 0;JMP
-// {line: 16836}
+// {line: 25348}
 (Math.bit.if.0)
-// {line: 16841}
+// {line: 25353}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16847}
+// {line: 25359}
 // push constant 0
 @0
 D=A
@@ -22221,18 +32592,18 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16849}
+// {line: 25361}
 // return
 @return
 0;JMP
-// {line: 16854}
+// {line: 25366}
 // function Math.divide nLocals: 1
 (Math.divide)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 16863}
+// {line: 25375}
 // push argument 1
 @1
 D=A
@@ -22243,7 +32614,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16869}
+// {line: 25381}
 // push constant 0
 @0
 D=A
@@ -22251,7 +32622,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16876}
+// {line: 25388}
 // eq
 @Math.divide.eq.0
 D=A
@@ -22260,14 +32631,14 @@ M=D
 @eq
 0;JMP
 (Math.divide.eq.0)
-// {line: 16881}
+// {line: 25393}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16887}
+// {line: 25399}
 // push temp 1
 @6
 D=M
@@ -22275,7 +32646,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16893}
+// {line: 25405}
 // push temp 1
 @6
 D=M
@@ -22283,19 +32654,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16896}
+// {line: 25408}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 16901}
+// {line: 25413}
 // if-goto Math.divide.if.0
 @SP
 AM=M-1
 D=M
 @Math.divide.if.0
 D;JNE
-// {line: 16907}
+// {line: 25419}
 // push constant 5
 @5
 D=A
@@ -22303,7 +32674,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16920}
+// {line: 25432}
 // call Sys.error nArgs: 1
 @1
 D=A
@@ -22318,23 +32689,23 @@ D=A
 @call
 0;JMP
 (Math.divide.call.0)
-// {line: 16925}
+// {line: 25437}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 16926}
+// {line: 25438}
 (Math.divide.if.0)
-// {line: 16931}
+// {line: 25443}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 16940}
+// {line: 25452}
 // push argument 0
 @0
 D=A
@@ -22345,7 +32716,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16949}
+// {line: 25461}
 // push argument 1
 @1
 D=A
@@ -22356,7 +32727,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 16962}
+// {line: 25474}
 // call Math.xor nArgs: 2
 @2
 D=A
@@ -22371,7 +32742,7 @@ D=A
 @call
 0;JMP
 (Math.divide.call.1)
-// {line: 16968}
+// {line: 25480}
 // push constant 0
 @0
 D=A
@@ -22379,7 +32750,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 16975}
+// {line: 25487}
 // lt
 @Math.divide.lt.0
 D=A
@@ -22388,7 +32759,7 @@ M=D
 @lt
 0;JMP
 (Math.divide.lt.0)
-// {line: 16981}
+// {line: 25493}
 // pop local 0
 @SP
 AM=M-1
@@ -22396,7 +32767,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 16990}
+// {line: 25502}
 // push argument 0
 @0
 D=A
@@ -22407,7 +32778,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17003}
+// {line: 25515}
 // call Math.abs nArgs: 1
 @1
 D=A
@@ -22422,7 +32793,7 @@ D=A
 @call
 0;JMP
 (Math.divide.call.2)
-// {line: 17009}
+// {line: 25521}
 // pop argument 0
 @SP
 AM=M-1
@@ -22430,7 +32801,7 @@ D=M
 @ARG
 A=M
 M=D
-// {line: 17018}
+// {line: 25530}
 // push argument 1
 @1
 D=A
@@ -22441,7 +32812,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17031}
+// {line: 25543}
 // call Math.abs nArgs: 1
 @1
 D=A
@@ -22456,7 +32827,7 @@ D=A
 @call
 0;JMP
 (Math.divide.call.3)
-// {line: 17038}
+// {line: 25550}
 // pop argument 1
 @SP
 AM=M-1
@@ -22465,7 +32836,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 17047}
+// {line: 25559}
 // push local 0
 @0
 D=A
@@ -22476,14 +32847,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17052}
+// {line: 25564}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17058}
+// {line: 25570}
 // push temp 1
 @6
 D=M
@@ -22491,7 +32862,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17064}
+// {line: 25576}
 // push temp 1
 @6
 D=M
@@ -22499,19 +32870,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17067}
+// {line: 25579}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17072}
+// {line: 25584}
 // if-goto Math.divide.if.1
 @SP
 AM=M-1
 D=M
 @Math.divide.if.1
 D;JNE
-// {line: 17081}
+// {line: 25593}
 // push argument 0
 @0
 D=A
@@ -22522,7 +32893,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17090}
+// {line: 25602}
 // push argument 1
 @1
 D=A
@@ -22533,7 +32904,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17103}
+// {line: 25615}
 // call Math._subdivide nArgs: 2
 @2
 D=A
@@ -22548,25 +32919,25 @@ D=A
 @call
 0;JMP
 (Math.divide.call.4)
-// {line: 17106}
+// {line: 25618}
 // neg
 @SP
 A=M-1
 M=-M
-// {line: 17108}
+// {line: 25620}
 // return
 @return
 0;JMP
-// {line: 17109}
+// {line: 25621}
 (Math.divide.if.1)
-// {line: 17114}
+// {line: 25626}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17123}
+// {line: 25635}
 // push argument 0
 @0
 D=A
@@ -22577,7 +32948,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17132}
+// {line: 25644}
 // push argument 1
 @1
 D=A
@@ -22588,7 +32959,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17145}
+// {line: 25657}
 // call Math._subdivide nArgs: 2
 @2
 D=A
@@ -22603,14 +32974,14 @@ D=A
 @call
 0;JMP
 (Math.divide.call.5)
-// {line: 17147}
+// {line: 25659}
 // return
 @return
 0;JMP
-// {line: 17148}
+// {line: 25660}
 // function Math.div nLocals: 0
 (Math.div)
-// {line: 17157}
+// {line: 25669}
 // push argument 0
 @0
 D=A
@@ -22621,7 +32992,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17166}
+// {line: 25678}
 // push argument 1
 @1
 D=A
@@ -22632,7 +33003,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17179}
+// {line: 25691}
 // call Math.divide nArgs: 2
 @2
 D=A
@@ -22647,18 +33018,18 @@ D=A
 @call
 0;JMP
 (Math.div.call.0)
-// {line: 17181}
+// {line: 25693}
 // return
 @return
 0;JMP
-// {line: 17186}
+// {line: 25698}
 // function Math._subdivide nLocals: 1
 (Math._subdivide)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 17195}
+// {line: 25707}
 // push argument 1
 @1
 D=A
@@ -22669,7 +33040,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17204}
+// {line: 25716}
 // push argument 0
 @0
 D=A
@@ -22680,7 +33051,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17211}
+// {line: 25723}
 // gt
 @Math._subdivide.gt.0
 D=A
@@ -22689,7 +33060,7 @@ M=D
 @gt
 0;JMP
 (Math._subdivide.gt.0)
-// {line: 17220}
+// {line: 25732}
 // push argument 1
 @1
 D=A
@@ -22700,7 +33071,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17226}
+// {line: 25738}
 // push constant 0
 @0
 D=A
@@ -22708,7 +33079,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17233}
+// {line: 25745}
 // lt
 @Math._subdivide.lt.0
 D=A
@@ -22717,21 +33088,21 @@ M=D
 @lt
 0;JMP
 (Math._subdivide.lt.0)
-// {line: 17238}
+// {line: 25750}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 17243}
+// {line: 25755}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17249}
+// {line: 25761}
 // push temp 1
 @6
 D=M
@@ -22739,7 +33110,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17255}
+// {line: 25767}
 // push temp 1
 @6
 D=M
@@ -22747,19 +33118,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17258}
+// {line: 25770}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17263}
+// {line: 25775}
 // if-goto Math._subdivide.if.0
 @SP
 AM=M-1
 D=M
 @Math._subdivide.if.0
 D;JNE
-// {line: 17269}
+// {line: 25781}
 // push constant 0
 @0
 D=A
@@ -22767,14 +33138,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17274}
+// {line: 25786}
 // pop static 7
 @SP
 AM=M-1
 D=M
 @Math.static.7
 M=D
-// {line: 17280}
+// {line: 25792}
 // push constant 0
 @0
 D=A
@@ -22782,20 +33153,20 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17282}
+// {line: 25794}
 // return
 @return
 0;JMP
-// {line: 17283}
+// {line: 25795}
 (Math._subdivide.if.0)
-// {line: 17288}
+// {line: 25800}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17297}
+// {line: 25809}
 // push argument 0
 @0
 D=A
@@ -22806,7 +33177,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17306}
+// {line: 25818}
 // push argument 1
 @1
 D=A
@@ -22817,7 +33188,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17315}
+// {line: 25827}
 // push argument 1
 @1
 D=A
@@ -22828,14 +33199,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17320}
+// {line: 25832}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17333}
+// {line: 25845}
 // call Math._subdivide nArgs: 2
 @2
 D=A
@@ -22850,7 +33221,7 @@ D=A
 @call
 0;JMP
 (Math._subdivide.call.0)
-// {line: 17339}
+// {line: 25851}
 // pop local 0
 @SP
 AM=M-1
@@ -22858,7 +33229,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 17348}
+// {line: 25860}
 // push argument 0
 @0
 D=A
@@ -22869,7 +33240,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17354}
+// {line: 25866}
 // push static 7
 @Math.static.7
 D=M
@@ -22877,14 +33248,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17359}
+// {line: 25871}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 17368}
+// {line: 25880}
 // push argument 1
 @1
 D=A
@@ -22895,7 +33266,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17375}
+// {line: 25887}
 // lt
 @Math._subdivide.lt.1
 D=A
@@ -22904,14 +33275,14 @@ M=D
 @lt
 0;JMP
 (Math._subdivide.lt.1)
-// {line: 17380}
+// {line: 25892}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17386}
+// {line: 25898}
 // push temp 1
 @6
 D=M
@@ -22919,7 +33290,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17392}
+// {line: 25904}
 // push temp 1
 @6
 D=M
@@ -22927,19 +33298,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17395}
+// {line: 25907}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17400}
+// {line: 25912}
 // if-goto Math._subdivide.if.1
 @SP
 AM=M-1
 D=M
 @Math._subdivide.if.1
 D;JNE
-// {line: 17409}
+// {line: 25921}
 // push local 0
 @0
 D=A
@@ -22950,7 +33321,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17418}
+// {line: 25930}
 // push local 0
 @0
 D=A
@@ -22961,27 +33332,27 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17423}
+// {line: 25935}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17425}
+// {line: 25937}
 // return
 @return
 0;JMP
-// {line: 17426}
+// {line: 25938}
 (Math._subdivide.if.1)
-// {line: 17431}
+// {line: 25943}
 // if-goto Math._subdivide.goto.0
 @SP
 AM=M-1
 D=M
 @Math._subdivide.goto.0
 D;JNE
-// {line: 17437}
+// {line: 25949}
 // push static 7
 @Math.static.7
 D=M
@@ -22989,7 +33360,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17446}
+// {line: 25958}
 // push argument 1
 @1
 D=A
@@ -23000,21 +33371,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17451}
+// {line: 25963}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17456}
+// {line: 25968}
 // pop static 7
 @SP
 AM=M-1
 D=M
 @Math.static.7
 M=D
-// {line: 17465}
+// {line: 25977}
 // push local 0
 @0
 D=A
@@ -23025,7 +33396,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17474}
+// {line: 25986}
 // push local 0
 @0
 D=A
@@ -23036,14 +33407,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17479}
+// {line: 25991}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17485}
+// {line: 25997}
 // push constant 1
 @1
 D=A
@@ -23051,27 +33422,27 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17490}
+// {line: 26002}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17492}
+// {line: 26004}
 // return
 @return
 0;JMP
-// {line: 17493}
+// {line: 26005}
 (Math._subdivide.goto.0)
-// {line: 17495}
+// {line: 26007}
 // return
 @return
 0;JMP
-// {line: 17496}
+// {line: 26008}
 // function Math.xor nLocals: 0
 (Math.xor)
-// {line: 17505}
+// {line: 26017}
 // push argument 0
 @0
 D=A
@@ -23082,7 +33453,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17514}
+// {line: 26026}
 // push argument 1
 @1
 D=A
@@ -23093,19 +33464,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17517}
+// {line: 26029}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17522}
+// {line: 26034}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 17531}
+// {line: 26043}
 // push argument 0
 @0
 D=A
@@ -23116,12 +33487,12 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17534}
+// {line: 26046}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17543}
+// {line: 26055}
 // push argument 1
 @1
 D=A
@@ -23132,25 +33503,25 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17548}
+// {line: 26060}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 17553}
+// {line: 26065}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 17555}
+// {line: 26067}
 // return
 @return
 0;JMP
-// {line: 17572}
+// {line: 26084}
 // function Math.sqrt nLocals: 4
 (Math.sqrt)
 @SP
@@ -23169,7 +33540,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 17578}
+// {line: 26090}
 // push static 6
 @Math.static.6
 D=M
@@ -23177,7 +33548,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17584}
+// {line: 26096}
 // pop local 0
 @SP
 AM=M-1
@@ -23185,7 +33556,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 17590}
+// {line: 26102}
 // push constant 0
 @0
 D=A
@@ -23193,7 +33564,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17597}
+// {line: 26109}
 // pop local 1
 @SP
 AM=M-1
@@ -23202,9 +33573,9 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 17598}
+// {line: 26110}
 (Math.sqrt.while.0)
-// {line: 17607}
+// {line: 26119}
 // push local 0
 @0
 D=A
@@ -23215,7 +33586,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17613}
+// {line: 26125}
 // push constant 0
 @0
 D=A
@@ -23223,7 +33594,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17620}
+// {line: 26132}
 // gt
 @Math.sqrt.gt.0
 D=A
@@ -23232,7 +33603,7 @@ M=D
 @gt
 0;JMP
 (Math.sqrt.gt.0)
-// {line: 17629}
+// {line: 26141}
 // push local 0
 @0
 D=A
@@ -23243,7 +33614,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17635}
+// {line: 26147}
 // push constant 0
 @0
 D=A
@@ -23251,7 +33622,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17642}
+// {line: 26154}
 // eq
 @Math.sqrt.eq.0
 D=A
@@ -23260,26 +33631,26 @@ M=D
 @eq
 0;JMP
 (Math.sqrt.eq.0)
-// {line: 17647}
+// {line: 26159}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 17650}
+// {line: 26162}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17655}
+// {line: 26167}
 // if-goto Math.sqrt.while.1
 @SP
 AM=M-1
 D=M
 @Math.sqrt.while.1
 D;JNE
-// {line: 17664}
+// {line: 26176}
 // push local 1
 @1
 D=A
@@ -23290,7 +33661,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17670}
+// {line: 26182}
 // push pointer 1
 @4
 D=M
@@ -23298,7 +33669,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17676}
+// {line: 26188}
 // push static 4
 @Math.static.4
 D=M
@@ -23306,7 +33677,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17685}
+// {line: 26197}
 // push local 0
 @0
 D=A
@@ -23317,21 +33688,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17690}
+// {line: 26202}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17695}
+// {line: 26207}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 17704}
+// {line: 26216}
 // push that 0
 @0
 D=A
@@ -23342,21 +33713,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17709}
+// {line: 26221}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 17714}
+// {line: 26226}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 17720}
+// {line: 26232}
 // push temp 2
 @7
 D=M
@@ -23364,14 +33735,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17725}
+// {line: 26237}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 17733}
+// {line: 26245}
 // pop local 2
 @SP
 AM=M-1
@@ -23381,7 +33752,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 17742}
+// {line: 26254}
 // push local 2
 @2
 D=A
@@ -23392,7 +33763,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17751}
+// {line: 26263}
 // push local 2
 @2
 D=A
@@ -23403,7 +33774,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17764}
+// {line: 26276}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -23418,7 +33789,7 @@ D=A
 @call
 0;JMP
 (Math.sqrt.call.0)
-// {line: 17773}
+// {line: 26285}
 // pop local 3
 @SP
 AM=M-1
@@ -23429,7 +33800,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 17782}
+// {line: 26294}
 // push local 3
 @3
 D=A
@@ -23440,7 +33811,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17791}
+// {line: 26303}
 // push argument 0
 @0
 D=A
@@ -23451,7 +33822,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17798}
+// {line: 26310}
 // lt
 @Math.sqrt.lt.0
 D=A
@@ -23460,7 +33831,7 @@ M=D
 @lt
 0;JMP
 (Math.sqrt.lt.0)
-// {line: 17807}
+// {line: 26319}
 // push local 3
 @3
 D=A
@@ -23471,7 +33842,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17816}
+// {line: 26328}
 // push argument 0
 @0
 D=A
@@ -23482,7 +33853,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17823}
+// {line: 26335}
 // eq
 @Math.sqrt.eq.1
 D=A
@@ -23491,14 +33862,14 @@ M=D
 @eq
 0;JMP
 (Math.sqrt.eq.1)
-// {line: 17828}
+// {line: 26340}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 17837}
+// {line: 26349}
 // push local 3
 @3
 D=A
@@ -23509,7 +33880,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17843}
+// {line: 26355}
 // push constant 0
 @0
 D=A
@@ -23517,7 +33888,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17850}
+// {line: 26362}
 // gt
 @Math.sqrt.gt.1
 D=A
@@ -23526,21 +33897,21 @@ M=D
 @gt
 0;JMP
 (Math.sqrt.gt.1)
-// {line: 17855}
+// {line: 26367}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 17860}
+// {line: 26372}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17866}
+// {line: 26378}
 // push temp 1
 @6
 D=M
@@ -23548,7 +33919,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17872}
+// {line: 26384}
 // push temp 1
 @6
 D=M
@@ -23556,19 +33927,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17875}
+// {line: 26387}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17880}
+// {line: 26392}
 // if-goto Math.sqrt.if.0
 @SP
 AM=M-1
 D=M
 @Math.sqrt.if.0
 D;JNE
-// {line: 17889}
+// {line: 26401}
 // push local 2
 @2
 D=A
@@ -23579,7 +33950,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17896}
+// {line: 26408}
 // pop local 1
 @SP
 AM=M-1
@@ -23588,16 +33959,16 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 17897}
+// {line: 26409}
 (Math.sqrt.if.0)
-// {line: 17902}
+// {line: 26414}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17911}
+// {line: 26423}
 // push local 0
 @0
 D=A
@@ -23608,7 +33979,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17917}
+// {line: 26429}
 // push constant 1
 @1
 D=A
@@ -23616,14 +33987,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 17922}
+// {line: 26434}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 17928}
+// {line: 26440}
 // pop local 0
 @SP
 AM=M-1
@@ -23631,13 +34002,13 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 17930}
+// {line: 26442}
 // goto Math.sqrt.while.0
 @Math.sqrt.while.0
 0;JMP
-// {line: 17931}
+// {line: 26443}
 (Math.sqrt.while.1)
-// {line: 17940}
+// {line: 26452}
 // push local 1
 @1
 D=A
@@ -23648,14 +34019,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17942}
+// {line: 26454}
 // return
 @return
 0;JMP
-// {line: 17943}
+// {line: 26455}
 // function Math.max nLocals: 0
 (Math.max)
-// {line: 17952}
+// {line: 26464}
 // push argument 1
 @1
 D=A
@@ -23666,7 +34037,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17961}
+// {line: 26473}
 // push argument 0
 @0
 D=A
@@ -23677,7 +34048,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17968}
+// {line: 26480}
 // gt
 @Math.max.gt.0
 D=A
@@ -23686,14 +34057,14 @@ M=D
 @gt
 0;JMP
 (Math.max.gt.0)
-// {line: 17973}
+// {line: 26485}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 17979}
+// {line: 26491}
 // push temp 1
 @6
 D=M
@@ -23701,7 +34072,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17985}
+// {line: 26497}
 // push temp 1
 @6
 D=M
@@ -23709,19 +34080,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 17988}
+// {line: 26500}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 17993}
+// {line: 26505}
 // if-goto Math.max.if.0
 @SP
 AM=M-1
 D=M
 @Math.max.if.0
 D;JNE
-// {line: 18002}
+// {line: 26514}
 // push argument 1
 @1
 D=A
@@ -23732,20 +34103,20 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18004}
+// {line: 26516}
 // return
 @return
 0;JMP
-// {line: 18005}
+// {line: 26517}
 (Math.max.if.0)
-// {line: 18010}
+// {line: 26522}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 18019}
+// {line: 26531}
 // push argument 0
 @0
 D=A
@@ -23756,14 +34127,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18021}
+// {line: 26533}
 // return
 @return
 0;JMP
-// {line: 18022}
+// {line: 26534}
 // function Math.min nLocals: 0
 (Math.min)
-// {line: 18031}
+// {line: 26543}
 // push argument 1
 @1
 D=A
@@ -23774,7 +34145,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18040}
+// {line: 26552}
 // push argument 0
 @0
 D=A
@@ -23785,7 +34156,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18047}
+// {line: 26559}
 // lt
 @Math.min.lt.0
 D=A
@@ -23794,14 +34165,14 @@ M=D
 @lt
 0;JMP
 (Math.min.lt.0)
-// {line: 18052}
+// {line: 26564}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 18058}
+// {line: 26570}
 // push temp 1
 @6
 D=M
@@ -23809,7 +34180,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18064}
+// {line: 26576}
 // push temp 1
 @6
 D=M
@@ -23817,19 +34188,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18067}
+// {line: 26579}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 18072}
+// {line: 26584}
 // if-goto Math.min.if.0
 @SP
 AM=M-1
 D=M
 @Math.min.if.0
 D;JNE
-// {line: 18081}
+// {line: 26593}
 // push argument 1
 @1
 D=A
@@ -23840,20 +34211,20 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18083}
+// {line: 26595}
 // return
 @return
 0;JMP
-// {line: 18084}
+// {line: 26596}
 (Math.min.if.0)
-// {line: 18089}
+// {line: 26601}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 18098}
+// {line: 26610}
 // push argument 0
 @0
 D=A
@@ -23864,14 +34235,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18100}
+// {line: 26612}
 // return
 @return
 0;JMP
-// {line: 18101}
+// {line: 26613}
 // function Math.mod nLocals: 0
 (Math.mod)
-// {line: 18110}
+// {line: 26622}
 // push argument 0
 @0
 D=A
@@ -23882,7 +34253,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18119}
+// {line: 26631}
 // push argument 0
 @0
 D=A
@@ -23893,7 +34264,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18128}
+// {line: 26640}
 // push argument 1
 @1
 D=A
@@ -23904,7 +34275,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18141}
+// {line: 26653}
 // call Math.divide nArgs: 2
 @2
 D=A
@@ -23919,7 +34290,7 @@ D=A
 @call
 0;JMP
 (Math.mod.call.0)
-// {line: 18150}
+// {line: 26662}
 // push argument 1
 @1
 D=A
@@ -23930,7 +34301,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18163}
+// {line: 26675}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -23945,21 +34316,21 @@ D=A
 @call
 0;JMP
 (Math.mod.call.1)
-// {line: 18168}
+// {line: 26680}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 18170}
+// {line: 26682}
 // return
 @return
 0;JMP
-// {line: 18171}
+// {line: 26683}
 // function Screen.init nLocals: 0
 (Screen.init)
-// {line: 18177}
+// {line: 26689}
 // push constant 0
 @0
 D=A
@@ -23967,19 +34338,19 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18180}
+// {line: 26692}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 18185}
-// pop static 13
+// {line: 26697}
+// pop static 14
 @SP
 AM=M-1
 D=M
-@Screen.static.13
+@Screen.static.14
 M=D
-// {line: 18191}
+// {line: 26703}
 // push constant 512
 @512
 D=A
@@ -23987,14 +34358,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18196}
-// pop static 14
+// {line: 26708}
+// pop static 15
 @SP
 AM=M-1
 D=M
-@Screen.static.14
+@Screen.static.15
 M=D
-// {line: 18202}
+// {line: 26714}
 // push constant 256
 @256
 D=A
@@ -24002,14 +34373,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18207}
-// pop static 15
+// {line: 26719}
+// pop static 16
 @SP
 AM=M-1
 D=M
-@Screen.static.15
+@Screen.static.16
 M=D
-// {line: 18213}
+// {line: 26725}
 // push constant 16384
 @16384
 D=A
@@ -24017,28 +34388,184 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18218}
-// pop static 16
+// {line: 26730}
+// pop static 17
 @SP
 AM=M-1
 D=M
-@Screen.static.16
+@Screen.static.17
 M=D
-// {line: 18220}
+// {line: 26732}
 // return
 @return
 0;JMP
-// {line: 18221}
-// function Screen.clearScreen nLocals: 0
+// {line: 26737}
+// function Screen.clearScreen nLocals: 1
 (Screen.clearScreen)
-// {line: 18223}
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 26743}
+// push constant 8191
+@8191
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26749}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 26750}
+(Screen.clearScreen.while.0)
+// {line: 26759}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26765}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26768}
+// neg
+@SP
+A=M-1
+M=-M
+// {line: 26775}
+// gt
+@Screen.clearScreen.gt.0
+D=A
+@R14
+M=D
+@gt
+0;JMP
+(Screen.clearScreen.gt.0)
+// {line: 26778}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 26783}
+// if-goto Screen.clearScreen.while.1
+@SP
+AM=M-1
+D=M
+@Screen.clearScreen.while.1
+D;JNE
+// {line: 26789}
+// push static 17
+@Screen.static.17
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26798}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26803}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 26808}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 26814}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26820}
+// pop that 0
+@SP
+AM=M-1
+D=M
+@THAT
+A=M
+M=D
+// {line: 26829}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26835}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 26840}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 26846}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 26848}
+// goto Screen.clearScreen.while.0
+@Screen.clearScreen.while.0
+0;JMP
+// {line: 26849}
+(Screen.clearScreen.while.1)
+// {line: 26851}
 // return
 @return
 0;JMP
-// {line: 18224}
+// {line: 26852}
 // function Screen.setColor nLocals: 0
 (Screen.setColor)
-// {line: 18233}
+// {line: 26861}
 // push argument 0
 @0
 D=A
@@ -24049,34 +34576,34 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18238}
-// pop static 13
+// {line: 26866}
+// pop static 14
 @SP
 AM=M-1
 D=M
-@Screen.static.13
+@Screen.static.14
 M=D
-// {line: 18240}
+// {line: 26868}
 // return
 @return
 0;JMP
-// {line: 18241}
+// {line: 26869}
 // function Screen.getColor nLocals: 0
 (Screen.getColor)
-// {line: 18247}
-// push static 13
-@Screen.static.13
+// {line: 26875}
+// push static 14
+@Screen.static.14
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 18249}
+// {line: 26877}
 // return
 @return
 0;JMP
-// {line: 18258}
-// function Screen.drawPixel nLocals: 2
+// {line: 26894}
+// function Screen.drawPixel nLocals: 4
 (Screen.drawPixel)
 @SP
 AM=M+1
@@ -24086,7 +34613,15 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 18267}
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 26903}
 // push argument 0
 @0
 D=A
@@ -24097,7 +34632,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18273}
+// {line: 26909}
 // push constant 16
 @16
 D=A
@@ -24105,7 +34640,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18286}
+// {line: 26922}
 // call Math.divide nArgs: 2
 @2
 D=A
@@ -24120,7 +34655,7 @@ D=A
 @call
 0;JMP
 (Screen.drawPixel.call.0)
-// {line: 18295}
+// {line: 26931}
 // push argument 1
 @1
 D=A
@@ -24131,7 +34666,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18301}
+// {line: 26937}
 // push constant 32
 @32
 D=A
@@ -24139,7 +34674,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18314}
+// {line: 26950}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -24154,14 +34689,14 @@ D=A
 @call
 0;JMP
 (Screen.drawPixel.call.1)
-// {line: 18319}
+// {line: 26955}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 18325}
+// {line: 26961}
 // pop local 0
 @SP
 AM=M-1
@@ -24169,7 +34704,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 18334}
+// {line: 26970}
 // push argument 0
 @0
 D=A
@@ -24180,7 +34715,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18340}
+// {line: 26976}
 // push constant 16
 @16
 D=A
@@ -24188,7 +34723,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18353}
+// {line: 26989}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -24203,7 +34738,7 @@ D=A
 @call
 0;JMP
 (Screen.drawPixel.call.2)
-// {line: 18366}
+// {line: 27002}
 // call Math.twoToThe nArgs: 1
 @1
 D=A
@@ -24218,7 +34753,7 @@ D=A
 @call
 0;JMP
 (Screen.drawPixel.call.3)
-// {line: 18373}
+// {line: 27009}
 // pop local 1
 @SP
 AM=M-1
@@ -24227,58 +34762,15 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 18379}
-// push static 13
-@Screen.static.13
+// {line: 27015}
+// push static 17
+@Screen.static.17
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 18384}
-// pop temp 1
-@SP
-AM=M-1
-D=M
-@R6
-M=D
-// {line: 18390}
-// push temp 1
-@6
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18396}
-// push temp 1
-@6
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18399}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 18404}
-// if-goto Screen.drawPixel.if.0
-@SP
-AM=M-1
-D=M
-@Screen.drawPixel.if.0
-D;JNE
-// {line: 18410}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18419}
+// {line: 27024}
 // push local 0
 @0
 D=A
@@ -24289,21 +34781,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18424}
+// {line: 27029}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 18429}
+// {line: 27034}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 18435}
+// {line: 27040}
 // push pointer 1
 @4
 D=M
@@ -24311,15 +34803,15 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18441}
-// push static 16
-@Screen.static.16
+// {line: 27046}
+// push static 17
+@Screen.static.17
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 18450}
+// {line: 27055}
 // push local 0
 @0
 D=A
@@ -24330,21 +34822,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18455}
+// {line: 27060}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 18460}
+// {line: 27065}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 18469}
+// {line: 27074}
 // push that 0
 @0
 D=A
@@ -24355,21 +34847,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18474}
+// {line: 27079}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 18479}
+// {line: 27084}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 18485}
+// {line: 27090}
 // push temp 2
 @7
 D=M
@@ -24377,7 +34869,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18494}
+// {line: 27099}
 // push local 1
 @1
 D=A
@@ -24388,276 +34880,30 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18499}
-// or
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M|D
-// {line: 18505}
-// pop that 0
-@SP
-AM=M-1
-D=M
-@THAT
-A=M
-M=D
-// {line: 18506}
-(Screen.drawPixel.if.0)
-// {line: 18511}
-// if-goto Screen.drawPixel.goto.0
-@SP
-AM=M-1
-D=M
-@Screen.drawPixel.goto.0
-D;JNE
-// {line: 18517}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18526}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18531}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 18536}
-// pop pointer 1
-@SP
-AM=M-1
-D=M
-@THAT
-M=D
-// {line: 18542}
-// push pointer 1
-@4
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18548}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18557}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18562}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 18567}
-// pop pointer 1
-@SP
-AM=M-1
-D=M
-@THAT
-M=D
-// {line: 18576}
-// push that 0
-@0
-D=A
-@THAT
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18581}
-// pop temp 2
-@SP
-AM=M-1
-D=M
-@R7
-M=D
-// {line: 18586}
-// pop pointer 1
-@SP
-AM=M-1
-D=M
-@THAT
-M=D
-// {line: 18592}
-// push temp 2
-@7
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18601}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18604}
+// {line: 27102}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 18609}
+// {line: 27107}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 18615}
-// pop that 0
-@SP
-AM=M-1
-D=M
-@THAT
-A=M
-M=D
-// {line: 18616}
-(Screen.drawPixel.goto.0)
-// {line: 18618}
-// return
-@return
-0;JMP
-// {line: 18623}
-// function Screen._drawChunk nLocals: 1
-(Screen._drawChunk)
-@SP
-AM=M+1
-A=A-1
-M=0
-// {line: 18632}
-// push argument 0
-@0
-D=A
-@ARG
-A=M+D
+// {line: 27113}
+// push static 14
+@Screen.static.14
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 18638}
-// push constant 16
-@16
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18651}
-// call Math.divide nArgs: 2
-@2
-D=A
-@R14
-M=D
-@Math.divide
-D=A
-@R15
-M=D
-@Screen._drawChunk.call.0
-D=A
-@call
-0;JMP
-(Screen._drawChunk.call.0)
-// {line: 18660}
-// push argument 1
+// {line: 27122}
+// push local 1
 @1
 D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18666}
-// push constant 32
-@32
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18679}
-// call Math.multiply nArgs: 2
-@2
-D=A
-@R14
-M=D
-@Math.multiply
-D=A
-@R15
-M=D
-@Screen._drawChunk.call.1
-D=A
-@call
-0;JMP
-(Screen._drawChunk.call.1)
-// {line: 18684}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 18690}
-// pop local 0
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-M=D
-// {line: 18696}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18705}
-// push local 0
-@0
-D=A
 @LCL
 A=M+D
 D=M
@@ -24665,29 +34911,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18710}
-// add
+// {line: 27127}
+// and
 @SP
 AM=M-1
 D=M
 A=A-1
-M=M+D
-// {line: 18715}
-// pop pointer 1
+M=M&D
+// {line: 27132}
+// or
 @SP
 AM=M-1
 D=M
-@THAT
-M=D
-// {line: 18721}
-// push static 13
-@Screen.static.13
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18727}
+A=A-1
+M=M|D
+// {line: 27138}
 // pop that 0
 @SP
 AM=M-1
@@ -24695,12 +34933,12 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 18729}
+// {line: 27140}
 // return
 @return
 0;JMP
-// {line: 18742}
-// function Screen.drawHoriz nLocals: 3
+// {line: 27169}
+// function Screen.drawHoriz nLocals: 7
 (Screen.drawHoriz)
 @SP
 AM=M+1
@@ -24714,7 +34952,23 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 18751}
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 27178}
 // push argument 1
 @1
 D=A
@@ -24725,7 +34979,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18760}
+// {line: 27187}
 // push argument 0
 @0
 D=A
@@ -24736,14 +34990,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18765}
+// {line: 27192}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 18771}
+// {line: 27198}
 // pop local 0
 @SP
 AM=M-1
@@ -24751,7 +35005,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 18780}
+// {line: 27207}
 // push local 0
 @0
 D=A
@@ -24762,7 +35016,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18786}
+// {line: 27213}
 // push constant 0
 @0
 D=A
@@ -24770,7 +35024,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18793}
+// {line: 27220}
 // gt
 @Screen.drawHoriz.gt.0
 D=A
@@ -24779,14 +35033,14 @@ M=D
 @gt
 0;JMP
 (Screen.drawHoriz.gt.0)
-// {line: 18798}
+// {line: 27225}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 18804}
+// {line: 27231}
 // push temp 1
 @6
 D=M
@@ -24794,7 +35048,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18810}
+// {line: 27237}
 // push temp 1
 @6
 D=M
@@ -24802,19 +35056,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18813}
+// {line: 27240}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 18818}
+// {line: 27245}
 // if-goto Screen.drawHoriz.if.0
 @SP
 AM=M-1
 D=M
 @Screen.drawHoriz.if.0
 D;JNE
-// {line: 18827}
+// {line: 27254}
 // push local 0
 @0
 D=A
@@ -24825,7 +35079,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18833}
+// {line: 27260}
 // push constant 16
 @16
 D=A
@@ -24833,7 +35087,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18840}
+// {line: 27267}
 // gt
 @Screen.drawHoriz.gt.1
 D=A
@@ -24842,14 +35096,14 @@ M=D
 @gt
 0;JMP
 (Screen.drawHoriz.gt.1)
-// {line: 18845}
+// {line: 27272}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 18851}
+// {line: 27278}
 // push temp 1
 @6
 D=M
@@ -24857,7 +35111,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18857}
+// {line: 27284}
 // push temp 1
 @6
 D=M
@@ -24865,19 +35119,27 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18860}
+// {line: 27287}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 18865}
+// {line: 27292}
 // if-goto Screen.drawHoriz.if.1
 @SP
 AM=M-1
 D=M
 @Screen.drawHoriz.if.1
 D;JNE
-// {line: 18874}
+// {line: 27298}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27307}
 // push argument 0
 @0
 D=A
@@ -24888,7 +35150,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 18880}
+// {line: 27313}
 // push constant 16
 @16
 D=A
@@ -24896,7 +35158,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 18893}
+// {line: 27326}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -24911,42 +35173,14 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.0)
-// {line: 18900}
-// pop local 1
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-A=A+1
-M=D
-// {line: 18906}
-// push constant 16
-@16
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18915}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18920}
+// {line: 27331}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 18927}
+// {line: 27338}
 // pop local 1
 @SP
 AM=M-1
@@ -24955,78 +35189,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 18928}
-(Screen.drawHoriz.while.0)
-// {line: 18937}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18943}
-// push constant 0
-@0
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18950}
-// gt
-@Screen.drawHoriz.gt.2
-D=A
-@R14
-M=D
-@gt
-0;JMP
-(Screen.drawHoriz.gt.2)
-// {line: 18953}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 18958}
-// if-goto Screen.drawHoriz.while.1
-@SP
-AM=M-1
-D=M
-@Screen.drawHoriz.while.1
-D;JNE
-// {line: 18967}
-// push argument 0
-@0
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18976}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 18981}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 18990}
+// {line: 27347}
 // push argument 2
 @2
 D=A
@@ -25037,13 +35200,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19003}
-// call Screen.drawPixel nArgs: 2
+// {line: 27353}
+// push constant 32
+@32
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27366}
+// call Math.multiply nArgs: 2
 @2
 D=A
 @R14
 M=D
-@Screen.drawPixel
+@Math.multiply
 D=A
 @R15
 M=D
@@ -25052,14 +35223,23 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.1)
-// {line: 19008}
-// pop temp 0
+// {line: 27378}
+// pop local 6
 @SP
 AM=M-1
 D=M
-@R5
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 19017}
+// {line: 27379}
+(Screen.drawHoriz.while.0)
+// {line: 27388}
 // push local 1
 @1
 D=A
@@ -25070,48 +35250,65 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19023}
-// push constant 1
-@1
+// {line: 27394}
+// push constant 0
+@0
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 19028}
-// sub
+// {line: 27401}
+// gt
+@Screen.drawHoriz.gt.2
+D=A
+@R14
+M=D
+@gt
+0;JMP
+(Screen.drawHoriz.gt.2)
+// {line: 27404}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 27409}
+// if-goto Screen.drawHoriz.while.1
+@SP
+AM=M-1
+D=M
+@Screen.drawHoriz.while.1
+D;JNE
+// {line: 27418}
+// push argument 0
+@0
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27427}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27432}
+// add
 @SP
 AM=M-1
 D=M
 A=A-1
-M=M-D
-// {line: 19035}
-// pop local 1
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-A=A+1
-M=D
-// {line: 19037}
-// goto Screen.drawHoriz.while.0
-@Screen.drawHoriz.while.0
-0;JMP
-// {line: 19038}
-(Screen.drawHoriz.while.1)
-// {line: 19047}
-// push argument 0
-@0
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19053}
+M=M+D
+// {line: 27438}
 // push constant 16
 @16
 D=A
@@ -25119,32 +35316,13 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19062}
-// push argument 0
-@0
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19068}
-// push constant 16
-@16
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19081}
-// call Math.mod nArgs: 2
+// {line: 27451}
+// call Math.divide nArgs: 2
 @2
 D=A
 @R14
 M=D
-@Math.mod
+@Math.divide
 D=A
 @R15
 M=D
@@ -25153,31 +35331,40 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.2)
-// {line: 19086}
-// sub
-@SP
-AM=M-1
+// {line: 27460}
+// push local 6
+@6
+D=A
+@LCL
+A=M+D
 D=M
-A=A-1
-M=M-D
-// {line: 19091}
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27465}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 19097}
-// pop argument 0
+// {line: 27476}
+// pop local 5
 @SP
 AM=M-1
 D=M
-@ARG
+@LCL
 A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 19106}
-// push argument 1
-@1
+// {line: 27485}
+// push argument 0
+@0
 D=A
 @ARG
 A=M+D
@@ -25186,7 +35373,25 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19112}
+// {line: 27494}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27499}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 27505}
 // push constant 16
 @16
 D=A
@@ -25194,7 +35399,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19125}
+// {line: 27518}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -25209,104 +35414,13 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.3)
-// {line: 19132}
-// pop local 1
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-A=A+1
-M=D
-// {line: 19133}
-(Screen.drawHoriz.while.2)
-// {line: 19142}
-// push local 1
+// {line: 27531}
+// call Math.twoToThe nArgs: 1
 @1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19148}
-// push constant 0
-@0
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19155}
-// gt
-@Screen.drawHoriz.gt.3
 D=A
 @R14
 M=D
-@gt
-0;JMP
-(Screen.drawHoriz.gt.3)
-// {line: 19158}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 19163}
-// if-goto Screen.drawHoriz.while.3
-@SP
-AM=M-1
-D=M
-@Screen.drawHoriz.while.3
-D;JNE
-// {line: 19172}
-// push argument 1
-@1
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19181}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19186}
-// sub
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M-D
-// {line: 19195}
-// push argument 2
-@2
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19208}
-// call Screen.drawPixel nArgs: 2
-@2
-D=A
-@R14
-M=D
-@Screen.drawPixel
+@Math.twoToThe
 D=A
 @R15
 M=D
@@ -25315,14 +35429,189 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.4)
-// {line: 19213}
-// pop temp 0
+// {line: 27540}
+// pop local 3
 @SP
 AM=M-1
 D=M
-@R5
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
 M=D
-// {line: 19222}
+// {line: 27546}
+// push static 17
+@Screen.static.17
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27555}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27560}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 27565}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 27571}
+// push pointer 1
+@4
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27577}
+// push static 17
+@Screen.static.17
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27586}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27591}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 27596}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 27605}
+// push that 0
+@0
+D=A
+@THAT
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27610}
+// pop temp 2
+@SP
+AM=M-1
+D=M
+@R7
+M=D
+// {line: 27615}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 27621}
+// push temp 2
+@7
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27630}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27633}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 27638}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 27644}
+// push static 14
+@Screen.static.14
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27653}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27658}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 27663}
+// or
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M|D
+// {line: 27669}
+// pop that 0
+@SP
+AM=M-1
+D=M
+@THAT
+A=M
+M=D
+// {line: 27678}
 // push local 1
 @1
 D=A
@@ -25333,7 +35622,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19228}
+// {line: 27684}
 // push constant 1
 @1
 D=A
@@ -25341,14 +35630,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19233}
+// {line: 27689}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 19240}
+// {line: 27696}
 // pop local 1
 @SP
 AM=M-1
@@ -25357,15 +35646,15 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 19242}
-// goto Screen.drawHoriz.while.2
-@Screen.drawHoriz.while.2
+// {line: 27698}
+// goto Screen.drawHoriz.while.0
+@Screen.drawHoriz.while.0
 0;JMP
-// {line: 19243}
-(Screen.drawHoriz.while.3)
-// {line: 19252}
-// push argument 1
-@1
+// {line: 27699}
+(Screen.drawHoriz.while.1)
+// {line: 27708}
+// push argument 0
+@0
 D=A
 @ARG
 A=M+D
@@ -25374,18 +35663,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19261}
-// push argument 1
-@1
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19267}
+// {line: 27714}
 // push constant 16
 @16
 D=A
@@ -25393,7 +35671,26 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19280}
+// {line: 27723}
+// push argument 0
+@0
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27729}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27742}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -25408,23 +35705,29 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.5)
-// {line: 19285}
+// {line: 27747}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 19292}
-// pop argument 1
+// {line: 27752}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 27758}
+// pop argument 0
 @SP
 AM=M-1
 D=M
 @ARG
 A=M
-A=A+1
 M=D
-// {line: 19301}
+// {line: 27767}
 // push argument 1
 @1
 D=A
@@ -25435,121 +35738,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19310}
-// push argument 0
-@0
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19315}
-// sub
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M-D
-// {line: 19321}
-// pop local 0
-@SP
-AM=M-1
-D=M
-@LCL
-A=M
-M=D
-// {line: 19322}
-(Screen.drawHoriz.while.4)
-// {line: 19331}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19337}
-// push constant 0
-@0
+// {line: 27773}
+// push constant 16
+@16
 D=A
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 19344}
-// gt
-@Screen.drawHoriz.gt.4
-D=A
-@R14
-M=D
-@gt
-0;JMP
-(Screen.drawHoriz.gt.4)
-// {line: 19347}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 19352}
-// if-goto Screen.drawHoriz.while.5
-@SP
-AM=M-1
-D=M
-@Screen.drawHoriz.while.5
-D;JNE
-// {line: 19361}
-// push argument 1
-@1
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19370}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19375}
-// sub
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M-D
-// {line: 19384}
-// push argument 2
-@2
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19397}
-// call Screen._drawChunk nArgs: 2
+// {line: 27786}
+// call Math.mod nArgs: 2
 @2
 D=A
 @R14
 M=D
-@Screen._drawChunk
+@Math.mod
 D=A
 @R15
 M=D
@@ -25558,67 +35761,20 @@ D=A
 @call
 0;JMP
 (Screen.drawHoriz.call.6)
-// {line: 19402}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 19411}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19417}
-// push constant 16
-@16
-D=A
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19422}
-// sub
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M-D
-// {line: 19428}
-// pop local 0
+// {line: 27793}
+// pop local 1
 @SP
 AM=M-1
 D=M
 @LCL
 A=M
+A=A+1
 M=D
-// {line: 19430}
-// goto Screen.drawHoriz.while.4
-@Screen.drawHoriz.while.4
-0;JMP
-// {line: 19431}
-(Screen.drawHoriz.while.5)
-// {line: 19432}
-(Screen.drawHoriz.if.1)
-// {line: 19437}
-// if-goto Screen.drawHoriz.goto.0
-@SP
-AM=M-1
-D=M
-@Screen.drawHoriz.goto.0
-D;JNE
-// {line: 19438}
-(Screen.drawHoriz.while.6)
-// {line: 19447}
-// push local 0
-@0
+// {line: 27794}
+(Screen.drawHoriz.while.2)
+// {line: 27803}
+// push local 1
+@1
 D=A
 @LCL
 A=M+D
@@ -25627,7 +35783,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19453}
+// {line: 27809}
 // push constant 0
 @0
 D=A
@@ -25635,28 +35791,473 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19460}
+// {line: 27816}
 // gt
-@Screen.drawHoriz.gt.5
+@Screen.drawHoriz.gt.3
 D=A
 @R14
 M=D
 @gt
 0;JMP
-(Screen.drawHoriz.gt.5)
-// {line: 19463}
+(Screen.drawHoriz.gt.3)
+// {line: 27819}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 19468}
-// if-goto Screen.drawHoriz.while.7
+// {line: 27824}
+// if-goto Screen.drawHoriz.while.3
 @SP
 AM=M-1
 D=M
-@Screen.drawHoriz.while.7
+@Screen.drawHoriz.while.3
 D;JNE
-// {line: 19477}
+// {line: 27833}
+// push argument 1
+@1
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27842}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27847}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 27853}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27866}
+// call Math.divide nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.divide
+D=A
+@R15
+M=D
+@Screen.drawHoriz.call.7
+D=A
+@call
+0;JMP
+(Screen.drawHoriz.call.7)
+// {line: 27875}
+// push local 6
+@6
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27880}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 27891}
+// pop local 5
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 27900}
+// push argument 1
+@1
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27909}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27914}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 27920}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27933}
+// call Math.mod nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.mod
+D=A
+@R15
+M=D
+@Screen.drawHoriz.call.8
+D=A
+@call
+0;JMP
+(Screen.drawHoriz.call.8)
+// {line: 27946}
+// call Math.twoToThe nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Math.twoToThe
+D=A
+@R15
+M=D
+@Screen.drawHoriz.call.9
+D=A
+@call
+0;JMP
+(Screen.drawHoriz.call.9)
+// {line: 27955}
+// pop local 3
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 27961}
+// push static 17
+@Screen.static.17
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27970}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27975}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 27980}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 27986}
+// push pointer 1
+@4
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 27992}
+// push static 17
+@Screen.static.17
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28001}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28006}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 28011}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 28020}
+// push that 0
+@0
+D=A
+@THAT
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28025}
+// pop temp 2
+@SP
+AM=M-1
+D=M
+@R7
+M=D
+// {line: 28030}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 28036}
+// push temp 2
+@7
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28045}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28048}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 28053}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 28059}
+// push static 14
+@Screen.static.14
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28068}
+// push local 3
+@3
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28073}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 28078}
+// or
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M|D
+// {line: 28084}
+// pop that 0
+@SP
+AM=M-1
+D=M
+@THAT
+A=M
+M=D
+// {line: 28093}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28099}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28104}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 28111}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 28113}
+// goto Screen.drawHoriz.while.2
+@Screen.drawHoriz.while.2
+0;JMP
+// {line: 28114}
+(Screen.drawHoriz.while.3)
+// {line: 28123}
+// push argument 1
+@1
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28132}
+// push argument 1
+@1
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28138}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28151}
+// call Math.mod nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.mod
+D=A
+@R15
+M=D
+@Screen.drawHoriz.call.10
+D=A
+@call
+0;JMP
+(Screen.drawHoriz.call.10)
+// {line: 28156}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 28163}
+// pop argument 1
+@SP
+AM=M-1
+D=M
+@ARG
+A=M
+A=A+1
+M=D
+// {line: 28172}
+// push argument 1
+@1
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28181}
 // push argument 0
 @0
 D=A
@@ -25667,7 +36268,24 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19486}
+// {line: 28186}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 28192}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 28193}
+(Screen.drawHoriz.while.4)
+// {line: 28202}
 // push local 0
 @0
 D=A
@@ -25678,14 +36296,288 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19491}
+// {line: 28208}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28215}
+// gt
+@Screen.drawHoriz.gt.4
+D=A
+@R14
+M=D
+@gt
+0;JMP
+(Screen.drawHoriz.gt.4)
+// {line: 28218}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 28223}
+// if-goto Screen.drawHoriz.while.5
+@SP
+AM=M-1
+D=M
+@Screen.drawHoriz.while.5
+D;JNE
+// {line: 28232}
+// push argument 1
+@1
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28241}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28246}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 28252}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28265}
+// call Math.divide nArgs: 2
+@2
+D=A
+@R14
+M=D
+@Math.divide
+D=A
+@R15
+M=D
+@Screen.drawHoriz.call.11
+D=A
+@call
+0;JMP
+(Screen.drawHoriz.call.11)
+// {line: 28274}
+// push local 6
+@6
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28279}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 19500}
+// {line: 28290}
+// pop local 5
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+A=A+1
+M=D
+// {line: 28296}
+// push static 17
+@Screen.static.17
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28305}
+// push local 5
+@5
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28310}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 28315}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 28321}
+// push static 14
+@Screen.static.14
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28327}
+// pop that 0
+@SP
+AM=M-1
+D=M
+@THAT
+A=M
+M=D
+// {line: 28336}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28342}
+// push constant 16
+@16
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28347}
+// sub
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M-D
+// {line: 28353}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 28355}
+// goto Screen.drawHoriz.while.4
+@Screen.drawHoriz.while.4
+0;JMP
+// {line: 28356}
+(Screen.drawHoriz.while.5)
+// {line: 28357}
+(Screen.drawHoriz.if.1)
+// {line: 28362}
+// if-goto Screen.drawHoriz.goto.0
+@SP
+AM=M-1
+D=M
+@Screen.drawHoriz.goto.0
+D;JNE
+// {line: 28363}
+(Screen.drawHoriz.while.6)
+// {line: 28372}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28378}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28385}
+// gt
+@Screen.drawHoriz.gt.5
+D=A
+@R14
+M=D
+@gt
+0;JMP
+(Screen.drawHoriz.gt.5)
+// {line: 28388}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 28393}
+// if-goto Screen.drawHoriz.while.7
+@SP
+AM=M-1
+D=M
+@Screen.drawHoriz.while.7
+D;JNE
+// {line: 28402}
+// push argument 0
+@0
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28411}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28416}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 28425}
 // push argument 2
 @2
 D=A
@@ -25696,7 +36588,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19513}
+// {line: 28438}
 // call Screen.drawPixel nArgs: 2
 @2
 D=A
@@ -25706,19 +36598,19 @@ M=D
 D=A
 @R15
 M=D
-@Screen.drawHoriz.call.7
+@Screen.drawHoriz.call.12
 D=A
 @call
 0;JMP
-(Screen.drawHoriz.call.7)
-// {line: 19518}
+(Screen.drawHoriz.call.12)
+// {line: 28443}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 19527}
+// {line: 28452}
 // push local 0
 @0
 D=A
@@ -25729,7 +36621,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19533}
+// {line: 28458}
 // push constant 1
 @1
 D=A
@@ -25737,14 +36629,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19538}
+// {line: 28463}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 19544}
+// {line: 28469}
 // pop local 0
 @SP
 AM=M-1
@@ -25752,24 +36644,24 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 19546}
+// {line: 28471}
 // goto Screen.drawHoriz.while.6
 @Screen.drawHoriz.while.6
 0;JMP
-// {line: 19547}
+// {line: 28472}
 (Screen.drawHoriz.while.7)
-// {line: 19548}
+// {line: 28473}
 (Screen.drawHoriz.goto.0)
-// {line: 19549}
+// {line: 28474}
 (Screen.drawHoriz.if.0)
-// {line: 19554}
+// {line: 28479}
 // if-goto Screen.drawHoriz.goto.1
 @SP
 AM=M-1
 D=M
 @Screen.drawHoriz.goto.1
 D;JNE
-// {line: 19563}
+// {line: 28488}
 // push argument 1
 @1
 D=A
@@ -25780,7 +36672,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19572}
+// {line: 28497}
 // push argument 0
 @0
 D=A
@@ -25791,7 +36683,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19581}
+// {line: 28506}
 // push argument 2
 @2
 D=A
@@ -25802,7 +36694,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19594}
+// {line: 28519}
 // call Screen.drawHoriz nArgs: 3
 @3
 D=A
@@ -25812,25 +36704,25 @@ M=D
 D=A
 @R15
 M=D
-@Screen.drawHoriz.call.8
+@Screen.drawHoriz.call.13
 D=A
 @call
 0;JMP
-(Screen.drawHoriz.call.8)
-// {line: 19599}
+(Screen.drawHoriz.call.13)
+// {line: 28524}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 19600}
+// {line: 28525}
 (Screen.drawHoriz.goto.1)
-// {line: 19602}
+// {line: 28527}
 // return
 @return
 0;JMP
-// {line: 19615}
+// {line: 28540}
 // function Screen.drawVert nLocals: 3
 (Screen.drawVert)
 @SP
@@ -25845,7 +36737,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 19624}
+// {line: 28549}
 // push argument 2
 @2
 D=A
@@ -25856,7 +36748,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19633}
+// {line: 28558}
 // push argument 1
 @1
 D=A
@@ -25867,14 +36759,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19638}
+// {line: 28563}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 19644}
+// {line: 28569}
 // push constant 0
 @0
 D=A
@@ -25882,7 +36774,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19651}
+// {line: 28576}
 // lt
 @Screen.drawVert.lt.0
 D=A
@@ -25891,14 +36783,14 @@ M=D
 @lt
 0;JMP
 (Screen.drawVert.lt.0)
-// {line: 19656}
+// {line: 28581}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 19662}
+// {line: 28587}
 // push temp 1
 @6
 D=M
@@ -25906,7 +36798,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19668}
+// {line: 28593}
 // push temp 1
 @6
 D=M
@@ -25914,19 +36806,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19671}
+// {line: 28596}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 19676}
+// {line: 28601}
 // if-goto Screen.drawVert.if.0
 @SP
 AM=M-1
 D=M
 @Screen.drawVert.if.0
 D;JNE
-// {line: 19685}
+// {line: 28610}
 // push argument 0
 @0
 D=A
@@ -25937,7 +36829,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19694}
+// {line: 28619}
 // push argument 2
 @2
 D=A
@@ -25948,7 +36840,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19703}
+// {line: 28628}
 // push argument 1
 @1
 D=A
@@ -25959,7 +36851,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19716}
+// {line: 28641}
 // call Screen.drawVert nArgs: 3
 @3
 D=A
@@ -25974,23 +36866,23 @@ D=A
 @call
 0;JMP
 (Screen.drawVert.call.0)
-// {line: 19721}
+// {line: 28646}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 19722}
+// {line: 28647}
 (Screen.drawVert.if.0)
-// {line: 19727}
+// {line: 28652}
 // if-goto Screen.drawVert.goto.0
 @SP
 AM=M-1
 D=M
 @Screen.drawVert.goto.0
 D;JNE
-// {line: 19736}
+// {line: 28661}
 // push argument 0
 @0
 D=A
@@ -26001,7 +36893,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19742}
+// {line: 28667}
 // push constant 16
 @16
 D=A
@@ -26009,7 +36901,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19755}
+// {line: 28680}
 // call Math.divide nArgs: 2
 @2
 D=A
@@ -26024,7 +36916,7 @@ D=A
 @call
 0;JMP
 (Screen.drawVert.call.1)
-// {line: 19764}
+// {line: 28689}
 // push argument 1
 @1
 D=A
@@ -26035,7 +36927,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19770}
+// {line: 28695}
 // push constant 32
 @32
 D=A
@@ -26043,7 +36935,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19783}
+// {line: 28708}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -26058,14 +36950,14 @@ D=A
 @call
 0;JMP
 (Screen.drawVert.call.2)
-// {line: 19788}
+// {line: 28713}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 19794}
+// {line: 28719}
 // pop local 0
 @SP
 AM=M-1
@@ -26073,7 +36965,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 19803}
+// {line: 28728}
 // push argument 0
 @0
 D=A
@@ -26084,7 +36976,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19809}
+// {line: 28734}
 // push constant 16
 @16
 D=A
@@ -26092,7 +36984,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 19822}
+// {line: 28747}
 // call Math.mod nArgs: 2
 @2
 D=A
@@ -26107,7 +36999,7 @@ D=A
 @call
 0;JMP
 (Screen.drawVert.call.3)
-// {line: 19835}
+// {line: 28760}
 // call Math.twoToThe nArgs: 1
 @1
 D=A
@@ -26122,7 +37014,7 @@ D=A
 @call
 0;JMP
 (Screen.drawVert.call.4)
-// {line: 19842}
+// {line: 28767}
 // pop local 1
 @SP
 AM=M-1
@@ -26131,9 +37023,9 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 19843}
+// {line: 28768}
 (Screen.drawVert.while.0)
-// {line: 19852}
+// {line: 28777}
 // push argument 2
 @2
 D=A
@@ -26144,7 +37036,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19861}
+// {line: 28786}
 // push argument 1
 @1
 D=A
@@ -26155,7 +37047,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19868}
+// {line: 28793}
 // gt
 @Screen.drawVert.gt.0
 D=A
@@ -26164,70 +37056,27 @@ M=D
 @gt
 0;JMP
 (Screen.drawVert.gt.0)
-// {line: 19871}
+// {line: 28796}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 19876}
+// {line: 28801}
 // if-goto Screen.drawVert.while.1
 @SP
 AM=M-1
 D=M
 @Screen.drawVert.while.1
 D;JNE
-// {line: 19882}
-// push static 13
-@Screen.static.13
+// {line: 28807}
+// push static 17
+@Screen.static.17
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 19887}
-// pop temp 1
-@SP
-AM=M-1
-D=M
-@R6
-M=D
-// {line: 19893}
-// push temp 1
-@6
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19899}
-// push temp 1
-@6
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19902}
-// not
-@SP
-A=M-1
-M=!M
-// {line: 19907}
-// if-goto Screen.drawVert.if.1
-@SP
-AM=M-1
-D=M
-@Screen.drawVert.if.1
-D;JNE
-// {line: 19913}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 19922}
+// {line: 28816}
 // push local 0
 @0
 D=A
@@ -26238,21 +37087,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19927}
+// {line: 28821}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 19932}
+// {line: 28826}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 19938}
+// {line: 28832}
 // push pointer 1
 @4
 D=M
@@ -26260,15 +37109,15 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19944}
-// push static 16
-@Screen.static.16
+// {line: 28838}
+// push static 17
+@Screen.static.17
 D=M
 @SP
 M=M+1
 A=M-1
 M=D
-// {line: 19953}
+// {line: 28847}
 // push local 0
 @0
 D=A
@@ -26279,21 +37128,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19958}
+// {line: 28852}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 19963}
+// {line: 28857}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 19972}
+// {line: 28866}
 // push that 0
 @0
 D=A
@@ -26304,21 +37153,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19977}
+// {line: 28871}
 // pop temp 2
 @SP
 AM=M-1
 D=M
 @R7
 M=D
-// {line: 19982}
+// {line: 28876}
 // pop pointer 1
 @SP
 AM=M-1
 D=M
 @THAT
 M=D
-// {line: 19988}
+// {line: 28882}
 // push temp 2
 @7
 D=M
@@ -26326,7 +37175,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 19997}
+// {line: 28891}
 // push local 1
 @1
 D=A
@@ -26337,161 +37186,52 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20002}
-// or
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M|D
-// {line: 20008}
-// pop that 0
-@SP
-AM=M-1
-D=M
-@THAT
-A=M
-M=D
-// {line: 20009}
-(Screen.drawVert.if.1)
-// {line: 20014}
-// if-goto Screen.drawVert.goto.1
-@SP
-AM=M-1
-D=M
-@Screen.drawVert.goto.1
-D;JNE
-// {line: 20020}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20029}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20034}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 20039}
-// pop pointer 1
-@SP
-AM=M-1
-D=M
-@THAT
-M=D
-// {line: 20045}
-// push pointer 1
-@4
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20051}
-// push static 16
-@Screen.static.16
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20060}
-// push local 0
-@0
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20065}
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
-// {line: 20070}
-// pop pointer 1
-@SP
-AM=M-1
-D=M
-@THAT
-M=D
-// {line: 20079}
-// push that 0
-@0
-D=A
-@THAT
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20084}
-// pop temp 2
-@SP
-AM=M-1
-D=M
-@R7
-M=D
-// {line: 20089}
-// pop pointer 1
-@SP
-AM=M-1
-D=M
-@THAT
-M=D
-// {line: 20095}
-// push temp 2
-@7
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20104}
-// push local 1
-@1
-D=A
-@LCL
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20107}
+// {line: 28894}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20112}
+// {line: 28899}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 20118}
+// {line: 28905}
+// push static 14
+@Screen.static.14
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28914}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 28919}
+// and
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M&D
+// {line: 28924}
+// or
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M|D
+// {line: 28930}
 // pop that 0
 @SP
 AM=M-1
@@ -26499,20 +37239,7 @@ D=M
 @THAT
 A=M
 M=D
-// {line: 20119}
-(Screen.drawVert.goto.1)
-// {line: 20128}
-// push argument 0
-@0
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20137}
+// {line: 28939}
 // push argument 2
 @2
 D=A
@@ -26523,40 +37250,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20150}
-// call Screen.drawPixel nArgs: 2
-@2
-D=A
-@R14
-M=D
-@Screen.drawPixel
-D=A
-@R15
-M=D
-@Screen.drawVert.call.5
-D=A
-@call
-0;JMP
-(Screen.drawVert.call.5)
-// {line: 20155}
-// pop temp 0
-@SP
-AM=M-1
-D=M
-@R5
-M=D
-// {line: 20164}
-// push argument 2
-@2
-D=A
-@ARG
-A=M+D
-D=M
-@SP
-M=M+1
-A=M-1
-M=D
-// {line: 20170}
+// {line: 28945}
 // push constant 1
 @1
 D=A
@@ -26564,14 +37258,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20175}
+// {line: 28950}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 20183}
+// {line: 28958}
 // pop argument 2
 @SP
 AM=M-1
@@ -26581,7 +37275,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 20192}
+// {line: 28967}
 // push local 0
 @0
 D=A
@@ -26592,7 +37286,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20198}
+// {line: 28973}
 // push constant 32
 @32
 D=A
@@ -26600,14 +37294,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20203}
+// {line: 28978}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 20209}
+// {line: 28984}
 // pop local 0
 @SP
 AM=M-1
@@ -26615,19 +37309,19 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 20211}
+// {line: 28986}
 // goto Screen.drawVert.while.0
 @Screen.drawVert.while.0
 0;JMP
-// {line: 20212}
+// {line: 28987}
 (Screen.drawVert.while.1)
-// {line: 20213}
+// {line: 28988}
 (Screen.drawVert.goto.0)
-// {line: 20215}
+// {line: 28990}
 // return
 @return
 0;JMP
-// {line: 20236}
+// {line: 29011}
 // function Screen.drawLine nLocals: 5
 (Screen.drawLine)
 @SP
@@ -26650,7 +37344,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 20242}
+// {line: 29017}
 // push constant 0
 @0
 D=A
@@ -26658,7 +37352,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20252}
+// {line: 29027}
 // pop local 4
 @SP
 AM=M-1
@@ -26670,7 +37364,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 20261}
+// {line: 29036}
 // push argument 2
 @2
 D=A
@@ -26681,7 +37375,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20270}
+// {line: 29045}
 // push argument 0
 @0
 D=A
@@ -26692,14 +37386,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20275}
+// {line: 29050}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 20281}
+// {line: 29056}
 // pop local 0
 @SP
 AM=M-1
@@ -26707,7 +37401,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 20290}
+// {line: 29065}
 // push local 0
 @0
 D=A
@@ -26718,7 +37412,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20296}
+// {line: 29071}
 // push constant 0
 @0
 D=A
@@ -26726,7 +37420,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20303}
+// {line: 29078}
 // eq
 @Screen.drawLine.eq.0
 D=A
@@ -26735,14 +37429,14 @@ M=D
 @eq
 0;JMP
 (Screen.drawLine.eq.0)
-// {line: 20308}
+// {line: 29083}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20314}
+// {line: 29089}
 // push temp 1
 @6
 D=M
@@ -26750,7 +37444,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20320}
+// {line: 29095}
 // push temp 1
 @6
 D=M
@@ -26758,19 +37452,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20323}
+// {line: 29098}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20328}
+// {line: 29103}
 // if-goto Screen.drawLine.if.0
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.0
 D;JNE
-// {line: 20337}
+// {line: 29112}
 // push argument 0
 @0
 D=A
@@ -26781,7 +37475,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20346}
+// {line: 29121}
 // push argument 1
 @1
 D=A
@@ -26792,7 +37486,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20355}
+// {line: 29130}
 // push argument 3
 @3
 D=A
@@ -26803,7 +37497,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20368}
+// {line: 29143}
 // call Screen.drawVert nArgs: 3
 @3
 D=A
@@ -26818,14 +37512,14 @@ D=A
 @call
 0;JMP
 (Screen.drawLine.call.0)
-// {line: 20373}
+// {line: 29148}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 20379}
+// {line: 29154}
 // push constant 0
 @0
 D=A
@@ -26833,20 +37527,20 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20381}
+// {line: 29156}
 // return
 @return
 0;JMP
-// {line: 20382}
+// {line: 29157}
 (Screen.drawLine.if.0)
-// {line: 20387}
+// {line: 29162}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20396}
+// {line: 29171}
 // push argument 3
 @3
 D=A
@@ -26857,7 +37551,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20405}
+// {line: 29180}
 // push argument 1
 @1
 D=A
@@ -26868,14 +37562,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20410}
+// {line: 29185}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 20417}
+// {line: 29192}
 // pop local 1
 @SP
 AM=M-1
@@ -26884,7 +37578,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 20426}
+// {line: 29201}
 // push local 1
 @1
 D=A
@@ -26895,7 +37589,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20432}
+// {line: 29207}
 // push constant 0
 @0
 D=A
@@ -26903,7 +37597,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20439}
+// {line: 29214}
 // eq
 @Screen.drawLine.eq.1
 D=A
@@ -26912,14 +37606,14 @@ M=D
 @eq
 0;JMP
 (Screen.drawLine.eq.1)
-// {line: 20444}
+// {line: 29219}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20450}
+// {line: 29225}
 // push temp 1
 @6
 D=M
@@ -26927,7 +37621,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20456}
+// {line: 29231}
 // push temp 1
 @6
 D=M
@@ -26935,19 +37629,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20459}
+// {line: 29234}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20464}
+// {line: 29239}
 // if-goto Screen.drawLine.if.1
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.1
 D;JNE
-// {line: 20473}
+// {line: 29248}
 // push argument 0
 @0
 D=A
@@ -26958,7 +37652,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20482}
+// {line: 29257}
 // push argument 2
 @2
 D=A
@@ -26969,7 +37663,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20491}
+// {line: 29266}
 // push argument 1
 @1
 D=A
@@ -26980,7 +37674,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20504}
+// {line: 29279}
 // call Screen.drawHoriz nArgs: 3
 @3
 D=A
@@ -26995,14 +37689,14 @@ D=A
 @call
 0;JMP
 (Screen.drawLine.call.1)
-// {line: 20509}
+// {line: 29284}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 20515}
+// {line: 29290}
 // push constant 0
 @0
 D=A
@@ -27010,20 +37704,20 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20517}
+// {line: 29292}
 // return
 @return
 0;JMP
-// {line: 20518}
+// {line: 29293}
 (Screen.drawLine.if.1)
-// {line: 20523}
+// {line: 29298}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20529}
+// {line: 29304}
 // push constant 0
 @0
 D=A
@@ -27031,7 +37725,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20537}
+// {line: 29312}
 // pop local 2
 @SP
 AM=M-1
@@ -27041,7 +37735,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 20543}
+// {line: 29318}
 // push constant 0
 @0
 D=A
@@ -27049,7 +37743,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20552}
+// {line: 29327}
 // pop local 3
 @SP
 AM=M-1
@@ -27060,7 +37754,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 20558}
+// {line: 29333}
 // push constant 0
 @0
 D=A
@@ -27068,7 +37762,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20568}
+// {line: 29343}
 // pop local 4
 @SP
 AM=M-1
@@ -27080,7 +37774,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 20577}
+// {line: 29352}
 // push local 0
 @0
 D=A
@@ -27091,7 +37785,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20583}
+// {line: 29358}
 // push constant 0
 @0
 D=A
@@ -27099,7 +37793,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20590}
+// {line: 29365}
 // lt
 @Screen.drawLine.lt.0
 D=A
@@ -27108,14 +37802,14 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.0)
-// {line: 20595}
+// {line: 29370}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20601}
+// {line: 29376}
 // push temp 1
 @6
 D=M
@@ -27123,7 +37817,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20607}
+// {line: 29382}
 // push temp 1
 @6
 D=M
@@ -27131,19 +37825,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20610}
+// {line: 29385}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20615}
+// {line: 29390}
 // if-goto Screen.drawLine.if.2
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.2
 D;JNE
-// {line: 20624}
+// {line: 29399}
 // push local 1
 @1
 D=A
@@ -27154,7 +37848,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20630}
+// {line: 29405}
 // push constant 0
 @0
 D=A
@@ -27162,7 +37856,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20637}
+// {line: 29412}
 // lt
 @Screen.drawLine.lt.1
 D=A
@@ -27171,14 +37865,14 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.1)
-// {line: 20642}
+// {line: 29417}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20648}
+// {line: 29423}
 // push temp 1
 @6
 D=M
@@ -27186,7 +37880,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20654}
+// {line: 29429}
 // push temp 1
 @6
 D=M
@@ -27194,19 +37888,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20657}
+// {line: 29432}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20662}
+// {line: 29437}
 // if-goto Screen.drawLine.if.3
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.3
 D;JNE
-// {line: 20671}
+// {line: 29446}
 // push argument 2
 @2
 D=A
@@ -27217,7 +37911,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20680}
+// {line: 29455}
 // push argument 3
 @3
 D=A
@@ -27228,7 +37922,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20689}
+// {line: 29464}
 // push argument 0
 @0
 D=A
@@ -27239,7 +37933,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20698}
+// {line: 29473}
 // push argument 1
 @1
 D=A
@@ -27250,7 +37944,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20711}
+// {line: 29486}
 // call Screen.drawLine nArgs: 4
 @4
 D=A
@@ -27265,14 +37959,14 @@ D=A
 @call
 0;JMP
 (Screen.drawLine.call.2)
-// {line: 20716}
+// {line: 29491}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 20722}
+// {line: 29497}
 // push constant 0
 @0
 D=A
@@ -27280,20 +37974,20 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20724}
+// {line: 29499}
 // return
 @return
 0;JMP
-// {line: 20725}
+// {line: 29500}
 (Screen.drawLine.if.3)
-// {line: 20730}
+// {line: 29505}
 // if-goto Screen.drawLine.goto.0
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.goto.0
 D;JNE
-// {line: 20739}
+// {line: 29514}
 // push local 0
 @0
 D=A
@@ -27304,12 +37998,12 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20742}
+// {line: 29517}
 // neg
 @SP
 A=M-1
 M=-M
-// {line: 20748}
+// {line: 29523}
 // pop local 0
 @SP
 AM=M-1
@@ -27317,9 +38011,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 20749}
+// {line: 29524}
 (Screen.drawLine.while.0)
-// {line: 20758}
+// {line: 29533}
 // push local 2
 @2
 D=A
@@ -27330,7 +38024,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20767}
+// {line: 29542}
 // push local 0
 @0
 D=A
@@ -27341,7 +38035,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20774}
+// {line: 29549}
 // lt
 @Screen.drawLine.lt.2
 D=A
@@ -27350,7 +38044,7 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.2)
-// {line: 20783}
+// {line: 29558}
 // push local 2
 @2
 D=A
@@ -27361,7 +38055,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20792}
+// {line: 29567}
 // push local 0
 @0
 D=A
@@ -27372,7 +38066,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20799}
+// {line: 29574}
 // eq
 @Screen.drawLine.eq.2
 D=A
@@ -27381,14 +38075,14 @@ M=D
 @eq
 0;JMP
 (Screen.drawLine.eq.2)
-// {line: 20804}
+// {line: 29579}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 20813}
+// {line: 29588}
 // push local 3
 @3
 D=A
@@ -27399,7 +38093,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20822}
+// {line: 29597}
 // push local 1
 @1
 D=A
@@ -27410,7 +38104,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20829}
+// {line: 29604}
 // lt
 @Screen.drawLine.lt.3
 D=A
@@ -27419,7 +38113,7 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.3)
-// {line: 20838}
+// {line: 29613}
 // push local 3
 @3
 D=A
@@ -27430,7 +38124,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20847}
+// {line: 29622}
 // push local 1
 @1
 D=A
@@ -27441,7 +38135,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20854}
+// {line: 29629}
 // eq
 @Screen.drawLine.eq.3
 D=A
@@ -27450,33 +38144,33 @@ M=D
 @eq
 0;JMP
 (Screen.drawLine.eq.3)
-// {line: 20859}
+// {line: 29634}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 20864}
+// {line: 29639}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 20867}
+// {line: 29642}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20872}
+// {line: 29647}
 // if-goto Screen.drawLine.while.1
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.while.1
 D;JNE
-// {line: 20881}
+// {line: 29656}
 // push argument 0
 @0
 D=A
@@ -27487,7 +38181,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20890}
+// {line: 29665}
 // push local 2
 @2
 D=A
@@ -27498,14 +38192,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20895}
+// {line: 29670}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 20904}
+// {line: 29679}
 // push argument 1
 @1
 D=A
@@ -27516,7 +38210,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20913}
+// {line: 29688}
 // push local 3
 @3
 D=A
@@ -27527,14 +38221,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20918}
+// {line: 29693}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 20931}
+// {line: 29706}
 // call Screen.drawPixel nArgs: 2
 @2
 D=A
@@ -27549,14 +38243,14 @@ D=A
 @call
 0;JMP
 (Screen.drawLine.call.3)
-// {line: 20936}
+// {line: 29711}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 20945}
+// {line: 29720}
 // push local 4
 @4
 D=A
@@ -27567,7 +38261,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20951}
+// {line: 29726}
 // push constant 0
 @0
 D=A
@@ -27575,7 +38269,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 20958}
+// {line: 29733}
 // lt
 @Screen.drawLine.lt.4
 D=A
@@ -27584,14 +38278,14 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.4)
-// {line: 20963}
+// {line: 29738}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 20969}
+// {line: 29744}
 // push temp 1
 @6
 D=M
@@ -27599,7 +38293,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20975}
+// {line: 29750}
 // push temp 1
 @6
 D=M
@@ -27607,19 +38301,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20978}
+// {line: 29753}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 20983}
+// {line: 29758}
 // if-goto Screen.drawLine.if.4
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.4
 D;JNE
-// {line: 20992}
+// {line: 29767}
 // push local 2
 @2
 D=A
@@ -27630,7 +38324,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 20998}
+// {line: 29773}
 // push constant 1
 @1
 D=A
@@ -27638,14 +38332,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21003}
+// {line: 29778}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21011}
+// {line: 29786}
 // pop local 2
 @SP
 AM=M-1
@@ -27655,7 +38349,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 21020}
+// {line: 29795}
 // push local 4
 @4
 D=A
@@ -27666,7 +38360,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21029}
+// {line: 29804}
 // push local 1
 @1
 D=A
@@ -27677,14 +38371,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21034}
+// {line: 29809}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21044}
+// {line: 29819}
 // pop local 4
 @SP
 AM=M-1
@@ -27696,16 +38390,16 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 21045}
+// {line: 29820}
 (Screen.drawLine.if.4)
-// {line: 21050}
+// {line: 29825}
 // if-goto Screen.drawLine.goto.1
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.goto.1
 D;JNE
-// {line: 21059}
+// {line: 29834}
 // push local 3
 @3
 D=A
@@ -27716,7 +38410,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21065}
+// {line: 29840}
 // push constant 1
 @1
 D=A
@@ -27724,14 +38418,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21070}
+// {line: 29845}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21079}
+// {line: 29854}
 // pop local 3
 @SP
 AM=M-1
@@ -27742,7 +38436,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 21088}
+// {line: 29863}
 // push local 4
 @4
 D=A
@@ -27753,7 +38447,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21097}
+// {line: 29872}
 // push local 0
 @0
 D=A
@@ -27764,14 +38458,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21102}
+// {line: 29877}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 21112}
+// {line: 29887}
 // pop local 4
 @SP
 AM=M-1
@@ -27783,15 +38477,15 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 21113}
+// {line: 29888}
 (Screen.drawLine.goto.1)
-// {line: 21115}
+// {line: 29890}
 // goto Screen.drawLine.while.0
 @Screen.drawLine.while.0
 0;JMP
-// {line: 21116}
+// {line: 29891}
 (Screen.drawLine.while.1)
-// {line: 21122}
+// {line: 29897}
 // push constant 0
 @0
 D=A
@@ -27799,22 +38493,22 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21124}
+// {line: 29899}
 // return
 @return
 0;JMP
-// {line: 21125}
+// {line: 29900}
 (Screen.drawLine.goto.0)
-// {line: 21126}
+// {line: 29901}
 (Screen.drawLine.if.2)
-// {line: 21131}
+// {line: 29906}
 // if-goto Screen.drawLine.goto.2
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.goto.2
 D;JNE
-// {line: 21140}
+// {line: 29915}
 // push local 1
 @1
 D=A
@@ -27825,7 +38519,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21146}
+// {line: 29921}
 // push constant 0
 @0
 D=A
@@ -27833,7 +38527,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21153}
+// {line: 29928}
 // lt
 @Screen.drawLine.lt.5
 D=A
@@ -27842,14 +38536,14 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.5)
-// {line: 21158}
+// {line: 29933}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 21164}
+// {line: 29939}
 // push temp 1
 @6
 D=M
@@ -27857,7 +38551,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21170}
+// {line: 29945}
 // push temp 1
 @6
 D=M
@@ -27865,19 +38559,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21173}
+// {line: 29948}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 21178}
+// {line: 29953}
 // if-goto Screen.drawLine.if.5
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.5
 D;JNE
-// {line: 21187}
+// {line: 29962}
 // push argument 2
 @2
 D=A
@@ -27888,7 +38582,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21196}
+// {line: 29971}
 // push argument 3
 @3
 D=A
@@ -27899,7 +38593,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21205}
+// {line: 29980}
 // push argument 0
 @0
 D=A
@@ -27910,7 +38604,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21214}
+// {line: 29989}
 // push argument 1
 @1
 D=A
@@ -27921,7 +38615,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21227}
+// {line: 30002}
 // call Screen.drawLine nArgs: 4
 @4
 D=A
@@ -27936,14 +38630,14 @@ D=A
 @call
 0;JMP
 (Screen.drawLine.call.4)
-// {line: 21232}
+// {line: 30007}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 21238}
+// {line: 30013}
 // push constant 0
 @0
 D=A
@@ -27951,24 +38645,24 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21240}
+// {line: 30015}
 // return
 @return
 0;JMP
-// {line: 21241}
+// {line: 30016}
 (Screen.drawLine.if.5)
-// {line: 21246}
+// {line: 30021}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 21247}
+// {line: 30022}
 (Screen.drawLine.goto.2)
-// {line: 21248}
+// {line: 30023}
 (Screen.drawLine.while.2)
-// {line: 21257}
+// {line: 30032}
 // push local 2
 @2
 D=A
@@ -27979,7 +38673,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21266}
+// {line: 30041}
 // push local 0
 @0
 D=A
@@ -27990,7 +38684,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21273}
+// {line: 30048}
 // lt
 @Screen.drawLine.lt.6
 D=A
@@ -27999,7 +38693,7 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.6)
-// {line: 21282}
+// {line: 30057}
 // push local 2
 @2
 D=A
@@ -28010,7 +38704,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21291}
+// {line: 30066}
 // push local 0
 @0
 D=A
@@ -28021,7 +38715,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21298}
+// {line: 30073}
 // eq
 @Screen.drawLine.eq.4
 D=A
@@ -28030,14 +38724,14 @@ M=D
 @eq
 0;JMP
 (Screen.drawLine.eq.4)
-// {line: 21303}
+// {line: 30078}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 21312}
+// {line: 30087}
 // push local 3
 @3
 D=A
@@ -28048,7 +38742,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21321}
+// {line: 30096}
 // push local 1
 @1
 D=A
@@ -28059,7 +38753,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21328}
+// {line: 30103}
 // lt
 @Screen.drawLine.lt.7
 D=A
@@ -28068,7 +38762,7 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.7)
-// {line: 21337}
+// {line: 30112}
 // push local 3
 @3
 D=A
@@ -28079,7 +38773,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21346}
+// {line: 30121}
 // push local 1
 @1
 D=A
@@ -28090,7 +38784,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21353}
+// {line: 30128}
 // eq
 @Screen.drawLine.eq.5
 D=A
@@ -28099,33 +38793,33 @@ M=D
 @eq
 0;JMP
 (Screen.drawLine.eq.5)
-// {line: 21358}
+// {line: 30133}
 // or
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M|D
-// {line: 21363}
+// {line: 30138}
 // and
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M&D
-// {line: 21366}
+// {line: 30141}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 21371}
+// {line: 30146}
 // if-goto Screen.drawLine.while.3
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.while.3
 D;JNE
-// {line: 21380}
+// {line: 30155}
 // push argument 0
 @0
 D=A
@@ -28136,7 +38830,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21389}
+// {line: 30164}
 // push local 2
 @2
 D=A
@@ -28147,14 +38841,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21394}
+// {line: 30169}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21403}
+// {line: 30178}
 // push argument 1
 @1
 D=A
@@ -28165,7 +38859,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21412}
+// {line: 30187}
 // push local 3
 @3
 D=A
@@ -28176,14 +38870,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21417}
+// {line: 30192}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21430}
+// {line: 30205}
 // call Screen.drawPixel nArgs: 2
 @2
 D=A
@@ -28198,14 +38892,14 @@ D=A
 @call
 0;JMP
 (Screen.drawLine.call.5)
-// {line: 21435}
+// {line: 30210}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 21444}
+// {line: 30219}
 // push local 4
 @4
 D=A
@@ -28216,7 +38910,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21450}
+// {line: 30225}
 // push constant 0
 @0
 D=A
@@ -28224,7 +38918,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21457}
+// {line: 30232}
 // lt
 @Screen.drawLine.lt.8
 D=A
@@ -28233,14 +38927,14 @@ M=D
 @lt
 0;JMP
 (Screen.drawLine.lt.8)
-// {line: 21462}
+// {line: 30237}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 21468}
+// {line: 30243}
 // push temp 1
 @6
 D=M
@@ -28248,7 +38942,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21474}
+// {line: 30249}
 // push temp 1
 @6
 D=M
@@ -28256,19 +38950,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21477}
+// {line: 30252}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 21482}
+// {line: 30257}
 // if-goto Screen.drawLine.if.6
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.if.6
 D;JNE
-// {line: 21491}
+// {line: 30266}
 // push local 2
 @2
 D=A
@@ -28279,7 +38973,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21497}
+// {line: 30272}
 // push constant 1
 @1
 D=A
@@ -28287,14 +38981,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21502}
+// {line: 30277}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21510}
+// {line: 30285}
 // pop local 2
 @SP
 AM=M-1
@@ -28304,7 +38998,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 21519}
+// {line: 30294}
 // push local 4
 @4
 D=A
@@ -28315,7 +39009,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21528}
+// {line: 30303}
 // push local 1
 @1
 D=A
@@ -28326,14 +39020,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21533}
+// {line: 30308}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21543}
+// {line: 30318}
 // pop local 4
 @SP
 AM=M-1
@@ -28345,16 +39039,16 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 21544}
+// {line: 30319}
 (Screen.drawLine.if.6)
-// {line: 21549}
+// {line: 30324}
 // if-goto Screen.drawLine.goto.3
 @SP
 AM=M-1
 D=M
 @Screen.drawLine.goto.3
 D;JNE
-// {line: 21558}
+// {line: 30333}
 // push local 3
 @3
 D=A
@@ -28365,7 +39059,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21564}
+// {line: 30339}
 // push constant 1
 @1
 D=A
@@ -28373,14 +39067,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21569}
+// {line: 30344}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21578}
+// {line: 30353}
 // pop local 3
 @SP
 AM=M-1
@@ -28391,7 +39085,7 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 21587}
+// {line: 30362}
 // push local 4
 @4
 D=A
@@ -28402,7 +39096,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21596}
+// {line: 30371}
 // push local 0
 @0
 D=A
@@ -28413,14 +39107,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21601}
+// {line: 30376}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 21611}
+// {line: 30386}
 // pop local 4
 @SP
 AM=M-1
@@ -28432,24 +39126,24 @@ A=A+1
 A=A+1
 A=A+1
 M=D
-// {line: 21612}
+// {line: 30387}
 (Screen.drawLine.goto.3)
-// {line: 21614}
+// {line: 30389}
 // goto Screen.drawLine.while.2
 @Screen.drawLine.while.2
 0;JMP
-// {line: 21615}
+// {line: 30390}
 (Screen.drawLine.while.3)
-// {line: 21617}
+// {line: 30392}
 // return
 @return
 0;JMP
-// {line: 21618}
+// {line: 30393}
 // function Screen.drawRectangle nLocals: 0
 (Screen.drawRectangle)
-// {line: 21619}
+// {line: 30394}
 (Screen.drawRectangle.while.0)
-// {line: 21628}
+// {line: 30403}
 // push argument 1
 @1
 D=A
@@ -28460,7 +39154,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21634}
+// {line: 30409}
 // push constant 1
 @1
 D=A
@@ -28468,14 +39162,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21639}
+// {line: 30414}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 21648}
+// {line: 30423}
 // push argument 3
 @3
 D=A
@@ -28486,7 +39180,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21655}
+// {line: 30430}
 // lt
 @Screen.drawRectangle.lt.0
 D=A
@@ -28495,19 +39189,19 @@ M=D
 @lt
 0;JMP
 (Screen.drawRectangle.lt.0)
-// {line: 21658}
+// {line: 30433}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 21663}
+// {line: 30438}
 // if-goto Screen.drawRectangle.while.1
 @SP
 AM=M-1
 D=M
 @Screen.drawRectangle.while.1
 D;JNE
-// {line: 21672}
+// {line: 30447}
 // push argument 0
 @0
 D=A
@@ -28518,7 +39212,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21681}
+// {line: 30456}
 // push argument 2
 @2
 D=A
@@ -28529,7 +39223,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21690}
+// {line: 30465}
 // push argument 1
 @1
 D=A
@@ -28540,7 +39234,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21703}
+// {line: 30478}
 // call Screen.drawHoriz nArgs: 3
 @3
 D=A
@@ -28555,14 +39249,14 @@ D=A
 @call
 0;JMP
 (Screen.drawRectangle.call.0)
-// {line: 21708}
+// {line: 30483}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 21717}
+// {line: 30492}
 // push argument 1
 @1
 D=A
@@ -28573,7 +39267,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21723}
+// {line: 30498}
 // push constant 1
 @1
 D=A
@@ -28581,14 +39275,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21728}
+// {line: 30503}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21735}
+// {line: 30510}
 // pop argument 1
 @SP
 AM=M-1
@@ -28597,17 +39291,17 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 21737}
+// {line: 30512}
 // goto Screen.drawRectangle.while.0
 @Screen.drawRectangle.while.0
 0;JMP
-// {line: 21738}
+// {line: 30513}
 (Screen.drawRectangle.while.1)
-// {line: 21740}
+// {line: 30515}
 // return
 @return
 0;JMP
-// {line: 21749}
+// {line: 30524}
 // function Screen.drawCircle nLocals: 2
 (Screen.drawCircle)
 @SP
@@ -28618,7 +39312,7 @@ M=0
 AM=M+1
 A=A-1
 M=0
-// {line: 21758}
+// {line: 30533}
 // push argument 2
 @2
 D=A
@@ -28629,7 +39323,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21771}
+// {line: 30546}
 // call Math.abs nArgs: 1
 @1
 D=A
@@ -28644,7 +39338,7 @@ D=A
 @call
 0;JMP
 (Screen.drawCircle.call.0)
-// {line: 21779}
+// {line: 30554}
 // pop argument 2
 @SP
 AM=M-1
@@ -28654,7 +39348,7 @@ A=M
 A=A+1
 A=A+1
 M=D
-// {line: 21788}
+// {line: 30563}
 // push argument 2
 @2
 D=A
@@ -28665,12 +39359,12 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21791}
+// {line: 30566}
 // neg
 @SP
 A=M-1
 M=-M
-// {line: 21797}
+// {line: 30572}
 // pop local 0
 @SP
 AM=M-1
@@ -28678,9 +39372,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 21798}
+// {line: 30573}
 (Screen.drawCircle.while.0)
-// {line: 21807}
+// {line: 30582}
 // push local 0
 @0
 D=A
@@ -28691,7 +39385,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21813}
+// {line: 30588}
 // push constant 1
 @1
 D=A
@@ -28699,14 +39393,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 21818}
+// {line: 30593}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 21827}
+// {line: 30602}
 // push argument 2
 @2
 D=A
@@ -28717,7 +39411,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21834}
+// {line: 30609}
 // lt
 @Screen.drawCircle.lt.0
 D=A
@@ -28726,19 +39420,19 @@ M=D
 @lt
 0;JMP
 (Screen.drawCircle.lt.0)
-// {line: 21837}
+// {line: 30612}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 21842}
+// {line: 30617}
 // if-goto Screen.drawCircle.while.1
 @SP
 AM=M-1
 D=M
 @Screen.drawCircle.while.1
 D;JNE
-// {line: 21851}
+// {line: 30626}
 // push argument 2
 @2
 D=A
@@ -28749,7 +39443,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21860}
+// {line: 30635}
 // push argument 2
 @2
 D=A
@@ -28760,7 +39454,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21873}
+// {line: 30648}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -28775,7 +39469,7 @@ D=A
 @call
 0;JMP
 (Screen.drawCircle.call.1)
-// {line: 21882}
+// {line: 30657}
 // push local 0
 @0
 D=A
@@ -28786,7 +39480,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21891}
+// {line: 30666}
 // push local 0
 @0
 D=A
@@ -28797,7 +39491,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21904}
+// {line: 30679}
 // call Math.multiply nArgs: 2
 @2
 D=A
@@ -28812,14 +39506,14 @@ D=A
 @call
 0;JMP
 (Screen.drawCircle.call.2)
-// {line: 21909}
+// {line: 30684}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 21922}
+// {line: 30697}
 // call Math.sqrt nArgs: 1
 @1
 D=A
@@ -28834,7 +39528,7 @@ D=A
 @call
 0;JMP
 (Screen.drawCircle.call.3)
-// {line: 21929}
+// {line: 30704}
 // pop local 1
 @SP
 AM=M-1
@@ -28843,7 +39537,7 @@ D=M
 A=M
 A=A+1
 M=D
-// {line: 21938}
+// {line: 30713}
 // push argument 0
 @0
 D=A
@@ -28854,7 +39548,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21947}
+// {line: 30722}
 // push local 1
 @1
 D=A
@@ -28865,14 +39559,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21952}
+// {line: 30727}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 21961}
+// {line: 30736}
 // push argument 1
 @1
 D=A
@@ -28883,7 +39577,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21970}
+// {line: 30745}
 // push local 0
 @0
 D=A
@@ -28894,14 +39588,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21975}
+// {line: 30750}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 21984}
+// {line: 30759}
 // push argument 0
 @0
 D=A
@@ -28912,7 +39606,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21993}
+// {line: 30768}
 // push local 1
 @1
 D=A
@@ -28923,14 +39617,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 21998}
+// {line: 30773}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 22007}
+// {line: 30782}
 // push argument 1
 @1
 D=A
@@ -28941,7 +39635,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22016}
+// {line: 30791}
 // push local 0
 @0
 D=A
@@ -28952,14 +39646,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22021}
+// {line: 30796}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 22034}
+// {line: 30809}
 // call Screen.drawLine nArgs: 4
 @4
 D=A
@@ -28974,14 +39668,14 @@ D=A
 @call
 0;JMP
 (Screen.drawCircle.call.4)
-// {line: 22039}
+// {line: 30814}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22048}
+// {line: 30823}
 // push local 0
 @0
 D=A
@@ -28992,7 +39686,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22054}
+// {line: 30829}
 // push constant 1
 @1
 D=A
@@ -29000,14 +39694,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22059}
+// {line: 30834}
 // add
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M+D
-// {line: 22065}
+// {line: 30840}
 // pop local 0
 @SP
 AM=M-1
@@ -29015,20 +39709,20 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 22067}
+// {line: 30842}
 // goto Screen.drawCircle.while.0
 @Screen.drawCircle.while.0
 0;JMP
-// {line: 22068}
+// {line: 30843}
 (Screen.drawCircle.while.1)
-// {line: 22070}
+// {line: 30845}
 // return
 @return
 0;JMP
-// {line: 22071}
+// {line: 30846}
 // function Sys.init nLocals: 0
 (Sys.init)
-// {line: 22077}
+// {line: 30852}
 // push constant 0
 @0
 D=A
@@ -29036,7 +39730,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22090}
+// {line: 30865}
 // call Sys.setSplash nArgs: 1
 @1
 D=A
@@ -29051,14 +39745,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.0)
-// {line: 22095}
+// {line: 30870}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22108}
+// {line: 30883}
 // call Memory.init nArgs: 0
 @0
 D=A
@@ -29073,14 +39767,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.1)
-// {line: 22113}
+// {line: 30888}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22126}
+// {line: 30901}
 // call Screen.init nArgs: 0
 @0
 D=A
@@ -29095,14 +39789,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.2)
-// {line: 22131}
+// {line: 30906}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22144}
+// {line: 30919}
 // call Output.init nArgs: 0
 @0
 D=A
@@ -29117,14 +39811,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.3)
-// {line: 22149}
+// {line: 30924}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22162}
+// {line: 30937}
 // call Math.init nArgs: 0
 @0
 D=A
@@ -29139,14 +39833,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.4)
-// {line: 22167}
+// {line: 30942}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22180}
+// {line: 30955}
 // call Keyboard.init nArgs: 0
 @0
 D=A
@@ -29161,14 +39855,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.5)
-// {line: 22185}
+// {line: 30960}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22191}
+// {line: 30966}
 // push constant 60
 @60
 D=A
@@ -29176,7 +39870,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22204}
+// {line: 30979}
 // call Sys.setWaitRate nArgs: 1
 @1
 D=A
@@ -29191,14 +39885,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.6)
-// {line: 22209}
+// {line: 30984}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22215}
+// {line: 30990}
 // push static 12
 @Sys.static.12
 D=M
@@ -29206,14 +39900,14 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22220}
+// {line: 30995}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 22226}
+// {line: 31001}
 // push temp 1
 @6
 D=M
@@ -29221,7 +39915,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22232}
+// {line: 31007}
 // push temp 1
 @6
 D=M
@@ -29229,19 +39923,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22235}
+// {line: 31010}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 22240}
+// {line: 31015}
 // if-goto Sys.init.if.0
 @SP
 AM=M-1
 D=M
 @Sys.init.if.0
 D;JNE
-// {line: 22253}
+// {line: 31028}
 // call Sys.splash nArgs: 0
 @0
 D=A
@@ -29256,23 +39950,23 @@ D=A
 @call
 0;JMP
 (Sys.init.call.7)
-// {line: 22258}
+// {line: 31033}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22259}
+// {line: 31034}
 (Sys.init.if.0)
-// {line: 22264}
+// {line: 31039}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 22277}
+// {line: 31052}
 // call Main.main nArgs: 0
 @0
 D=A
@@ -29287,14 +39981,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.8)
-// {line: 22282}
+// {line: 31057}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22295}
+// {line: 31070}
 // call Sys.halt nArgs: 0
 @0
 D=A
@@ -29309,14 +40003,14 @@ D=A
 @call
 0;JMP
 (Sys.init.call.9)
-// {line: 22300}
+// {line: 31075}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22306}
+// {line: 31081}
 // push constant 0
 @0
 D=A
@@ -29324,14 +40018,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22308}
+// {line: 31083}
 // return
 @return
 0;JMP
-// {line: 22309}
+// {line: 31084}
 // function Sys.setSplash nLocals: 0
 (Sys.setSplash)
-// {line: 22318}
+// {line: 31093}
 // push argument 0
 @0
 D=A
@@ -29342,21 +40036,21 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22323}
+// {line: 31098}
 // pop static 12
 @SP
 AM=M-1
 D=M
 @Sys.static.12
 M=D
-// {line: 22325}
+// {line: 31100}
 // return
 @return
 0;JMP
-// {line: 22326}
+// {line: 31101}
 // function Sys.setWaitRate nLocals: 0
 (Sys.setWaitRate)
-// {line: 22335}
+// {line: 31110}
 // push argument 0
 @0
 D=A
@@ -29367,25 +40061,25 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22340}
+// {line: 31115}
 // pop static 11
 @SP
 AM=M-1
 D=M
 @Sys.static.11
 M=D
-// {line: 22342}
+// {line: 31117}
 // return
 @return
 0;JMP
-// {line: 22347}
+// {line: 31122}
 // function Sys.splash nLocals: 1
 (Sys.splash)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 22353}
+// {line: 31128}
 // push constant 3
 @3
 D=A
@@ -29393,7 +40087,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22359}
+// {line: 31134}
 // pop local 0
 @SP
 AM=M-1
@@ -29401,7 +40095,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 22365}
+// {line: 31140}
 // push constant 10
 @10
 D=A
@@ -29409,7 +40103,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22378}
+// {line: 31153}
 // call String.new nArgs: 1
 @1
 D=A
@@ -29424,7 +40118,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.0)
-// {line: 22384}
+// {line: 31159}
 // push constant 74
 @74
 D=A
@@ -29432,7 +40126,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22397}
+// {line: 31172}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29447,7 +40141,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.1)
-// {line: 22403}
+// {line: 31178}
 // push constant 97
 @97
 D=A
@@ -29455,7 +40149,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22416}
+// {line: 31191}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29470,7 +40164,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.2)
-// {line: 22422}
+// {line: 31197}
 // push constant 114
 @114
 D=A
@@ -29478,7 +40172,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22435}
+// {line: 31210}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29493,7 +40187,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.3)
-// {line: 22441}
+// {line: 31216}
 // push constant 118
 @118
 D=A
@@ -29501,7 +40195,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22454}
+// {line: 31229}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29516,7 +40210,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.4)
-// {line: 22460}
+// {line: 31235}
 // push constant 105
 @105
 D=A
@@ -29524,7 +40218,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22473}
+// {line: 31248}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29539,7 +40233,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.5)
-// {line: 22479}
+// {line: 31254}
 // push constant 115
 @115
 D=A
@@ -29547,7 +40241,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22492}
+// {line: 31267}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29562,7 +40256,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.6)
-// {line: 22498}
+// {line: 31273}
 // push constant 32
 @32
 D=A
@@ -29570,7 +40264,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22511}
+// {line: 31286}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29585,7 +40279,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.7)
-// {line: 22517}
+// {line: 31292}
 // push constant 49
 @49
 D=A
@@ -29593,7 +40287,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22530}
+// {line: 31305}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29608,7 +40302,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.8)
-// {line: 22536}
+// {line: 31311}
 // push constant 46
 @46
 D=A
@@ -29616,7 +40310,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22549}
+// {line: 31324}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29631,7 +40325,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.9)
-// {line: 22555}
+// {line: 31330}
 // push constant 48
 @48
 D=A
@@ -29639,7 +40333,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22568}
+// {line: 31343}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29654,7 +40348,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.10)
-// {line: 22581}
+// {line: 31356}
 // call Output.printString nArgs: 1
 @1
 D=A
@@ -29669,14 +40363,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.11)
-// {line: 22586}
+// {line: 31361}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22599}
+// {line: 31374}
 // call Output.println nArgs: 0
 @0
 D=A
@@ -29691,14 +40385,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.12)
-// {line: 22604}
+// {line: 31379}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22610}
+// {line: 31385}
 // push constant 700
 @700
 D=A
@@ -29706,7 +40400,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22623}
+// {line: 31398}
 // call Sys.wait nArgs: 1
 @1
 D=A
@@ -29721,14 +40415,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.13)
-// {line: 22628}
+// {line: 31403}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22634}
+// {line: 31409}
 // push constant 7
 @7
 D=A
@@ -29736,7 +40430,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22647}
+// {line: 31422}
 // call String.new nArgs: 1
 @1
 D=A
@@ -29751,7 +40445,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.14)
-// {line: 22653}
+// {line: 31428}
 // push constant 98
 @98
 D=A
@@ -29759,7 +40453,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22666}
+// {line: 31441}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29774,7 +40468,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.15)
-// {line: 22672}
+// {line: 31447}
 // push constant 111
 @111
 D=A
@@ -29782,7 +40476,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22685}
+// {line: 31460}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29797,7 +40491,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.16)
-// {line: 22691}
+// {line: 31466}
 // push constant 111
 @111
 D=A
@@ -29805,7 +40499,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22704}
+// {line: 31479}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29820,7 +40514,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.17)
-// {line: 22710}
+// {line: 31485}
 // push constant 116
 @116
 D=A
@@ -29828,7 +40522,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22723}
+// {line: 31498}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29843,7 +40537,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.18)
-// {line: 22729}
+// {line: 31504}
 // push constant 105
 @105
 D=A
@@ -29851,7 +40545,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22742}
+// {line: 31517}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29866,7 +40560,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.19)
-// {line: 22748}
+// {line: 31523}
 // push constant 110
 @110
 D=A
@@ -29874,7 +40568,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22761}
+// {line: 31536}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29889,7 +40583,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.20)
-// {line: 22767}
+// {line: 31542}
 // push constant 103
 @103
 D=A
@@ -29897,7 +40591,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22780}
+// {line: 31555}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -29912,7 +40606,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.21)
-// {line: 22793}
+// {line: 31568}
 // call Output.printString nArgs: 1
 @1
 D=A
@@ -29927,16 +40621,16 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.22)
-// {line: 22798}
+// {line: 31573}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22799}
+// {line: 31574}
 (Sys.splash.while.0)
-// {line: 22808}
+// {line: 31583}
 // push local 0
 @0
 D=A
@@ -29947,7 +40641,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22814}
+// {line: 31589}
 // push constant 0
 @0
 D=A
@@ -29955,7 +40649,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22821}
+// {line: 31596}
 // gt
 @Sys.splash.gt.0
 D=A
@@ -29964,19 +40658,19 @@ M=D
 @gt
 0;JMP
 (Sys.splash.gt.0)
-// {line: 22824}
+// {line: 31599}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 22829}
+// {line: 31604}
 // if-goto Sys.splash.while.1
 @SP
 AM=M-1
 D=M
 @Sys.splash.while.1
 D;JNE
-// {line: 22835}
+// {line: 31610}
 // push constant 600
 @600
 D=A
@@ -29984,7 +40678,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22848}
+// {line: 31623}
 // call Sys.wait nArgs: 1
 @1
 D=A
@@ -29999,14 +40693,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.23)
-// {line: 22853}
+// {line: 31628}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22859}
+// {line: 31634}
 // push constant 1
 @1
 D=A
@@ -30014,7 +40708,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22872}
+// {line: 31647}
 // call String.new nArgs: 1
 @1
 D=A
@@ -30029,7 +40723,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.24)
-// {line: 22878}
+// {line: 31653}
 // push constant 46
 @46
 D=A
@@ -30037,7 +40731,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22891}
+// {line: 31666}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -30052,7 +40746,7 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.25)
-// {line: 22904}
+// {line: 31679}
 // call Output.printString nArgs: 1
 @1
 D=A
@@ -30067,14 +40761,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.26)
-// {line: 22909}
+// {line: 31684}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22918}
+// {line: 31693}
 // push local 0
 @0
 D=A
@@ -30085,7 +40779,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 22924}
+// {line: 31699}
 // push constant 1
 @1
 D=A
@@ -30093,14 +40787,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22929}
+// {line: 31704}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 22935}
+// {line: 31710}
 // pop local 0
 @SP
 AM=M-1
@@ -30108,13 +40802,13 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 22937}
+// {line: 31712}
 // goto Sys.splash.while.0
 @Sys.splash.while.0
 0;JMP
-// {line: 22938}
+// {line: 31713}
 (Sys.splash.while.1)
-// {line: 22944}
+// {line: 31719}
 // push constant 1500
 @1500
 D=A
@@ -30122,7 +40816,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22957}
+// {line: 31732}
 // call Sys.wait nArgs: 1
 @1
 D=A
@@ -30137,14 +40831,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.27)
-// {line: 22962}
+// {line: 31737}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22975}
+// {line: 31750}
 // call Screen.clearScreen nArgs: 0
 @0
 D=A
@@ -30159,14 +40853,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.28)
-// {line: 22980}
+// {line: 31755}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 22986}
+// {line: 31761}
 // push constant 1000
 @1000
 D=A
@@ -30174,7 +40868,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 22999}
+// {line: 31774}
 // call Sys.wait nArgs: 1
 @1
 D=A
@@ -30189,14 +40883,14 @@ D=A
 @call
 0;JMP
 (Sys.splash.call.29)
-// {line: 23004}
+// {line: 31779}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 23010}
+// {line: 31785}
 // push constant 0
 @0
 D=A
@@ -30204,16 +40898,16 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23012}
+// {line: 31787}
 // return
 @return
 0;JMP
-// {line: 23013}
+// {line: 31788}
 // function Sys.halt nLocals: 0
 (Sys.halt)
-// {line: 23014}
+// {line: 31789}
 (Sys.halt.while.0)
-// {line: 23020}
+// {line: 31795}
 // push constant 0
 @0
 D=A
@@ -30221,30 +40915,30 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23023}
+// {line: 31798}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 23026}
+// {line: 31801}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 23031}
+// {line: 31806}
 // if-goto Sys.halt.while.1
 @SP
 AM=M-1
 D=M
 @Sys.halt.while.1
 D;JNE
-// {line: 23033}
+// {line: 31808}
 // goto Sys.halt.while.0
 @Sys.halt.while.0
 0;JMP
-// {line: 23034}
+// {line: 31809}
 (Sys.halt.while.1)
-// {line: 23040}
+// {line: 31815}
 // push constant 0
 @0
 D=A
@@ -30252,18 +40946,18 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23042}
+// {line: 31817}
 // return
 @return
 0;JMP
-// {line: 23047}
+// {line: 31822}
 // function Sys.wait nLocals: 1
 (Sys.wait)
 @SP
 AM=M+1
 A=A-1
 M=0
-// {line: 23056}
+// {line: 31831}
 // push argument 0
 @0
 D=A
@@ -30274,7 +40968,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23062}
+// {line: 31837}
 // push constant 0
 @0
 D=A
@@ -30282,7 +40976,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23069}
+// {line: 31844}
 // lt
 @Sys.wait.lt.0
 D=A
@@ -30291,14 +40985,14 @@ M=D
 @lt
 0;JMP
 (Sys.wait.lt.0)
-// {line: 23074}
+// {line: 31849}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 23080}
+// {line: 31855}
 // push temp 1
 @6
 D=M
@@ -30306,7 +41000,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23086}
+// {line: 31861}
 // push temp 1
 @6
 D=M
@@ -30314,19 +41008,19 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23089}
+// {line: 31864}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 23094}
+// {line: 31869}
 // if-goto Sys.wait.if.0
 @SP
 AM=M-1
 D=M
 @Sys.wait.if.0
 D;JNE
-// {line: 23100}
+// {line: 31875}
 // push constant 1
 @1
 D=A
@@ -30334,7 +41028,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23113}
+// {line: 31888}
 // call Sys.error nArgs: 1
 @1
 D=A
@@ -30349,23 +41043,23 @@ D=A
 @call
 0;JMP
 (Sys.wait.call.0)
-// {line: 23118}
+// {line: 31893}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 23119}
+// {line: 31894}
 (Sys.wait.if.0)
-// {line: 23124}
+// {line: 31899}
 // pop temp 1
 @SP
 AM=M-1
 D=M
 @R6
 M=D
-// {line: 23130}
+// {line: 31905}
 // push static 11
 @Sys.static.11
 D=M
@@ -30373,7 +41067,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23136}
+// {line: 31911}
 // pop local 0
 @SP
 AM=M-1
@@ -30381,9 +41075,9 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 23137}
+// {line: 31912}
 (Sys.wait.while.0)
-// {line: 23146}
+// {line: 31921}
 // push argument 0
 @0
 D=A
@@ -30394,7 +41088,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23152}
+// {line: 31927}
 // push constant 0
 @0
 D=A
@@ -30402,7 +41096,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23159}
+// {line: 31934}
 // gt
 @Sys.wait.gt.0
 D=A
@@ -30411,21 +41105,21 @@ M=D
 @gt
 0;JMP
 (Sys.wait.gt.0)
-// {line: 23162}
+// {line: 31937}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 23167}
+// {line: 31942}
 // if-goto Sys.wait.while.1
 @SP
 AM=M-1
 D=M
 @Sys.wait.while.1
 D;JNE
-// {line: 23168}
+// {line: 31943}
 (Sys.wait.while.2)
-// {line: 23177}
+// {line: 31952}
 // push local 0
 @0
 D=A
@@ -30436,7 +41130,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23183}
+// {line: 31958}
 // push constant 0
 @0
 D=A
@@ -30444,7 +41138,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23190}
+// {line: 31965}
 // gt
 @Sys.wait.gt.1
 D=A
@@ -30453,19 +41147,19 @@ M=D
 @gt
 0;JMP
 (Sys.wait.gt.1)
-// {line: 23193}
+// {line: 31968}
 // not
 @SP
 A=M-1
 M=!M
-// {line: 23198}
+// {line: 31973}
 // if-goto Sys.wait.while.3
 @SP
 AM=M-1
 D=M
 @Sys.wait.while.3
 D;JNE
-// {line: 23207}
+// {line: 31982}
 // push local 0
 @0
 D=A
@@ -30476,7 +41170,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23213}
+// {line: 31988}
 // push constant 1
 @1
 D=A
@@ -30484,14 +41178,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23218}
+// {line: 31993}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 23224}
+// {line: 31999}
 // pop local 0
 @SP
 AM=M-1
@@ -30499,13 +41193,13 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 23226}
+// {line: 32001}
 // goto Sys.wait.while.2
 @Sys.wait.while.2
 0;JMP
-// {line: 23227}
+// {line: 32002}
 (Sys.wait.while.3)
-// {line: 23233}
+// {line: 32008}
 // push static 11
 @Sys.static.11
 D=M
@@ -30513,7 +41207,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23239}
+// {line: 32014}
 // pop local 0
 @SP
 AM=M-1
@@ -30521,7 +41215,7 @@ D=M
 @LCL
 A=M
 M=D
-// {line: 23248}
+// {line: 32023}
 // push argument 0
 @0
 D=A
@@ -30532,7 +41226,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23254}
+// {line: 32029}
 // push constant 1
 @1
 D=A
@@ -30540,14 +41234,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23259}
+// {line: 32034}
 // sub
 @SP
 AM=M-1
 D=M
 A=A-1
 M=M-D
-// {line: 23265}
+// {line: 32040}
 // pop argument 0
 @SP
 AM=M-1
@@ -30555,13 +41249,13 @@ D=M
 @ARG
 A=M
 M=D
-// {line: 23267}
+// {line: 32042}
 // goto Sys.wait.while.0
 @Sys.wait.while.0
 0;JMP
-// {line: 23268}
+// {line: 32043}
 (Sys.wait.while.1)
-// {line: 23274}
+// {line: 32049}
 // push constant 0
 @0
 D=A
@@ -30569,14 +41263,14 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23276}
+// {line: 32051}
 // return
 @return
 0;JMP
-// {line: 23277}
+// {line: 32052}
 // function Sys.error nLocals: 0
 (Sys.error)
-// {line: 23290}
+// {line: 32065}
 // call Output.println nArgs: 0
 @0
 D=A
@@ -30591,14 +41285,14 @@ D=A
 @call
 0;JMP
 (Sys.error.call.0)
-// {line: 23295}
+// {line: 32070}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 23301}
+// {line: 32076}
 // push constant 3
 @3
 D=A
@@ -30606,7 +41300,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23314}
+// {line: 32089}
 // call String.new nArgs: 1
 @1
 D=A
@@ -30621,7 +41315,7 @@ D=A
 @call
 0;JMP
 (Sys.error.call.1)
-// {line: 23320}
+// {line: 32095}
 // push constant 69
 @69
 D=A
@@ -30629,7 +41323,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23333}
+// {line: 32108}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -30644,7 +41338,7 @@ D=A
 @call
 0;JMP
 (Sys.error.call.2)
-// {line: 23339}
+// {line: 32114}
 // push constant 82
 @82
 D=A
@@ -30652,7 +41346,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23352}
+// {line: 32127}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -30667,7 +41361,7 @@ D=A
 @call
 0;JMP
 (Sys.error.call.3)
-// {line: 23358}
+// {line: 32133}
 // push constant 82
 @82
 D=A
@@ -30675,7 +41369,7 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23371}
+// {line: 32146}
 // call String.appendChar nArgs: 2
 @2
 D=A
@@ -30690,7 +41384,7 @@ D=A
 @call
 0;JMP
 (Sys.error.call.4)
-// {line: 23384}
+// {line: 32159}
 // call Output.printString nArgs: 1
 @1
 D=A
@@ -30705,14 +41399,14 @@ D=A
 @call
 0;JMP
 (Sys.error.call.5)
-// {line: 23389}
+// {line: 32164}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 23398}
+// {line: 32173}
 // push argument 0
 @0
 D=A
@@ -30723,7 +41417,7 @@ D=M
 M=M+1
 A=M-1
 M=D
-// {line: 23411}
+// {line: 32186}
 // call Output.printInt nArgs: 1
 @1
 D=A
@@ -30738,14 +41432,14 @@ D=A
 @call
 0;JMP
 (Sys.error.call.6)
-// {line: 23416}
+// {line: 32191}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 23429}
+// {line: 32204}
 // call Sys.halt nArgs: 0
 @0
 D=A
@@ -30760,14 +41454,14 @@ D=A
 @call
 0;JMP
 (Sys.error.call.7)
-// {line: 23434}
+// {line: 32209}
 // pop temp 0
 @SP
 AM=M-1
 D=M
 @R5
 M=D
-// {line: 23440}
+// {line: 32215}
 // push constant 0
 @0
 D=A
@@ -30775,42 +41469,1018 @@ D=A
 M=M+1
 A=M-1
 M=D
-// {line: 23442}
+// {line: 32217}
 // return
 @return
 0;JMP
-// {line: 23443}
+// {line: 32218}
 // function Keyboard.init nLocals: 0
 (Keyboard.init)
-// {line: 23445}
+// {line: 32224}
+// push constant 24576
+@24576
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32229}
+// pop static 13
+@SP
+AM=M-1
+D=M
+@Keyboard.static.13
+M=D
+// {line: 32231}
 // return
 @return
 0;JMP
-// {line: 23446}
+// {line: 32232}
 // function Keyboard.keyPressed nLocals: 0
 (Keyboard.keyPressed)
-// {line: 23448}
+// {line: 32238}
+// push pointer 1
+@4
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32244}
+// push static 13
+@Keyboard.static.13
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32250}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32255}
+// add
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M+D
+// {line: 32260}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 32269}
+// push that 0
+@0
+D=A
+@THAT
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32274}
+// pop temp 2
+@SP
+AM=M-1
+D=M
+@R7
+M=D
+// {line: 32279}
+// pop pointer 1
+@SP
+AM=M-1
+D=M
+@THAT
+M=D
+// {line: 32285}
+// push temp 2
+@7
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32287}
 // return
 @return
 0;JMP
-// {line: 23449}
-// function Keyboard.readChar nLocals: 0
+// {line: 32292}
+// function Keyboard.readChar nLocals: 1
 (Keyboard.readChar)
-// {line: 23451}
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 32298}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32304}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 32305}
+(Keyboard.readChar.while.0)
+// {line: 32314}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32320}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32327}
+// eq
+@Keyboard.readChar.eq.0
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Keyboard.readChar.eq.0)
+// {line: 32330}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32335}
+// if-goto Keyboard.readChar.while.1
+@SP
+AM=M-1
+D=M
+@Keyboard.readChar.while.1
+D;JNE
+// {line: 32348}
+// call Keyboard.keyPressed nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Keyboard.keyPressed
+D=A
+@R15
+M=D
+@Keyboard.readChar.call.0
+D=A
+@call
+0;JMP
+(Keyboard.readChar.call.0)
+// {line: 32354}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 32356}
+// goto Keyboard.readChar.while.0
+@Keyboard.readChar.while.0
+0;JMP
+// {line: 32357}
+(Keyboard.readChar.while.1)
+// {line: 32366}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32379}
+// call String.backSpace nArgs: 0
+@0
+D=A
+@R14
+M=D
+@String.backSpace
+D=A
+@R15
+M=D
+@Keyboard.readChar.call.1
+D=A
+@call
+0;JMP
+(Keyboard.readChar.call.1)
+// {line: 32386}
+// eq
+@Keyboard.readChar.eq.1
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Keyboard.readChar.eq.1)
+// {line: 32395}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32408}
+// call String.newLine nArgs: 0
+@0
+D=A
+@R14
+M=D
+@String.newLine
+D=A
+@R15
+M=D
+@Keyboard.readChar.call.2
+D=A
+@call
+0;JMP
+(Keyboard.readChar.call.2)
+// {line: 32415}
+// eq
+@Keyboard.readChar.eq.2
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Keyboard.readChar.eq.2)
+// {line: 32420}
+// or
+@SP
+AM=M-1
+D=M
+A=A-1
+M=M|D
+// {line: 32423}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32428}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32434}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32440}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32443}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32448}
+// if-goto Keyboard.readChar.if.0
+@SP
+AM=M-1
+D=M
+@Keyboard.readChar.if.0
+D;JNE
+// {line: 32457}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32470}
+// call Output.printChar nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printChar
+D=A
+@R15
+M=D
+@Keyboard.readChar.call.3
+D=A
+@call
+0;JMP
+(Keyboard.readChar.call.3)
+// {line: 32475}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 32476}
+(Keyboard.readChar.if.0)
+// {line: 32481}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32487}
+// push constant 115
+@115
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32500}
+// call Sys.wait nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Sys.wait
+D=A
+@R15
+M=D
+@Keyboard.readChar.call.4
+D=A
+@call
+0;JMP
+(Keyboard.readChar.call.4)
+// {line: 32505}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 32514}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32516}
 // return
 @return
 0;JMP
-// {line: 23452}
-// function Keyboard.readLine nLocals: 0
+// {line: 32525}
+// function Keyboard.readLine nLocals: 2
 (Keyboard.readLine)
-// {line: 23454}
+@SP
+AM=M+1
+A=A-1
+M=0
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 32531}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32538}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 32544}
+// push constant 1
+@1
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32557}
+// call String.new nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.new
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.0
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.0)
+// {line: 32563}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 32572}
+// push argument 0
+@0
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32585}
+// call Output.printString nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Output.printString
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.1
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.1)
+// {line: 32590}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 32591}
+(Keyboard.readLine.while.0)
+// {line: 32600}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32613}
+// call String.newLine nArgs: 0
+@0
+D=A
+@R14
+M=D
+@String.newLine
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.2
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.2)
+// {line: 32620}
+// eq
+@Keyboard.readLine.eq.0
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Keyboard.readLine.eq.0)
+// {line: 32623}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32626}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32631}
+// if-goto Keyboard.readLine.while.1
+@SP
+AM=M-1
+D=M
+@Keyboard.readLine.while.1
+D;JNE
+// {line: 32644}
+// call Keyboard.readChar nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Keyboard.readChar
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.3
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.3)
+// {line: 32651}
+// pop local 1
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+A=A+1
+M=D
+// {line: 32660}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32673}
+// call String.backSpace nArgs: 0
+@0
+D=A
+@R14
+M=D
+@String.backSpace
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.4
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.4)
+// {line: 32680}
+// eq
+@Keyboard.readLine.eq.1
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Keyboard.readLine.eq.1)
+// {line: 32685}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32691}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32697}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32700}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32705}
+// if-goto Keyboard.readLine.if.0
+@SP
+AM=M-1
+D=M
+@Keyboard.readLine.if.0
+D;JNE
+// {line: 32714}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32727}
+// call String.length nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.length
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.5
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.5)
+// {line: 32733}
+// push constant 0
+@0
+D=A
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32740}
+// gt
+@Keyboard.readLine.gt.0
+D=A
+@R14
+M=D
+@gt
+0;JMP
+(Keyboard.readLine.gt.0)
+// {line: 32745}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32751}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32757}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32760}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32765}
+// if-goto Keyboard.readLine.if.1
+@SP
+AM=M-1
+D=M
+@Keyboard.readLine.if.1
+D;JNE
+// {line: 32778}
+// call Output.backSpace nArgs: 0
+@0
+D=A
+@R14
+M=D
+@Output.backSpace
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.6
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.6)
+// {line: 32783}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 32792}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32805}
+// call String.eraseLastChar nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.eraseLastChar
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.7
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.7)
+// {line: 32810}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 32811}
+(Keyboard.readLine.if.1)
+// {line: 32816}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32817}
+(Keyboard.readLine.if.0)
+// {line: 32822}
+// if-goto Keyboard.readLine.goto.0
+@SP
+AM=M-1
+D=M
+@Keyboard.readLine.goto.0
+D;JNE
+// {line: 32831}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32844}
+// call String.newLine nArgs: 0
+@0
+D=A
+@R14
+M=D
+@String.newLine
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.8
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.8)
+// {line: 32851}
+// eq
+@Keyboard.readLine.eq.2
+D=A
+@R14
+M=D
+@eq
+0;JMP
+(Keyboard.readLine.eq.2)
+// {line: 32854}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32859}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32865}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32871}
+// push temp 1
+@6
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32874}
+// not
+@SP
+A=M-1
+M=!M
+// {line: 32879}
+// if-goto Keyboard.readLine.if.2
+@SP
+AM=M-1
+D=M
+@Keyboard.readLine.if.2
+D;JNE
+// {line: 32888}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32897}
+// push local 1
+@1
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32910}
+// call String.appendChar nArgs: 2
+@2
+D=A
+@R14
+M=D
+@String.appendChar
+D=A
+@R15
+M=D
+@Keyboard.readLine.call.9
+D=A
+@call
+0;JMP
+(Keyboard.readLine.call.9)
+// {line: 32915}
+// pop temp 0
+@SP
+AM=M-1
+D=M
+@R5
+M=D
+// {line: 32916}
+(Keyboard.readLine.if.2)
+// {line: 32921}
+// pop temp 1
+@SP
+AM=M-1
+D=M
+@R6
+M=D
+// {line: 32922}
+(Keyboard.readLine.goto.0)
+// {line: 32924}
+// goto Keyboard.readLine.while.0
+@Keyboard.readLine.while.0
+0;JMP
+// {line: 32925}
+(Keyboard.readLine.while.1)
+// {line: 32934}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32936}
 // return
 @return
 0;JMP
-// {line: 23455}
-// function Keyboard.readInt nLocals: 0
+// {line: 32941}
+// function Keyboard.readInt nLocals: 1
 (Keyboard.readInt)
-// {line: 23457}
+@SP
+AM=M+1
+A=A-1
+M=0
+// {line: 32950}
+// push argument 0
+@0
+D=A
+@ARG
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32963}
+// call Keyboard.readLine nArgs: 1
+@1
+D=A
+@R14
+M=D
+@Keyboard.readLine
+D=A
+@R15
+M=D
+@Keyboard.readInt.call.0
+D=A
+@call
+0;JMP
+(Keyboard.readInt.call.0)
+// {line: 32969}
+// pop local 0
+@SP
+AM=M-1
+D=M
+@LCL
+A=M
+M=D
+// {line: 32978}
+// push local 0
+@0
+D=A
+@LCL
+A=M+D
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+// {line: 32991}
+// call String.intValue nArgs: 1
+@1
+D=A
+@R14
+M=D
+@String.intValue
+D=A
+@R15
+M=D
+@Keyboard.readInt.call.1
+D=A
+@call
+0;JMP
+(Keyboard.readInt.call.1)
+// {line: 32993}
 // return
 @return
 0;JMP

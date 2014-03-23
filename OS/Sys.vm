@@ -214,3 +214,8 @@ call Sys.halt 0
 pop temp 0
 push constant 0
 return
+
+//
+function Sys.breakpoint 0
+//
+return

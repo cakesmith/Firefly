@@ -32,7 +32,7 @@ class Output {
         // black square (used for non printable characters)
         do Output.create(0,63,63,63,63,63,63,63,63,63,0,0);
 
-        // Assigns the bitmap for each character in the charachter set.
+        // Assigns the bitmap for each character in the character set.
         do Output.create(32,0,0,0,0,0,0,0,0,0,0,0);          //
         do Output.create(33,12,30,30,30,12,12,0,12,12,0,0);  // !
         do Output.create(34,54,54,20,0,0,0,0,0,0,0,0);       // "
@@ -181,6 +181,18 @@ class Output {
             let cursorX = j
             do Output._print(32)
         }
+    }
+    
+    /**
+     * Prints the location of the cursor to the screen
+     */
+    
+    
+    function void printLoc() {
+        do Output.printString("X: ")
+        do Output.printInt(cursorX)
+        do Output.printString(" Y: ")
+        do Output.printInt(cursorY)
     }
 
     /** Prints c at the cursor location and advances the cursor one

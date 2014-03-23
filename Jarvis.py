@@ -377,6 +377,9 @@ class StoppableThread(threading.Thread):
     def stopped(self):
         return self._stopflag.isSet()
 
+
+
+
 class IO:
     
     def __init__(self, thread):
@@ -484,6 +487,8 @@ class IO:
                 self.drawPoint(x+i, y, "black")
                 
                 
+
+
 
 
 class CPU:

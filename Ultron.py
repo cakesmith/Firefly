@@ -286,7 +286,7 @@ class ExpressionEvaluator:
                 value = self.nexttok.value
                 line = self.loctoline(self.nexttok.loc)
             else:
-                raise Exception("Unexpected token on line %d" % self.loctoline(self.tok.loc))
+                raise Exception("Unexpected End of File on line %d" % self.loctoline(self.tok.loc))
 
                 
             if Token.value:

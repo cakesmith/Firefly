@@ -134,4 +134,11 @@ class Sys {
         do Sys.halt()
         return
     }
+    
+    /**
+     * Empty function to be used for injecting breakpoints
+     */
+     
+    function void breakpoint() {}
+
 }

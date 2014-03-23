@@ -343,46 +343,11 @@ class VMTranslator:
             
             code = process(vmc)
             
-            #~ try:
-                #~ nextcommand = commands[0]
-            #~ except IndexError:
-                #~ pass
-                #~ 
-            #~ if nextcommand:
-                #~ if vmc.command == "push" and nextcommand.command == "pop":
-                    #~ code = self.move(vmc, nextcommand)
-                    #~ # gobble up the next command
-                    #~ next(commands)
-#~ 
-                #~ 
-                #~ else:
-                    #~ code = process(vmc)
-                #~ 
-                #~ 
-                #~ 
-            #~ else:
-                #~ code = process(vmc)
-            
-            #~ 
-            # quick and dirty
-            
-            if isinstance(code, str):
-                if not code.startswith("//"):
-                    self.countlines += 1
-            else:
-                for i in flatten(code):
-                    if not i.startswith("//"):
-                        self.countlines += 1
-            
-            
-            
             # iterable strings *grumble*
             
             if isinstance(code, str):
-                yield "// {line: " + str(self.countlines) + "}"
                 yield code
             else:
-                yield "// {line: " + str(self.countlines) + "}"
 
                 for y in code:
                     yield y

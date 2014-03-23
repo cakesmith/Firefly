@@ -16,10 +16,10 @@ class Memory {
         // 16383 reserved for Memory.alloc(0) requests
         let zeroBlock = 16383
         
-        let freeList = heapStart
+        let freeList = heapStart + 1
         
-        do Memory.poke(heapStart,(heapEnd-heapStart) - 1)
-        do Memory.poke(heapStart + 1, 0)
+        do Memory.poke(freeList - 1,(heapEnd-heapStart) - 1)    // Set initial free size
+        do Memory.poke(freeList, 0)                     // Initialize free pointer
         
     }
 
@@ -61,7 +61,7 @@ class Memory {
         
         while !(block = null) {
             
-            let blockSize = Memory.peek(block)
+            let blockSize = Memory.peek(block - 1)
             
             if  blockSize = size {
                 // consume the whole block
@@ -70,7 +70,7 @@ class Memory {
                 // last block's next address to the next
                 // block in the chain
                 
-                do Memory.poke(lastBlock + 1, block + 1)
+                do Memory.poke(lastBlock, block)
                 
                 return block
                 
@@ -78,17 +78,17 @@ class Memory {
             } else {
                 if blockSize > size {
                     // determine the starting point of the new block
-                    let blockSlice = (block + blockSize + 1) - size
+                    let blockSlice = (block + blockSize) - size - 1
                     
                     // set the new block's size
-                    do Memory.poke(blockSlice, size)
+                    do Memory.poke(blockSlice - 1, size)
                     
                     // reset this block's size
-                    do Memory.poke(block, (blockSize - size) - 1)
+                    do Memory.poke(block - 1, (blockSize - size)-1)
                     
-                    // return the slice (adjusted for the embedded size data)
+                    // return the slice
                     
-                    return blockSlice + 1
+                    return blockSlice
                     
                 }
             }
@@ -128,10 +128,10 @@ class Memory {
         let myAddress = object
         
         // First, set this block to point to the next block
-        do Memory.poke(object, Memory.peek(freeList + 1))
+        do Memory.poke(object, Memory.peek(freeList))
         
         // Then set the freelist pointer to point to this block
-        do Memory.poke(freeList + 1, myAddress)
+        do Memory.poke(freeList, myAddress)
         
         
         
@@ -145,4 +145,36 @@ class Memory {
             return false
         }
     }
+    
+    
+    function void report() {
+        var int block, blocks
+        
+        
+        do Output.printString("Free Memory report")
+        do Output.println()
+        
+        let block = freeList
+        let blocks = 1
+        
+        do Sys.breakpoint()
+        
+        while !(block = null) {
+            do Output.printString("Block size: ")
+            do Output.printInt(Memory.peek(block - 1))
+            
+            let block = Memory.peek(block)
+            do Output.printString(" Next Block: ")
+            do Output.printInt(block)
+            do Output.println()
+            
+            let blocks = blocks + 1
+        }
+        
+        do Output.printString("Total number of free blocks: ")
+        do Output.printInt(blocks)
+        
+    }
+        
+        
 }
