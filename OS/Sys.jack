@@ -10,10 +10,12 @@ class Sys {
     
     /** Performs all the initializations required by the OS. */
     function void init() {
-        // Do not assign any variables from within sys.init
+
+        // *** WARNING ***
+        // *** Do not assign any variables from within sys.init ***
         
         // show splash screen?
-        do Sys.setSplash(false)
+        do Sys.setSplash(true)
         
         
         // Do initialization routines first.

@@ -675,10 +675,13 @@ class CPU:
 
 t = []
 
-inputfile = "OS/OS.asm"
+#~  Uncomment this line to play a very slow version of pong
+inputfile = "Pong.asm"
 
-#~ inputfile = "projects/11/Average/Average.asm"
-#~ inputfile = "projects/06/pong/Pong.asm"
+#~ inputfile = "OS/OS.asm"
+
+
+
 
 for i in open(inputfile).readlines():
     t.append(i)
