@@ -7,7 +7,9 @@ Firefly
 ### On Debian Linux derivatives:
 ```sh
 sudo apt-get install python3 python3tk
+python3 Jarvis.py
 ```
+
 
 - `Ultron.py` is the high level language compiler (High level language -> VM intermediate format).
 - `VirtualMachine.py` is the virtual machine translator (VM commands -> Assembly commands).
