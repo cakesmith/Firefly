@@ -63,7 +63,7 @@ def clean(line):
 
     line = line.split("//")[0].strip()
 
-    if len(line) is 0 or line.isspace():
+    if len(line) == 0 or line.isspace():
         return None
     else:
         return line
@@ -411,6 +411,8 @@ class IO:
         system("xset r off")
         self.screen.protocol("WM_DELETE_WINDOW", self.delete_callback)
 
+        self.cache = [['0' for i in range(256)] for j in range(512)]
+
     def delete_callback(self):
         system("xset r on")
         self.mythread.stop()
@@ -482,9 +484,13 @@ class IO:
         
         for i in range(0, 16):
             if memword[15-i] == '1':
-                self.drawPoint(x+i, y, "green")
+                if(self.cache[x+i][y] != '1')
+                    self.drawPoint(x+i, y, "green")
+                    self.cache[x+i][y] = '1'
             else:
-                self.drawPoint(x+i, y, "black")
+                if(self.cache[x.i][y] != '0')
+                    self.drawPoint(x+i, y, "black")
+                    self.cache[x+i][y] = '0'
                 
                 
 
@@ -680,7 +686,7 @@ inputfile = "Pong.asm"
 
 #~ inputfile = "OS/OS.asm"
 
-
+print("Starting up...")
 
 
 for i in open(inputfile).readlines():

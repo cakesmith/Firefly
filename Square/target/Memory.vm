@@ -1,0 +1,436 @@
+//
+function Memory.init 1
+//
+push constant 2048
+pop static 0
+push constant 16382
+pop static 1
+push constant 16383
+pop static 3
+push static 0
+push constant 1
+add
+pop static 2
+push static 2
+push constant 1
+sub
+push static 1
+push static 0
+sub
+push constant 1
+sub
+call Memory.poke 2
+pop temp 0
+push static 2
+push constant 0
+call Memory.poke 2
+pop temp 0
+return
+
+//
+function Memory.peek 1
+//
+push constant 0
+pop local 0
+push pointer 1
+push local 0
+push argument 0
+add
+pop pointer 1
+push that 0
+pop temp 2
+pop pointer 1
+push temp 2
+return
+
+//
+function Memory.poke 1
+//
+push constant 0
+pop local 0
+push local 0
+push argument 0
+add
+pop pointer 1
+push argument 1
+pop that 0
+return
+
+//
+function Memory.alloc 5
+//
+push argument 0
+push constant 0
+lt
+push argument 0
+push constant 0
+eq
+or
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Memory.alloc.if.0
+push static 3
+return
+label Memory.alloc.if.0
+pop temp 1
+push static 2
+pop local 1
+push local 1
+pop local 0
+push constant 1
+pop local 4
+label Memory.alloc.while.0
+push local 1
+push constant 0
+eq
+not
+not
+if-goto Memory.alloc.while.1
+push local 1
+push constant 1
+sub
+call Memory.peek 1
+pop local 2
+push local 2
+push argument 0
+eq
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Memory.alloc.if.1
+push local 0
+push local 1
+call Memory.poke 2
+pop temp 0
+push local 1
+return
+label Memory.alloc.if.1
+if-goto Memory.alloc.goto.0
+push local 2
+push argument 0
+gt
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Memory.alloc.if.2
+push local 1
+push local 2
+add
+push argument 0
+sub
+push constant 1
+sub
+pop local 3
+push local 3
+push constant 1
+sub
+push argument 0
+call Memory.poke 2
+pop temp 0
+push local 1
+push constant 1
+sub
+push local 2
+push argument 0
+sub
+push constant 1
+sub
+call Memory.poke 2
+pop temp 0
+push local 3
+return
+label Memory.alloc.if.2
+pop temp 1
+label Memory.alloc.goto.0
+push local 1
+pop local 0
+push local 1
+push constant 1
+add
+call Memory.peek 1
+pop local 1
+push local 4
+push constant 1
+add
+pop local 4
+goto Memory.alloc.while.0
+label Memory.alloc.while.1
+call Memory.defrag 0
+pop temp 0
+return
+
+//
+function Memory.defrag 0
+//
+push constant 6
+call Sys.error 1
+pop temp 0
+return
+
+//
+function Memory.deAlloc 1
+//
+push argument 0
+push static 3
+eq
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Memory.deAlloc.if.0
+push constant 0
+return
+label Memory.deAlloc.if.0
+pop temp 1
+push argument 0
+pop local 0
+push argument 0
+push static 2
+call Memory.peek 1
+call Memory.poke 2
+pop temp 0
+push static 2
+push local 0
+call Memory.poke 2
+pop temp 0
+return
+
+//
+function Memory.isValid 0
+//
+push argument 0
+push static 0
+gt
+push argument 0
+push static 0
+eq
+or
+push argument 0
+push static 1
+lt
+push argument 0
+push static 1
+eq
+or
+and
+pop temp 1
+push temp 1
+push temp 1
+not
+if-goto Memory.isValid.if.0
+push constant 0
+not
+return
+label Memory.isValid.if.0
+if-goto Memory.isValid.goto.0
+push constant 0
+return
+label Memory.isValid.goto.0
+return
+
+//
+function Memory.report 2
+//
+push constant 18
+call String.new 1
+push constant 70
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 77
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 109
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 121
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 112
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+call Output.printString 1
+pop temp 0
+call Output.println 0
+pop temp 0
+push static 2
+pop local 0
+push constant 1
+pop local 1
+call Sys.breakpoint 0
+pop temp 0
+label Memory.report.while.0
+push local 0
+push constant 0
+eq
+not
+not
+if-goto Memory.report.while.1
+push constant 12
+call String.new 1
+push constant 66
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 99
+call String.appendChar 2
+push constant 107
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 122
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 58
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+call Output.printString 1
+pop temp 0
+push local 0
+push constant 1
+sub
+call Memory.peek 1
+call Output.printInt 1
+pop temp 0
+push local 0
+call Memory.peek 1
+pop local 0
+push constant 13
+call String.new 1
+push constant 32
+call String.appendChar 2
+push constant 78
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 120
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 66
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 99
+call String.appendChar 2
+push constant 107
+call String.appendChar 2
+push constant 58
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+call Output.printString 1
+pop temp 0
+push local 0
+call Output.printInt 1
+pop temp 0
+call Output.println 0
+pop temp 0
+push local 1
+push constant 1
+add
+pop local 1
+goto Memory.report.while.0
+label Memory.report.while.1
+push constant 29
+call String.new 1
+push constant 84
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 109
+call String.appendChar 2
+push constant 98
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 102
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 102
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 98
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 99
+call String.appendChar 2
+push constant 107
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 58
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+call Output.printString 1
+pop temp 0
+push local 1
+call Output.printInt 1
+pop temp 0
+return
