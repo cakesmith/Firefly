@@ -1,5 +1,6 @@
 import re
-from collections import namedtuple, Iterable
+from collections import namedtuple
+from collections.abc import Iterable
 
 def flatten(items, ignore_types=(str, bytes)):
     for x in items:

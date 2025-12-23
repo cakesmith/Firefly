@@ -336,8 +336,6 @@ class VMTranslator:
             
         for vmc in commands:
             
-            
-                
             command = vmc
             nextcommand = None
             
@@ -359,9 +357,8 @@ class VMTranslator:
                  "@SP",
                  "M=D",
                  "@Sys.init",
-                 "0;JMP",
-                 
-                 ]
+                 "0;JMP"
+            ]
         
         if self.debug:
             code = ["// Bootstrap code"] + code
@@ -692,6 +689,13 @@ class VMTranslator:
             raise Exception("unrecognized segment %s on line %d"\
             % (segment, line))
         
+        return code
+    
+    def p_push(self, vmc):
+        segment = vmc.segment
+        index = vmc.index
+
+        code = []
         return code
         
     def push(self, vmc):

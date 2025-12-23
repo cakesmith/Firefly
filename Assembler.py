@@ -1,8 +1,14 @@
 #!/usr/bin/python3
 
-# This code is due for a major tuneup.
-
-from tkinter import Tk, Frame, PhotoImage, Label, BOTH
+try:
+    from tkinter import Tk, Frame, PhotoImage, Label, BOTH
+except ImportError:
+    print("Error: tkinter module not found. Please install tkinter:")
+    print("On Windows: tkinter should be included with Python")
+    print("On Ubuntu/Debian: sudo apt-get install python3-tk")
+    print("On CentOS/RHEL: sudo yum install tkinter")
+    print("On macOS: tkinter should be included with Python")
+    exit(1)
 from os import system
 from collections import namedtuple
 
@@ -63,7 +69,7 @@ def clean(line):
 
     line = line.split("//")[0].strip()
 
-    if len(line) is 0 or line.isspace():
+    if len(line) == 0 or line.isspace():
         return None
     else:
         return line
@@ -375,7 +381,7 @@ class StoppableThread(threading.Thread):
         self._stopflag.set()
 
     def stopped(self):
-        return self._stopflag.isSet()
+        return self._stopflag.is_set()
 
 
 
@@ -389,7 +395,7 @@ class IO:
         self.mythread = thread
         self.screen = Tk()
         self.screen.title("Jarvis Simulator")
-        self.screen.geometry("512x256+1600+500")
+        self.screen.geometry("512x256")
         self.screen.wm_maxsize(width=512, height=256)
         self.screen.wm_minsize(width=512, height=256)
         self.screen.wm_resizable(width=False, height=False)
@@ -408,11 +414,11 @@ class IO:
         self.screen.bind("<Any-KeyPress>", self.KeyPressed)
         self.screen.bind("<Any-KeyRelease>", self.KeyReleased)
 
-        system("xset r off")
+        system("xset r off") if system("where xset >nul 2>&1") == 0 else None
         self.screen.protocol("WM_DELETE_WINDOW", self.delete_callback)
 
     def delete_callback(self):
-        system("xset r on")
+        system("xset r on") if system("where xset >nul 2>&1") == 0 else None
         self.mythread.stop()
         self.screen.destroy()
         
@@ -567,7 +573,7 @@ class CPU:
 
             self.step()
 
-            self.hz = (self.iterations / (time.time() - self.ticks))
+            # self.hz = (self.iterations / (time.time() - self.ticks))
 
 
             #~ print("Iterations: %i Hz: %i" % (self.iterations, self.hz))
@@ -703,6 +709,6 @@ try:
 finally:
     c.mythread.stop()
     print("Total iterations: %i" % c.iterations)
-    print("Average Hz: %i" % c.hz)
+    # print("Average Hz: %i" % c.hz)
 
 #####

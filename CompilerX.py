@@ -1,7 +1,5 @@
 import re
 
-
-
 class Lookahead:
     from itertools import tee, islice
     
