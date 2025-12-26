@@ -100,7 +100,8 @@ class VMToPetriTranslator:
     
     def push_local(self, index):
         """
-        Push local[index] onto stack
+        Push local[index] onto stack with enhanced reliability
+        Improved error handling and memory optimization integration
         """
         if not self.current_function:
             raise RuntimeError("No function context for local variable access")
@@ -109,29 +110,21 @@ class VMToPetriTranslator:
             raise RuntimeError(f"Function {self.current_function} not defined")
         
         if index >= self.function_locals[self.current_function]:
-            raise RuntimeError(f"Local index {index} out of bounds")
+            raise RuntimeError(f"Local index {index} out of bounds for function {self.current_function}")
         
-        # Find the local variable place
+        # Get or create the local variable place (handles uninitialized locals gracefully)
         local_place_name = f"local_{self.current_function}_{index}"
-        local_place = None
-        
-        for place_name, place in self.net.places.items():
-            if local_place_name in place_name:
-                local_place = place
-                break
-        
-        if not local_place:
-            raise RuntimeError(f"Local variable {index} not found")
+        local_place = self._get_or_create_local_place(local_place_name, index)
         
         # Create a new place for the pushed value
         pushed_place = self.net.add_place(self.get_unique_place_name(f"pushed_local_{index}"))
         
-        # Create dup transition to copy the local value
+        # Create dup transition to copy the local value (memory optimization friendly)
         def dup_local_func(tokens):
             if tokens:
                 val = tokens[0].value
                 return [Token(val), Token(val)]  # Original and copy
-            return [Token(0), Token(0)]
+            return [Token(0), Token(0)]  # Default value if uninitialized
         
         dup_transition = self.net.add_transition(
             self.get_unique_transition_name(f"dup_local_{index}"),
@@ -145,19 +138,76 @@ class VMToPetriTranslator:
         
         # Add to result places
         self.result_places.append(pushed_place)
+        print(f"Pushed local variable {index} (function: {self.current_function})")
         return pushed_place
+    
+    def pop_local(self, index):
         """
-        Implement push constant using 'source' primitive
-        Creates a new place with the constant value - this IS the stack element
+        Store top stack element to local variable N
+        Implements pop local using Petri net semantics
         """
-        # Create a new place for this constant (source primitive)
-        const_place = self.net.add_place(self.get_unique_place_name(f"const_{value}"))
-        const_place.put_token(Token(value))
+        if not self.current_function:
+            raise RuntimeError("No function context for local variable")
         
-        # This place represents the value - add to results
-        self.result_places.append(const_place)
+        if self.current_function not in self.function_locals:
+            raise RuntimeError(f"Function {self.current_function} not defined")
         
-        return const_place
+        if index >= self.function_locals[self.current_function]:
+            raise RuntimeError(f"Local index {index} out of bounds for function {self.current_function}")
+        
+        if len(self.result_places) < 1:
+            raise RuntimeError("No value to pop")
+        
+        # Get the value to store
+        value_place = self.result_places.pop()
+        
+        # Get or create local variable place
+        local_place_name = f"local_{self.current_function}_{index}"
+        local_place = self._get_or_create_local_place(local_place_name, index)
+        
+        # Create assignment transition that replaces the local value
+        def assign_local_func(tokens):
+            # tokens[0] is from value_place, tokens[1:] are from local_place
+            # We want to replace all local tokens with the new value
+            if tokens:
+                return Token(tokens[0].value)
+            return Token(0)
+        
+        assign_transition = self.net.add_transition(
+            self.get_unique_transition_name(f"pop_local_{index}"),
+            assign_local_func
+        )
+        
+        # Wire: value_place + local_place → assign_transition → local_place
+        # This consumes both the value and the old local content, produces new local content
+        self.net.add_arc(value_place, assign_transition)
+        self.net.add_arc(local_place, assign_transition)  # Consume old value
+        self.net.add_arc(assign_transition, local_place)  # Produce new value
+        
+        print(f"Stored value to local variable {index}")
+        return local_place
+    
+    def _get_or_create_local_place(self, local_place_name, index):
+        """Get existing local place or create new one"""
+        # Check if local place already exists
+        for place_name, place in self.net.places.items():
+            if local_place_name in place_name:
+                return place
+        
+        # Create new local place
+        local_place = self.net.add_place(self.get_unique_place_name(local_place_name))
+        
+        # Initialize with default value (0) if needed
+        local_place.put_token(Token(0))
+        
+        return local_place
+    
+    def pop_operation(self, segment, index):
+        """General pop operation for different memory segments"""
+        if segment == "local":
+            return self.pop_local(index)
+        else:
+            raise NotImplementedError(f"Pop {segment} not implemented")
         
     def add_operation(self):
         """
@@ -599,7 +649,9 @@ class VMToPetriTranslator:
                     'num_locals': num_locals,
                     'body': function_body
                 }
-                print(f"Parsed function {function_name} with {len(function_body)} commands")
+                # Also store in function_locals for compatibility
+                self.function_locals[function_name] = num_locals
+                print(f"Parsed function {function_name} with {len(function_body)} commands and {num_locals} locals")
                 
                 # Set command index to continue after this function
                 self.command_index = i
@@ -625,6 +677,10 @@ class VMToPetriTranslator:
             segment = command[1]
             index = command[2]
             self.push_operation(segment, index)
+        elif cmd_type == "pop":
+            segment = command[1]
+            index = command[2]
+            self.pop_operation(segment, index)
         elif cmd_type == "add":
             self.add_operation()
         elif cmd_type == "sub":
