@@ -32,6 +32,7 @@ class VMToPetriTranslator:
         self.function_locals = {}  # function_name -> number of locals
         self.function_definitions = {}  # function_name -> list of commands
         self.program_commands = []  # Commands being executed
+        self.main_program_commands = []  # Main program commands (separated from functions)
         self.command_index = 0  # Current command index
         
         # Local variable management
@@ -43,6 +44,9 @@ class VMToPetriTranslator:
         # Cross-scope jump management
         self._cross_scope_jump_pending = False
         self._cross_scope_jump_target = None
+        
+        # Function-scope jump management
+        self._function_jump_target = None
         
         # Operation handlers
         self.memory_ops = MemoryOperations()
@@ -80,6 +84,9 @@ class VMToPetriTranslator:
     
     def pop_local(self, index):
         return self.memory_ops.pop_local(self, index)
+    
+    def pop_argument(self, index):
+        return self.memory_ops.pop_argument(self, index)
     
     def pop_operation(self, segment, index):
         return self.memory_ops.pop_operation(self, segment, index)
@@ -168,34 +175,41 @@ class VMToPetriTranslator:
         self._parse_functions()
         
         # Second pass: execute main program (commands after all function definitions)
-        print(f"Starting main program execution from command {self.command_index}")
-        while self.command_index < len(commands):
-            command = commands[self.command_index]
+        print(f"Starting main program execution")
+        main_cmd_index = 0
+        while main_cmd_index < len(self.main_program_commands):
+            original_index, command = self.main_program_commands[main_cmd_index]
             cmd_type = command[0]
             
-            print(f"Executing command {self.command_index}: {command}")
+            print(f"Executing main command {main_cmd_index}: {command}")
             
+            # With fixed parsing, we should not encounter function definitions in main program
             if cmd_type == "function":
-                # Skip function definitions in main execution
-                self._skip_function_definition()
+                print(f"Warning: Unexpected function definition in main program")
             else:
+                # Set command_index for compatibility with existing code
+                self.command_index = original_index
                 result = self._execute_command(command)
                 
                 # Handle cross-scope jumps
                 if result == "CROSS_SCOPE_JUMP" or self._cross_scope_jump_pending:
                     if self._cross_scope_jump_target is not None:
                         print(f"Handling cross-scope jump to main program index {self._cross_scope_jump_target}")
-                        self.command_index = self._cross_scope_jump_target
+                        # Find the main command index for the target
+                        for i, (orig_idx, _) in enumerate(self.main_program_commands):
+                            if orig_idx >= self._cross_scope_jump_target:
+                                main_cmd_index = i
+                                break
                         self._cross_scope_jump_pending = False
                         self._cross_scope_jump_target = None
-                        continue  # Don't increment command_index
+                        continue  # Don't increment main_cmd_index
                 
                 # Check if this was a return statement in main program (should terminate)
                 if cmd_type == "return" and not self.call_stack:
                     print("Main program return - terminating execution")
                     break
             
-            self.command_index += 1
+            main_cmd_index += 1
                 
         # Execute the Petri net to get final results
         # Keep executing until no more transitions can fire
@@ -212,47 +226,103 @@ class VMToPetriTranslator:
     def _parse_functions(self):
         """Parse all function definitions from the command list"""
         i = 0
+        functions_found = []
+        
+        # First pass: find all function starts
         while i < len(self.program_commands):
             command = self.program_commands[i]
             if command[0] == "function":
-                function_name = command[1]
-                num_locals = command[2]
-                
-                # Collect function body (until return statement)
-                function_body = []
-                i += 1
-                while i < len(self.program_commands):
-                    next_command = self.program_commands[i]
-                    function_body.append(next_command)
-                    if next_command[0] == "return":
-                        i += 1  # Move past the return
-                        break  # End of function
-                    i += 1
-                
-                # Store function definition
-                self.function_definitions[function_name] = {
-                    'num_locals': num_locals,
-                    'body': function_body
-                }
-                # Also store in function_locals for compatibility
-                self.function_locals[function_name] = num_locals
-                print(f"Parsed function {function_name} with {len(function_body)} commands and {num_locals} locals")
-                
-                # Set command index to continue after this function
-                self.command_index = i
-                continue
+                functions_found.append(i)
             i += 1
+        
+        print(f"Found {len(functions_found)} functions")
+        
+        # Second pass: parse each function
+        main_program_start = 0
+        for func_idx, func_start in enumerate(functions_found):
+            command = self.program_commands[func_start]
+            function_name = command[1]
+            num_locals = command[2]
+            
+            # Determine function end
+            if func_idx + 1 < len(functions_found):
+                # Next function starts here
+                func_end = functions_found[func_idx + 1]
+            else:
+                # This is the last function, find where it ends
+                func_end = self._find_function_end(func_start)
+            
+            # Collect function body
+            function_body = []
+            for j in range(func_start + 1, func_end):
+                if j < len(self.program_commands):
+                    function_body.append(self.program_commands[j])
+            
+            # Store function definition
+            self.function_definitions[function_name] = {
+                'num_locals': num_locals,
+                'body': function_body,
+                'start_index': func_start + 1,
+                'end_index': func_end
+            }
+            self.function_locals[function_name] = num_locals
+            print(f"Parsed function {function_name} with {len(function_body)} commands and {num_locals} locals")
+            
+            # Update main program start
+            main_program_start = max(main_program_start, func_end)
+        
+        # Collect main program commands
+        main_program_commands = []
+        for i in range(main_program_start, len(self.program_commands)):
+            main_program_commands.append((i, self.program_commands[i]))
+        
+        self.main_program_commands = main_program_commands
+        self.command_index = 0
+        print(f"Main program has {len(main_program_commands)} commands")
+    
+    def _find_function_end(self, func_start):
+        """Find where a function ends by looking for main program patterns"""
+        # Start after the function declaration
+        i = func_start + 1
+        return_count = 0
+        
+        while i < len(self.program_commands):
+            command = self.program_commands[i]
+            
+            # Count return statements
+            if command[0] == "return":
+                return_count += 1
+                
+                # Look ahead to see if the next commands look like main program
+                # Main program typically starts with push constant or call
+                if i + 1 < len(self.program_commands):
+                    next_cmd = self.program_commands[i + 1]
+                    # If next command is push constant (not push argument/local), 
+                    # it's likely main program
+                    if (next_cmd[0] == "push" and next_cmd[1] == "constant") or \
+                       (next_cmd[0] == "call"):
+                        return i + 1
+            
+            i += 1
+        
+        # If we didn't find a clear boundary, assume the whole thing is the function
+        return len(self.program_commands)
     
     def _skip_function_definition(self):
         """Skip over a function definition during main execution"""
-        # Skip until we find the next function or reach end
-        self.command_index += 1
-        while self.command_index < len(self.program_commands):
-            command = self.program_commands[self.command_index]
-            if command[0] == "function":
-                self.command_index -= 1  # Back up to let main loop handle it
-                break
-            self.command_index += 1
+        # This should not be called anymore with the fixed parsing
+        # But keep it for safety
+        function_name = self.program_commands[self.command_index][1]
+        if function_name in self.function_definitions:
+            # Jump to end of this function
+            self.command_index = self.function_definitions[function_name]['end_index'] - 1
+        else:
+            # Fallback: skip until we find return
+            while self.command_index < len(self.program_commands):
+                command = self.program_commands[self.command_index]
+                if command[0] == "return":
+                    break
+                self.command_index += 1
     
     def _perform_cross_scope_jump(self, main_program_index):
         """

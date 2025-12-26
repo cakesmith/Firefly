@@ -175,9 +175,43 @@ class MemoryOperations:
         
         return local_place
     
+    def pop_argument(self, translator, index):
+        """
+        Store top stack element back to caller's argument location
+        Implements reference parameter semantics - changes are visible to caller
+        """
+        if not translator.call_stack:
+            raise RuntimeError("No function call context for argument modification")
+        
+        current_call = translator.call_stack[-1]
+        if index >= len(current_call['arguments']):
+            raise RuntimeError(f"Argument index {index} out of bounds")
+        
+        if len(translator.result_places) < 1:
+            raise RuntimeError("No value to pop")
+        
+        # Get the value to store
+        value_place = translator.result_places.pop()
+        
+        # Get the caller's argument place (shared reference)
+        caller_arg_place = current_call['arguments'][index]
+        
+        # With single-token constraint, directly replace the token in caller's argument
+        if value_place.has_token():
+            new_value = value_place.get_token()
+            caller_arg_place.put_token(new_value)  # This modifies caller's data directly
+        else:
+            # Default value if no token
+            caller_arg_place.put_token(Token(0))
+        
+        print(f"Modified caller's argument {index} (reference parameter)")
+        return caller_arg_place
+    
     def pop_operation(self, translator, segment, index):
         """General pop operation for different memory segments"""
         if segment == "local":
             return self.pop_local(translator, index)
+        elif segment == "argument":
+            return self.pop_argument(translator, index)
         else:
             raise NotImplementedError(f"Pop {segment} not implemented")

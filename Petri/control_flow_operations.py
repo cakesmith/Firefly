@@ -69,8 +69,8 @@ class ControlFlowOperations:
             function_commands = translator.function_definitions[translator.current_function]['body']
             for i, command in enumerate(function_commands):
                 if command[0] == "label" and command[1] == label_name:
-                    # Found in current function - normal jump
-                    translator.command_index = i
+                    # Found in current function - set function jump target
+                    translator._function_jump_target = i
                     print(f"Goto to label '{label_name}' at function command index {i}")
                     return goto_transition
         
@@ -144,8 +144,8 @@ class ControlFlowOperations:
                     function_commands = translator.function_definitions[translator.current_function]['body']
                     for i, command in enumerate(function_commands):
                         if command[0] == "label" and command[1] == label_name:
-                            # Found in current function - normal jump
-                            translator.command_index = i
+                            # Found in current function - set function jump target
+                            translator._function_jump_target = i
                             print(f"If-goto jumping to label '{label_name}' at function command index {i}")
                             return if_goto_transition
                 

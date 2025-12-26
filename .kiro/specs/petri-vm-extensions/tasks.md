@@ -125,7 +125,7 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
     - Test nested control structures
     - _Requirements: US-3.1, US-3.2, US-3.3_
 
-- [ ] 6. Integrate control flow with multi-core execution
+- [x] 6. Integrate control flow with multi-core execution
   - [x] 6.1 Update execution dependency analysis for control flow
     - Modify _analyze_execution_dependencies to handle control flow
     - Implement conservative level assignment for goto/if-goto
@@ -144,27 +144,27 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
     - Test memory optimization with control flow places
     - _Requirements: TR-2, TR-3_
 
-- [ ] 7. Checkpoint - Ensure all tests pass
+- [x] 7. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Implement advanced function features
-  - [ ] 8.1 Implement pop argument N for reference parameters
+- [x] 8. Implement advanced function features
+  - [x] 8.1 Implement pop argument N for reference parameters
     - Add pop_argument method for modifying caller's arguments
     - Handle argument place sharing between caller and callee
     - Ensure changes are visible to caller after function returns
     - _Requirements: US-4.2_
 
-  - [ ] 8.2 Enhance recursive function support
+  - [x] 8.2 Enhance recursive function support
     - Improve call stack management for deeper recursion
     - Add stack depth limits to prevent infinite recursion
     - Optimize memory allocation for recursive call patterns
     - _Requirements: US-4.1_
 
-  - [ ] 8.3 Write property test for advanced function features
+  - [x] 8.3 Write property test for advanced function features
     - **Property 4: Reference parameter correctness**
     - **Validates: Requirements US-4.1, US-4.2**
 
-  - [ ] 8.4 Write integration tests for recursive functions
+  - [x] 8.4 Write integration tests for recursive functions
     - Test simple recursive functions (factorial, fibonacci)
     - Test recursive functions with local variables
     - Test stack depth limits and error handling
