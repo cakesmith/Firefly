@@ -144,8 +144,8 @@ class VMToPetriTranslator:
         return self.control_flow_ops.if_goto_operation(self, label_name)
         
     # Function operations
-    def call_operation(self, function_name, num_args):
-        return self.function_ops.call_operation(self, function_name, num_args)
+    def call_operation(self, function_name, num_args, is_tail_call=False):
+        return self.function_ops.call_operation(self, function_name, num_args, is_tail_call)
         
     def return_operation(self):
         return self.function_ops.return_operation(self)
