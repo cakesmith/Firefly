@@ -7,7 +7,7 @@ import sys
 import os
 
 # Add the project root to the path
-project_root = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
 from Petri.VMToPetri import VMToPetriTranslator
@@ -93,20 +93,20 @@ def test_basic_control_flow():
         print(f"❌ FAILED: expected={expected}, got={result[0] if result else 'None'}")
         return False
     
-    # Test 3: Cross-scope jump (function to main program)
-    print("\n3. Testing cross-scope jump")
+    # Test 3: Function-local goto (within function scope)
+    print("\n3. Testing function-local goto")
     translator = VMToPetriTranslator()
     
     commands = [
         ("function", "test_func", 0),
-        ("goto", "MAIN_LABEL"),
+        ("goto", "SKIP_CODE"),
         # This should be skipped
         ("push", "constant", 999),
         ("return",),
-        ("call", "test_func", 0),
-        ("label", "MAIN_LABEL"),
+        ("label", "SKIP_CODE"),
         ("push", "constant", 123),
-        ("return",)
+        ("return",),
+        ("call", "test_func", 0)
     ]
     
     result = translator.execute_program(commands)
