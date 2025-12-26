@@ -138,7 +138,7 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
     - Handle control flow dependencies in memory reuse
     - _Requirements: TR-3_
 
-  - [ ] 6.3 Write tests for multi-core control flow
+  - [x] 6.3 Write tests for multi-core control flow
     - Test control flow operations in multi-core environment
     - Verify level-based synchronization with control flow
     - Test memory optimization with control flow places
