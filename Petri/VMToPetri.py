@@ -16,6 +16,14 @@ class VMToPetriTranslator:
         self.place_counter = 0
         self.transition_counter = 0
         
+        # Function call management
+        self.call_stack = []  # Stack of function call frames
+        self.current_function = None  # Current function name
+        self.function_locals = {}  # function_name -> number of locals
+        self.function_definitions = {}  # function_name -> list of commands
+        self.program_commands = []  # Commands being executed
+        self.command_index = 0  # Current command index
+        
     def get_unique_place_name(self, prefix="place"):
         self.place_counter += 1
         return f"{prefix}_{self.place_counter}"
@@ -24,7 +32,120 @@ class VMToPetriTranslator:
         self.transition_counter += 1
         return f"{prefix}_{self.transition_counter}"
         
+    def push_operation(self, segment, index):
+        """
+        General push operation for different memory segments
+        """
+        if segment == "constant":
+            return self.push_constant(index)
+        elif segment == "argument":
+            return self.push_argument(index)
+        elif segment == "local":
+            return self.push_local(index)
+        else:
+            raise NotImplementedError(f"Push {segment} not implemented")
+    
     def push_constant(self, value):
+        """
+        Implement push constant using 'source' primitive
+        Creates a new place with the constant value - this IS the stack element
+        """
+        # Create a new place for this constant (source primitive)
+        const_place = self.net.add_place(self.get_unique_place_name(f"const_{value}"))
+        const_place.put_token(Token(value))
+        
+        # This place represents the value - add to results
+        self.result_places.append(const_place)
+        
+        return const_place
+    
+    def push_argument(self, index):
+        """
+        Push argument[index] onto stack
+        Arguments are passed from the caller
+        """
+        if not self.call_stack:
+            raise RuntimeError("No function call context for argument access")
+        
+        current_call = self.call_stack[-1]
+        if index >= len(current_call['arguments']):
+            raise RuntimeError(f"Argument index {index} out of bounds")
+        
+        # Get the argument place
+        arg_place = current_call['arguments'][index]
+        
+        # Create a new place for the pushed value (duplicate the argument)
+        pushed_place = self.net.add_place(self.get_unique_place_name(f"pushed_arg_{index}"))
+        
+        # Create dup transition to copy the argument value
+        def dup_arg_func(tokens):
+            if tokens:
+                val = tokens[0].value
+                return [Token(val), Token(val)]  # Original and copy
+            return [Token(0), Token(0)]
+        
+        dup_transition = self.net.add_transition(
+            self.get_unique_transition_name(f"dup_arg_{index}"),
+            dup_arg_func
+        )
+        
+        # Wire: arg_place -> dup_transition -> [arg_place, pushed_place]
+        self.net.add_arc(arg_place, dup_transition)
+        self.net.add_arc(dup_transition, arg_place)  # Keep original
+        self.net.add_arc(dup_transition, pushed_place)  # Create copy
+        
+        # Add to result places
+        self.result_places.append(pushed_place)
+        return pushed_place
+    
+    def push_local(self, index):
+        """
+        Push local[index] onto stack
+        """
+        if not self.current_function:
+            raise RuntimeError("No function context for local variable access")
+        
+        if self.current_function not in self.function_locals:
+            raise RuntimeError(f"Function {self.current_function} not defined")
+        
+        if index >= self.function_locals[self.current_function]:
+            raise RuntimeError(f"Local index {index} out of bounds")
+        
+        # Find the local variable place
+        local_place_name = f"local_{self.current_function}_{index}"
+        local_place = None
+        
+        for place_name, place in self.net.places.items():
+            if local_place_name in place_name:
+                local_place = place
+                break
+        
+        if not local_place:
+            raise RuntimeError(f"Local variable {index} not found")
+        
+        # Create a new place for the pushed value
+        pushed_place = self.net.add_place(self.get_unique_place_name(f"pushed_local_{index}"))
+        
+        # Create dup transition to copy the local value
+        def dup_local_func(tokens):
+            if tokens:
+                val = tokens[0].value
+                return [Token(val), Token(val)]  # Original and copy
+            return [Token(0), Token(0)]
+        
+        dup_transition = self.net.add_transition(
+            self.get_unique_transition_name(f"dup_local_{index}"),
+            dup_local_func
+        )
+        
+        # Wire: local_place -> dup_transition -> [local_place, pushed_place]
+        self.net.add_arc(local_place, dup_transition)
+        self.net.add_arc(dup_transition, local_place)  # Keep original
+        self.net.add_arc(dup_transition, pushed_place)  # Create copy
+        
+        # Add to result places
+        self.result_places.append(pushed_place)
+        return pushed_place
         """
         Implement push constant using 'source' primitive
         Creates a new place with the constant value - this IS the stack element
@@ -322,6 +443,81 @@ class VMToPetriTranslator:
         # No output connections - token is consumed and discarded
         
         return None
+        
+    def call_operation(self, function_name, num_args):
+        """
+        Implement function call using Petri net semantics
+        Execute the function body with the provided arguments
+        """
+        if function_name not in self.function_definitions:
+            raise RuntimeError(f"Function {function_name} not defined")
+        
+        if len(self.result_places) < num_args:
+            raise RuntimeError(f"Not enough arguments for call to {function_name}")
+        
+        # Pop arguments from result places
+        args = []
+        for i in range(num_args):
+            args.append(self.result_places.pop())
+        args.reverse()  # Restore correct order
+        
+        # Store arguments in call stack for function to access
+        call_frame = {
+            'function_name': function_name,
+            'arguments': args,
+            'saved_result_places': self.result_places.copy(),
+            'saved_function': self.current_function
+        }
+        self.call_stack.append(call_frame)
+        
+        # Set current function context
+        self.current_function = function_name
+        
+        print(f"Calling function {function_name} with {num_args} arguments")
+        
+        # Execute function body
+        function_def = self.function_definitions[function_name]
+        for command in function_def['body']:
+            if command[0] == "return":
+                # Handle return - don't execute more commands
+                self.return_operation()
+                break
+            else:
+                self._execute_command(command)
+        
+        return call_frame
+        
+    def return_operation(self):
+        """
+        Implement function return using Petri net semantics
+        Returns value and restores caller context
+        """
+        if not self.call_stack:
+            # No active function call - this is a program return
+            print("Program return")
+            return None
+        
+        # Get the current call frame
+        call_frame = self.call_stack.pop()
+        
+        # Get return value (top of result places, if any)
+        if self.result_places:
+            return_value_place = self.result_places[-1]  # Keep the return value
+            print(f"Returning value from {call_frame['function_name']}")
+        else:
+            # No return value - create a default (0)
+            return_value_place = self.net.add_place(self.get_unique_place_name("return_default"))
+            return_value_place.put_token(Token(0))
+            print(f"Returning default value 0 from {call_frame['function_name']}")
+        
+        # Restore caller's result places and add the returned value
+        self.result_places = call_frame['saved_result_places']
+        self.result_places.append(return_value_place)
+        
+        # Restore function context
+        self.current_function = call_frame['saved_function']
+        
+        return return_value_place
         # No output connections - token is consumed and discarded
         
         return None
@@ -342,36 +538,29 @@ class VMToPetriTranslator:
         
     def execute_program(self, commands):
         """Execute a sequence of VM commands - no stack needed!"""
-        for command in commands:
+        self.program_commands = commands
+        self.command_index = 0
+        
+        print(f"Executing program with {len(commands)} commands")
+        
+        # First pass: parse function definitions
+        self._parse_functions()
+        
+        # Second pass: execute main program (commands after all function definitions)
+        print(f"Starting main program execution from command {self.command_index}")
+        while self.command_index < len(commands):
+            command = commands[self.command_index]
             cmd_type = command[0]
             
-            if cmd_type == "push" and command[1] == "constant":
-                value = command[2]
-                self.push_constant(value)
-            elif cmd_type == "add":
-                self.add_operation()
-            elif cmd_type == "sub":
-                self.sub_operation()
-            elif cmd_type == "neg":
-                self.neg_operation()
-            elif cmd_type == "eq":
-                self.eq_operation()
-            elif cmd_type == "lt":
-                self.lt_operation()
-            elif cmd_type == "gt":
-                self.gt_operation()
-            elif cmd_type == "and":
-                self.and_operation()
-            elif cmd_type == "or":
-                self.or_operation()
-            elif cmd_type == "not":
-                self.not_operation()
-            elif cmd_type == "dup":
-                self.dup_operation()
-            elif cmd_type == "drop":
-                self.drop_operation()
+            print(f"Executing command {self.command_index}: {command}")
+            
+            if cmd_type == "function":
+                # Skip function definitions in main execution
+                self._skip_function_definition()
             else:
-                raise NotImplementedError(f"Command {cmd_type} not implemented")
+                self._execute_command(command)
+            
+            self.command_index += 1
                 
         # Execute the Petri net to get final results
         # Keep executing until no more transitions can fire
@@ -384,6 +573,88 @@ class VMToPetriTranslator:
             steps += 1
             
         return self.get_result_values()
+    
+    def _parse_functions(self):
+        """Parse all function definitions from the command list"""
+        i = 0
+        while i < len(self.program_commands):
+            command = self.program_commands[i]
+            if command[0] == "function":
+                function_name = command[1]
+                num_locals = command[2]
+                
+                # Collect function body (until return statement)
+                function_body = []
+                i += 1
+                while i < len(self.program_commands):
+                    next_command = self.program_commands[i]
+                    function_body.append(next_command)
+                    if next_command[0] == "return":
+                        i += 1  # Move past the return
+                        break  # End of function
+                    i += 1
+                
+                # Store function definition
+                self.function_definitions[function_name] = {
+                    'num_locals': num_locals,
+                    'body': function_body
+                }
+                print(f"Parsed function {function_name} with {len(function_body)} commands")
+                
+                # Set command index to continue after this function
+                self.command_index = i
+                continue
+            i += 1
+    
+    def _skip_function_definition(self):
+        """Skip over a function definition during main execution"""
+        # Skip until we find the next function or reach end
+        self.command_index += 1
+        while self.command_index < len(self.program_commands):
+            command = self.program_commands[self.command_index]
+            if command[0] == "function":
+                self.command_index -= 1  # Back up to let main loop handle it
+                break
+            self.command_index += 1
+    
+    def _execute_command(self, command):
+        """Execute a single VM command"""
+        cmd_type = command[0]
+        
+        if cmd_type == "push":
+            segment = command[1]
+            index = command[2]
+            self.push_operation(segment, index)
+        elif cmd_type == "add":
+            self.add_operation()
+        elif cmd_type == "sub":
+            self.sub_operation()
+        elif cmd_type == "neg":
+            self.neg_operation()
+        elif cmd_type == "eq":
+            self.eq_operation()
+        elif cmd_type == "lt":
+            self.lt_operation()
+        elif cmd_type == "gt":
+            self.gt_operation()
+        elif cmd_type == "and":
+            self.and_operation()
+        elif cmd_type == "or":
+            self.or_operation()
+        elif cmd_type == "not":
+            self.not_operation()
+        elif cmd_type == "dup":
+            self.dup_operation()
+        elif cmd_type == "drop":
+            self.drop_operation()
+        elif cmd_type == "call":
+            function_name = command[1]
+            num_args = command[2]
+            self.call_operation(function_name, num_args)
+        elif cmd_type == "return":
+            self.return_operation()
+        else:
+            raise NotImplementedError(f"Command {cmd_type} not implemented")
         
     def print_net_statistics(self):
         """Print comprehensive statistics about the translated Petri net"""
