@@ -1922,7 +1922,8 @@ level-based barriers for synchronization and distributed termination detection.
     def _analyze_execution_dependencies(self):
         """
         Analyze the Petri net to determine execution dependencies
-        Returns a dependency graph and execution levels
+        Enhanced to handle control flow operations (goto, if-goto, labels)
+        Returns a dependency graph and execution levels with conservative level assignment
         """
         # Build dependency graph
         dependencies = {}
@@ -1940,6 +1941,24 @@ level-based barriers for synchronization and distributed termination detection.
                     if input_place in producer.out_places:
                         dependencies[trans_name].append(producer_name)
                         reverse_deps[producer_name].append(trans_name)
+        
+        # Handle control flow dependencies
+        control_flow_deps = self._analyze_control_flow_dependencies()
+        
+        # Merge control flow dependencies with place-based dependencies
+        for trans_name, cf_deps in control_flow_deps.items():
+            if trans_name in dependencies:
+                dependencies[trans_name].extend(cf_deps)
+                # Update reverse dependencies
+                for dep in cf_deps:
+                    if dep in reverse_deps:
+                        reverse_deps[dep].append(trans_name)
+                        
+        # Remove duplicates
+        for trans_name in dependencies:
+            dependencies[trans_name] = list(set(dependencies[trans_name]))
+        for trans_name in reverse_deps:
+            reverse_deps[trans_name] = list(set(reverse_deps[trans_name]))
                         
         # Topological sort to find execution levels
         execution_levels = []
@@ -1962,28 +1981,179 @@ level-based barriers for synchronization and distributed termination detection.
         return {
             'dependencies': dependencies,
             'reverse_deps': reverse_deps,
-            'execution_levels': execution_levels
+            'execution_levels': execution_levels,
+            'control_flow_deps': control_flow_deps
         }
+    
+    def _analyze_control_flow_dependencies(self):
+        """
+        Analyze dependencies created by control flow operations
+        Implements conservative level assignment for goto/if-goto operations
+        """
+        control_flow_deps = {}
+        
+        # Initialize empty dependencies for all transitions
+        for trans_name in self.net.transitions.keys():
+            control_flow_deps[trans_name] = []
+        
+        # Analyze each transition for control flow patterns
+        for trans_name, transition in self.net.transitions.items():
+            
+            # Handle goto operations
+            if trans_name.startswith("goto_"):
+                # goto operations create dependencies on their target labels
+                # Conservative approach: goto depends on all operations before it
+                label_name = trans_name.replace("goto_", "").split("_")[0]
+                
+                # Find the target label transition
+                target_label_trans = None
+                for other_trans_name in self.net.transitions.keys():
+                    if other_trans_name.startswith(f"label_{label_name}") or \
+                       (f"label_{label_name}" in other_trans_name):
+                        target_label_trans = other_trans_name
+                        break
+                
+                if target_label_trans:
+                    # goto depends on the label being defined
+                    control_flow_deps[trans_name].append(target_label_trans)
+                    
+                    # Conservative: all operations that might execute after the label
+                    # must wait for the goto to potentially redirect control
+                    for other_trans_name in self.net.transitions.keys():
+                        if (other_trans_name != trans_name and 
+                            other_trans_name != target_label_trans and
+                            not other_trans_name.startswith("goto_") and
+                            not other_trans_name.startswith("if_goto_")):
+                            # Other operations depend on control flow resolution
+                            control_flow_deps[other_trans_name].append(trans_name)
+            
+            # Handle if-goto operations  
+            elif trans_name.startswith("if_goto_"):
+                # if-goto operations create choice dependencies
+                label_name = trans_name.replace("if_goto_", "").split("_")[0]
+                
+                # Find the target label transition
+                target_label_trans = None
+                for other_trans_name in self.net.transitions.keys():
+                    if other_trans_name.startswith(f"label_{label_name}") or \
+                       (f"label_{label_name}" in other_trans_name):
+                        target_label_trans = other_trans_name
+                        break
+                
+                if target_label_trans:
+                    # if-goto depends on the label being defined
+                    control_flow_deps[trans_name].append(target_label_trans)
+                    
+                    # Conservative: operations after if-goto must wait for choice resolution
+                    # Both the jump path and continue path are possible
+                    for other_trans_name in self.net.transitions.keys():
+                        if (other_trans_name != trans_name and 
+                            other_trans_name != target_label_trans and
+                            not other_trans_name.startswith("goto_") and
+                            not other_trans_name.startswith("if_goto_") and
+                            not other_trans_name.startswith("label_")):
+                            # Other operations depend on control flow choice resolution
+                            control_flow_deps[other_trans_name].append(trans_name)
+            
+            # Handle label operations
+            elif trans_name.startswith("label_"):
+                # Labels create synchronization points
+                # All operations that might jump to this label depend on it being defined
+                label_name = trans_name.replace("label_", "").split("_")[0]
+                
+                # Find goto/if-goto operations that target this label
+                for other_trans_name in self.net.transitions.keys():
+                    if (other_trans_name.startswith(f"goto_{label_name}") or 
+                        other_trans_name.startswith(f"if_goto_{label_name}")):
+                        # These operations depend on the label
+                        control_flow_deps[other_trans_name].append(trans_name)
+        
+        # Log control flow dependencies for debugging
+        cf_deps_found = {k: v for k, v in control_flow_deps.items() if v}
+        if cf_deps_found:
+            print(f"\nControl Flow Dependencies Found:")
+            for trans_name, deps in cf_deps_found.items():
+                print(f"  {trans_name} depends on: {deps}")
+        
+        return control_flow_deps
         
     def _assign_operations_to_cores(self, execution_plan, num_cores):
         """
         Assign operations to cores based on dependencies and load balancing
+        Enhanced to handle control flow operations with distributed coordination
         """
         core_assignments = {i: [] for i in range(num_cores)}
         
         for level_idx, level in enumerate(execution_plan['execution_levels']):
             print(f"Level {level_idx}: {len(level)} parallel operations: {level}")
             
+            # Check if this level contains control flow operations
+            control_flow_ops = [op for op in level 
+                              if op.startswith(('goto_', 'if_goto_', 'label_'))]
+            
+            if control_flow_ops:
+                print(f"  Control flow operations in level {level_idx}: {control_flow_ops}")
+                # All cores must participate in control flow synchronization
+                # Even if they don't execute the specific control flow operation
+                
             # Assign operations in this level to cores (round-robin)
             for i, operation in enumerate(level):
                 core_id = i % num_cores
+                
+                # Mark control flow operations for special handling
+                is_control_flow = operation.startswith(('goto_', 'if_goto_', 'label_'))
+                
                 core_assignments[core_id].append({
                     'operation': operation,
                     'level': level_idx,
-                    'transition': self.net.transitions[operation]
+                    'transition': self.net.transitions[operation],
+                    'is_control_flow': is_control_flow,
+                    'requires_barrier': is_control_flow or len(control_flow_ops) > 0
                 })
                 
+        # Ensure all cores have barrier synchronization at control flow levels
+        self._ensure_control_flow_barriers(core_assignments, execution_plan)
+                
         return core_assignments
+    
+    def _ensure_control_flow_barriers(self, core_assignments, execution_plan):
+        """
+        Ensure all cores participate in barriers at levels containing control flow
+        This maintains distributed coordination even when cores don't execute control flow ops
+        """
+        # Find levels that contain control flow operations
+        control_flow_levels = set()
+        for level_idx, level in enumerate(execution_plan['execution_levels']):
+            if any(op.startswith(('goto_', 'if_goto_', 'label_')) for op in level):
+                control_flow_levels.add(level_idx)
+        
+        if control_flow_levels:
+            print(f"Control flow barrier levels: {sorted(control_flow_levels)}")
+            
+            # Ensure all cores have operations marked for barriers at these levels
+            for core_id, operations in core_assignments.items():
+                for op_info in operations:
+                    if op_info['level'] in control_flow_levels:
+                        op_info['requires_barrier'] = True
+                        
+                # If a core has no operations at a control flow level,
+                # add a barrier placeholder
+                core_levels = {op['level'] for op in operations}
+                for cf_level in control_flow_levels:
+                    if cf_level not in core_levels:
+                        # Add barrier placeholder for this core
+                        core_assignments[core_id].append({
+                            'operation': f'barrier_placeholder_level_{cf_level}',
+                            'level': cf_level,
+                            'transition': None,
+                            'is_control_flow': False,
+                            'requires_barrier': True,
+                            'is_placeholder': True
+                        })
+        
+        # Sort operations by level for each core
+        for core_id in core_assignments:
+            core_assignments[core_id].sort(key=lambda x: x['level'])
         
     def _generate_assembly_code(self, core_assignments, num_cores):
         """
