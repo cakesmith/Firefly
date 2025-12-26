@@ -1,0 +1,1 @@
+Put all tests into the tests/X/ folder, where X is the class of test. Then you can run all tests with the test runner (python run_tests.py) from the root of the project.

@@ -132,7 +132,7 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
     - Ensure distributed coordination works with control flow
     - _Requirements: TR-2_
 
-  - [ ] 6.2 Update memory optimization for control flow places
+  - [x] 6.2 Update memory optimization for control flow places
     - Extend place lifetime analysis for control flow constructs
     - Optimize memory allocation for labels and choice results
     - Handle control flow dependencies in memory reuse
@@ -220,3 +220,14 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
 - Implementation maintains pure Petri net semantics throughout
 - All new operations must integrate with existing multi-core execution
 - Memory optimization must handle all new operation types
+
+## Test Organization
+
+All tests must be placed in the appropriate category folder under `tests/`:
+
+- **Unit Tests**: `tests/unit/` - Test individual components and methods in isolation
+- **Integration Tests**: `tests/integration/` - Test complete workflows and component interactions
+- **Property-Based Tests**: `tests/property/` - Test universal properties using hypothesis or similar frameworks
+- **Test Data**: `tests/data/` - Sample VM files and test data
+
+Use the test runner with `python run_tests.py --category <category>` to run specific test categories.
