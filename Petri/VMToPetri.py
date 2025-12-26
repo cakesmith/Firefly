@@ -9,6 +9,94 @@ Pure Petri-net semantics - no stack needed. Places ARE the data flow.
 from .net import PetriNet
 from .Token import Token
 
+class ControlFlowManager:
+    """
+    Manages control flow constructs (labels, goto, if-goto) in Petri net semantics
+    Handles function-scoped labels and control flow places
+    """
+    def __init__(self, net):
+        self.net = net
+        self.labels = {}  # label_name -> control_place
+        self.function_labels = {}  # function_name -> {label_name -> control_place}
+        self.pending_jumps = []  # Jumps waiting for label resolution
+        self.place_counter = 0
+        
+    def get_unique_place_name(self, prefix="control"):
+        self.place_counter += 1
+        return f"{prefix}_{self.place_counter}"
+        
+    def define_label(self, label_name, function_name=None):
+        """
+        Create a control flow place for this label
+        Labels are scoped to their containing function
+        """
+        if function_name:
+            # Function-scoped label
+            scoped_label_name = f"{function_name}.{label_name}"
+            if function_name not in self.function_labels:
+                self.function_labels[function_name] = {}
+        else:
+            # Global label (for main program)
+            scoped_label_name = label_name
+            
+        # Check if label already exists
+        if scoped_label_name in self.labels:
+            print(f"Label '{label_name}' already defined in function '{function_name}', reusing existing place")
+            return self.labels[scoped_label_name]
+            
+        # Create control flow place for this label
+        control_place = self.net.add_place(self.get_unique_place_name(f"label_{scoped_label_name}"))
+        
+        # Store label mapping
+        if function_name:
+            self.function_labels[function_name][label_name] = control_place
+        self.labels[scoped_label_name] = control_place
+        
+        print(f"Defined label '{label_name}' in function '{function_name}' -> {control_place.name}")
+        return control_place
+        
+    def get_label_place(self, label_name, function_name=None):
+        """
+        Get the control flow place for a label
+        Handles function scoping
+        """
+        if function_name:
+            scoped_label_name = f"{function_name}.{label_name}"
+            # First try function-scoped label
+            if function_name in self.function_labels and label_name in self.function_labels[function_name]:
+                return self.function_labels[function_name][label_name]
+        else:
+            scoped_label_name = label_name
+            
+        # Try global label
+        if scoped_label_name in self.labels:
+            return self.labels[scoped_label_name]
+            
+        # Label not found
+        raise RuntimeError(f"Undefined label: {label_name} in function {function_name}")
+        
+    def is_label_defined(self, label_name, function_name=None):
+        """Check if a label is defined in the given scope"""
+        try:
+            self.get_label_place(label_name, function_name)
+            return True
+        except RuntimeError:
+            return False
+            
+    def get_function_labels(self, function_name):
+        """Get all labels defined in a function"""
+        return self.function_labels.get(function_name, {})
+        
+    def clear_function_labels(self, function_name):
+        """Clear labels for a function (cleanup)"""
+        if function_name in self.function_labels:
+            # Remove from global labels too
+            for label_name in self.function_labels[function_name]:
+                scoped_name = f"{function_name}.{label_name}"
+                if scoped_name in self.labels:
+                    del self.labels[scoped_name]
+            del self.function_labels[function_name]
+
 class VMToPetriTranslator:
     def __init__(self):
         self.net = PetriNet()
@@ -23,6 +111,16 @@ class VMToPetriTranslator:
         self.function_definitions = {}  # function_name -> list of commands
         self.program_commands = []  # Commands being executed
         self.command_index = 0  # Current command index
+        
+        # Local variable management
+        self.local_places = {}  # (function_name, index) -> place
+        
+        # Control flow management
+        self.control_flow = ControlFlowManager(self.net)
+        
+        # Cross-scope jump management
+        self._cross_scope_jump_pending = False
+        self._cross_scope_jump_target = None
         
     def get_unique_place_name(self, prefix="place"):
         self.place_counter += 1
@@ -144,7 +242,7 @@ class VMToPetriTranslator:
     def pop_local(self, index):
         """
         Store top stack element to local variable N
-        Implements pop local using Petri net semantics
+        Implements pop local using Petri net semantics with single-token constraint
         """
         if not self.current_function:
             raise RuntimeError("No function context for local variable")
@@ -165,40 +263,36 @@ class VMToPetriTranslator:
         local_place_name = f"local_{self.current_function}_{index}"
         local_place = self._get_or_create_local_place(local_place_name, index)
         
-        # Create assignment transition that replaces the local value
-        def assign_local_func(tokens):
-            # tokens[0] is from value_place, tokens[1:] are from local_place
-            # We want to replace all local tokens with the new value
-            if tokens:
-                return Token(tokens[0].value)
-            return Token(0)
-        
-        assign_transition = self.net.add_transition(
-            self.get_unique_transition_name(f"pop_local_{index}"),
-            assign_local_func
-        )
-        
-        # Wire: value_place + local_place → assign_transition → local_place
-        # This consumes both the value and the old local content, produces new local content
-        self.net.add_arc(value_place, assign_transition)
-        self.net.add_arc(local_place, assign_transition)  # Consume old value
-        self.net.add_arc(assign_transition, local_place)  # Produce new value
+        # With single-token constraint, we can directly replace the token
+        # Get the value from the value_place and put it in the local_place
+        if value_place.has_token():
+            new_value = value_place.get_token()
+            local_place.put_token(new_value)  # This will replace existing token
+        else:
+            # Default value if no token
+            from .Token import Token
+            local_place.put_token(Token(0))
         
         print(f"Stored value to local variable {index}")
         return local_place
     
     def _get_or_create_local_place(self, local_place_name, index):
         """Get existing local place or create new one"""
+        local_key = (self.current_function, index)
+        
         # Check if local place already exists
-        for place_name, place in self.net.places.items():
-            if local_place_name in place_name:
-                return place
+        if local_key in self.local_places:
+            place = self.local_places[local_key]
+            return place
         
         # Create new local place
         local_place = self.net.add_place(self.get_unique_place_name(local_place_name))
         
         # Initialize with default value (0) if needed
         local_place.put_token(Token(0))
+        
+        # Store in local places dictionary
+        self.local_places[local_key] = local_place
         
         return local_place
     
@@ -437,6 +531,255 @@ class VMToPetriTranslator:
         
         self.result_places.append(result_place)
         return result_place
+        
+    def mul_operation(self):
+        """
+        Implement mul operation: consume two most recent result places,
+        create mul transition, produce new result place
+        Handles integer overflow according to VM specification
+        """
+        if len(self.result_places) < 2:
+            raise RuntimeError("Not enough operands for mul operation")
+            
+        # Pop two operands from result places (most recent = top of conceptual stack)
+        b_place = self.result_places.pop()  # Top 
+        a_place = self.result_places.pop()  # Second from top
+        
+        # Create result place for the product
+        result_place = self.net.add_place(self.get_unique_place_name("mul_result"))
+        
+        # Create mul transition that consumes from both input places
+        def mul_op(tokens):
+            a_val = tokens[0].value
+            b_val = tokens[1].value
+            # Handle integer overflow according to VM specification (16-bit signed)
+            result = (a_val * b_val) & 0xFFFF
+            # Convert to signed 16-bit if needed
+            if result > 32767:
+                result = result - 65536
+            return Token(result)
+            
+        mul_transition = self.net.add_transition(
+            self.get_unique_transition_name("mul"), 
+            mul_op
+        )
+        
+        # Wire the Petri net: input_places -> transition -> output_place
+        self.net.add_arc(a_place, mul_transition)
+        self.net.add_arc(b_place, mul_transition)
+        self.net.add_arc(mul_transition, result_place)
+        
+        # Result place becomes the new top of conceptual stack
+        self.result_places.append(result_place)
+        
+        return result_place
+        
+    def div_operation(self):
+        """
+        Implement div operation: consume two most recent result places,
+        create div transition, produce new result place
+        Performs integer division (truncated toward zero)
+        Handles division by zero appropriately
+        """
+        if len(self.result_places) < 2:
+            raise RuntimeError("Not enough operands for div operation")
+            
+        # Pop two operands from result places (most recent = top of conceptual stack)
+        b_place = self.result_places.pop()  # Top (divisor)
+        a_place = self.result_places.pop()  # Second from top (dividend)
+        
+        # Create result place for the quotient
+        result_place = self.net.add_place(self.get_unique_place_name("div_result"))
+        
+        # Create div transition that consumes from both input places
+        def div_op(tokens):
+            a_val = tokens[0].value  # dividend
+            b_val = tokens[1].value  # divisor
+            
+            # Handle division by zero
+            if b_val == 0:
+                # VM specification behavior for division by zero
+                # Return 0 (some VMs might halt, but we'll return 0 for robustness)
+                return Token(0)
+            
+            # Perform integer division (truncated toward zero)
+            if (a_val < 0) != (b_val < 0):  # Different signs
+                # For negative results, use ceiling division to truncate toward zero
+                result = -(abs(a_val) // abs(b_val))
+            else:
+                # Same signs, normal floor division
+                result = a_val // b_val
+                
+            # Ensure result fits in 16-bit signed integer
+            result = max(-32768, min(32767, result))
+            return Token(result)
+            
+        div_transition = self.net.add_transition(
+            self.get_unique_transition_name("div"), 
+            div_op
+        )
+        
+        # Wire the Petri net: input_places -> transition -> output_place
+        self.net.add_arc(a_place, div_transition)
+        self.net.add_arc(b_place, div_transition)
+        self.net.add_arc(div_transition, result_place)
+        
+        # Result place becomes the new top of conceptual stack
+        self.result_places.append(result_place)
+        
+        return result_place
+        
+    def label_operation(self, label_name):
+        """
+        Implement label operation: define a jump target within current function
+        Creates control flow places for labels and integrates with function scoping
+        """
+        if not label_name:
+            raise RuntimeError("Label name cannot be empty")
+            
+        # Check if label is already defined (from pre-processing)
+        if self.control_flow.is_label_defined(label_name, self.current_function):
+            # Label already exists from pre-processing, just return the existing place
+            control_place = self.control_flow.get_label_place(label_name, self.current_function)
+            print(f"Using pre-processed label '{label_name}' in function '{self.current_function}'")
+            return control_place
+            
+        # Define the label in the current function scope
+        control_place = self.control_flow.define_label(label_name, self.current_function)
+        
+        # Initialize the control place with a control token to indicate this is a valid jump target
+        # This represents the "execution context" at this label
+        control_place.put_token(Token("control"))
+        
+        print(f"Created label '{label_name}' in function '{self.current_function}'")
+        return control_place
+        
+    def goto_operation(self, label_name):
+        """
+        Implement goto operation: unconditional jump to label
+        Supports cross-scope jumps (function -> main program)
+        """
+        if not label_name:
+            raise RuntimeError("Label name cannot be empty")
+        
+        # Check if label is defined in current scope
+        if not self.control_flow.is_label_defined(label_name, self.current_function):
+            raise RuntimeError(f"Cannot goto undefined label '{label_name}'")
+        
+        # Get the label place for Petri net semantics
+        label_place = self.control_flow.get_label_place(label_name, self.current_function)
+        
+        # Create goto transition that transfers control to the label
+        goto_transition = self.net.add_transition(
+            self.get_unique_transition_name(f"goto_{label_name}"),
+            lambda tokens: Token("control")  # Transfer control token
+        )
+        
+        # Create a control source place for this goto
+        goto_source = self.net.add_place(self.get_unique_place_name(f"goto_source_{label_name}"))
+        goto_source.put_token(Token("control"))
+        
+        # Wire: goto_source -> goto_transition -> label_place
+        self.net.add_arc(goto_source, goto_transition)
+        self.net.add_arc(goto_transition, label_place)
+        
+        # For program execution context, handle command index updates
+        if self.current_function and self.current_function in self.function_definitions:
+            function_commands = self.function_definitions[self.current_function]['body']
+            for i, command in enumerate(function_commands):
+                if command[0] == "label" and command[1] == label_name:
+                    # Found in current function - normal jump
+                    self.command_index = i
+                    print(f"Goto to label '{label_name}' at function command index {i}")
+                    return goto_transition
+        
+        # Check main program for cross-scope jumps
+        if hasattr(self, 'program_commands') and self.program_commands:
+            for i, command in enumerate(self.program_commands):
+                if command[0] == "label" and command[1] == label_name:
+                    # Found in main program - cross-scope jump
+                    self._perform_cross_scope_jump(i)
+                    print(f"Cross-scope goto to label '{label_name}' at main program index {i}")
+                    return "CROSS_SCOPE_JUMP"
+        
+        print(f"Goto to label '{label_name}' (Petri net semantics)")
+        return goto_transition
+        
+    def if_goto_operation(self, label_name):
+        """
+        Implement if-goto operation: conditional jump to label
+        Supports cross-scope jumps (function -> main program)
+        """
+        if not label_name:
+            raise RuntimeError("Label name cannot be empty")
+            
+        if len(self.result_places) < 1:
+            raise RuntimeError("No condition for if-goto")
+        
+        # Get the condition from the stack
+        condition_place = self.result_places.pop()
+        
+        # Check if label is defined in current scope
+        if not self.control_flow.is_label_defined(label_name, self.current_function):
+            raise RuntimeError(f"Cannot if-goto undefined label '{label_name}'")
+        
+        # Get the label place for Petri net semantics
+        label_place = self.control_flow.get_label_place(label_name, self.current_function)
+        
+        # Create if-goto transition with conditional logic
+        def if_goto_func(tokens):
+            condition_value = tokens[0].value if tokens else 0
+            if condition_value != 0:
+                return [Token("control"), Token("control")]  # Jump and continue paths
+            else:
+                return [Token("control")]  # Only continue path
+        
+        if_goto_transition = self.net.add_transition(
+            self.get_unique_transition_name(f"if_goto_{label_name}"),
+            if_goto_func
+        )
+        
+        # Create continue place for when condition is false
+        continue_place = self.net.add_place(self.get_unique_place_name(f"if_goto_continue_{label_name}"))
+        
+        # Wire: condition_place -> if_goto_transition -> [label_place, continue_place]
+        self.net.add_arc(condition_place, if_goto_transition)
+        self.net.add_arc(if_goto_transition, label_place)      # Jump path
+        self.net.add_arc(if_goto_transition, continue_place)   # Continue path
+        
+        # For program execution context, handle command index updates
+        if hasattr(self, 'program_commands') and self.program_commands:
+            # Get the condition value directly from the place for execution logic
+            condition_value = 0
+            if condition_place.has_token():
+                condition_value = condition_place.tokens[0].value
+            
+            print(f"If-goto condition: {condition_value} (0=false, non-zero=true)")
+            
+            # If condition is true (non-zero), jump to label
+            if condition_value != 0:
+                # First try to find label in current function
+                if self.current_function and self.current_function in self.function_definitions:
+                    function_commands = self.function_definitions[self.current_function]['body']
+                    for i, command in enumerate(function_commands):
+                        if command[0] == "label" and command[1] == label_name:
+                            # Found in current function - normal jump
+                            self.command_index = i
+                            print(f"If-goto jumping to label '{label_name}' at function command index {i}")
+                            return if_goto_transition
+                
+                # Not found in function, try main program (cross-scope jump)
+                for i, command in enumerate(self.program_commands):
+                    if command[0] == "label" and command[1] == label_name:
+                        # Found in main program - cross-scope jump
+                        self._perform_cross_scope_jump(i)
+                        print(f"Cross-scope if-goto to label '{label_name}' at main program index {i}")
+                        return "CROSS_SCOPE_JUMP"
+            else:
+                print(f"If-goto condition false, continuing to next command")
+        
+        return if_goto_transition
+        
     def dup_operation(self):
         """
         Implement dup operation using 'dup' primitive
@@ -525,17 +868,68 @@ class VMToPetriTranslator:
         
         print(f"Calling function {function_name} with {num_args} arguments")
         
-        # Execute function body
+        # Pre-process labels in function body before execution
         function_def = self.function_definitions[function_name]
-        for command in function_def['body']:
+        self._preprocess_function_labels(function_def['body'], function_name)
+        
+        # Execute function body with proper control flow
+        function_commands = function_def['body']
+        func_index = 0
+        
+        while func_index < len(function_commands):
+            command = function_commands[func_index]
+            
             if command[0] == "return":
                 # Handle return - don't execute more commands
                 self.return_operation()
                 break
             else:
-                self._execute_command(command)
+                # Save current command index and set function context
+                saved_index = self.command_index
+                self.command_index = func_index
+                
+                result = self._execute_command(command)
+                
+                # Check for cross-scope jump
+                if result == "CROSS_SCOPE_JUMP" or self._cross_scope_jump_pending:
+                    # Exit function and let main program handle the jump
+                    print(f"Cross-scope jump detected, exiting function {function_name}")
+                    # Don't call return_operation() - we're jumping out of the function
+                    # The main program will handle the jump
+                    self.command_index = saved_index
+                    return "CROSS_SCOPE_JUMP"
+                
+                # Check if command modified the index (goto/if-goto within function)
+                if self.command_index != func_index:
+                    # Jump occurred within function, update function index
+                    func_index = self.command_index
+                    # Don't increment func_index, continue from the jump target
+                else:
+                    # Normal progression
+                    func_index += 1
+                
+                # Restore main program index
+                self.command_index = saved_index
         
         return call_frame
+        
+    def _preprocess_function_labels(self, function_body, function_name):
+        """
+        Pre-process all label definitions in a function body
+        This ensures labels are defined before any goto/if-goto operations reference them
+        """
+        saved_function = self.current_function
+        self.current_function = function_name
+        
+        # First pass: define all labels
+        for command in function_body:
+            if command[0] == "label":
+                label_name = command[1]
+                # Only define the label, don't execute it
+                self.control_flow.define_label(label_name, function_name)
+                print(f"Pre-processed label '{label_name}' in function '{function_name}'")
+        
+        self.current_function = saved_function
         
     def return_operation(self):
         """
@@ -552,7 +946,7 @@ class VMToPetriTranslator:
         
         # Get return value (top of result places, if any)
         if self.result_places:
-            return_value_place = self.result_places[-1]  # Keep the return value
+            return_value_place = self.result_places.pop()  # Remove and return the top value
             print(f"Returning value from {call_frame['function_name']}")
         else:
             # No return value - create a default (0)
@@ -568,7 +962,6 @@ class VMToPetriTranslator:
         self.current_function = call_frame['saved_function']
         
         return return_value_place
-        # No output connections - token is consumed and discarded
         
         return None
         
@@ -608,7 +1001,21 @@ class VMToPetriTranslator:
                 # Skip function definitions in main execution
                 self._skip_function_definition()
             else:
-                self._execute_command(command)
+                result = self._execute_command(command)
+                
+                # Handle cross-scope jumps
+                if result == "CROSS_SCOPE_JUMP" or self._cross_scope_jump_pending:
+                    if self._cross_scope_jump_target is not None:
+                        print(f"Handling cross-scope jump to main program index {self._cross_scope_jump_target}")
+                        self.command_index = self._cross_scope_jump_target
+                        self._cross_scope_jump_pending = False
+                        self._cross_scope_jump_target = None
+                        continue  # Don't increment command_index
+                
+                # Check if this was a return statement in main program (should terminate)
+                if cmd_type == "return" and not self.call_stack:
+                    print("Main program return - terminating execution")
+                    break
             
             self.command_index += 1
                 
@@ -669,6 +1076,53 @@ class VMToPetriTranslator:
                 break
             self.command_index += 1
     
+    def _perform_cross_scope_jump(self, main_program_index):
+        """
+        Perform a cross-scope jump from function to main program
+        This exits the current function context and jumps to the main program
+        """
+        if not self.call_stack:
+            # No function context - this might be a unit test or direct call
+            print(f"Cross-scope jump: no function context, setting jump target to main program index {main_program_index}")
+            self._cross_scope_jump_target = main_program_index
+            self._cross_scope_jump_pending = True
+            return
+        
+        # Pop the call stack to exit the function completely
+        call_frame = self.call_stack.pop()
+        
+        # Restore the caller's context but don't add return value
+        # (cross-scope jumps don't return values)
+        self.result_places = call_frame['saved_result_places']
+        self.current_function = call_frame['saved_function']
+        
+        # Store the jump target for the main execution loop to handle
+        self._cross_scope_jump_target = main_program_index
+        
+        # Signal that we need to jump in main program
+        self._cross_scope_jump_pending = True
+        
+        print(f"Cross-scope jump: exited function {call_frame['function_name']}, jumping to main program index {main_program_index}")
+    
+    def _find_label_index(self, label_name):
+        """
+        Find the command index of a label within the current function or main program
+        """
+        if self.current_function:
+            # Search in current function body first
+            if self.current_function in self.function_definitions:
+                function_commands = self.function_definitions[self.current_function]['body']
+                for i, command in enumerate(function_commands):
+                    if command[0] == "label" and command[1] == label_name:
+                        return i
+        
+        # If not found in function or no current function, search in main program
+        for i, command in enumerate(self.program_commands):
+            if command[0] == "label" and command[1] == label_name:
+                return i
+        
+        return None
+    
     def _execute_command(self, command):
         """Execute a single VM command"""
         cmd_type = command[0]
@@ -699,6 +1153,10 @@ class VMToPetriTranslator:
             self.or_operation()
         elif cmd_type == "not":
             self.not_operation()
+        elif cmd_type == "mul":
+            self.mul_operation()
+        elif cmd_type == "div":
+            self.div_operation()
         elif cmd_type == "dup":
             self.dup_operation()
         elif cmd_type == "drop":
@@ -709,8 +1167,25 @@ class VMToPetriTranslator:
             self.call_operation(function_name, num_args)
         elif cmd_type == "return":
             self.return_operation()
+        elif cmd_type == "label":
+            label_name = command[1]
+            self.label_operation(label_name)
+        elif cmd_type == "goto":
+            label_name = command[1]
+            self.goto_operation(label_name)
+        elif cmd_type == "if-goto":
+            label_name = command[1]
+            self.if_goto_operation(label_name)
         else:
             raise NotImplementedError(f"Command {cmd_type} not implemented")
+        
+        # Execute Petri net after each command to ensure values are available
+        if cmd_type not in ["label", "goto", "if-goto"]:  # Don't execute for control flow
+            # Only execute once per command to prevent over-execution
+            fired = self.net.execute_step()
+            # If a transition fired, execute one more time to handle cascading effects
+            if fired:
+                self.net.execute_step()
         
     def print_net_statistics(self):
         """Print comprehensive statistics about the translated Petri net"""
@@ -1226,7 +1701,7 @@ class VMToPetriTranslator:
         op_type = operation.split('_')[0]
         code_lines = []
         
-        if op_type in ['add', 'sub', 'and', 'or', 'eq', 'lt', 'gt'] and len(transition.in_places) >= 2:
+        if op_type in ['add', 'sub', 'mul', 'div', 'and', 'or', 'eq', 'lt', 'gt'] and len(transition.in_places) >= 2:
             # Binary operations
             loc_a = memory_map['location_map'][transition.in_places[0].name]
             loc_b = memory_map['location_map'][transition.in_places[1].name]
@@ -1244,6 +1719,61 @@ class VMToPetriTranslator:
                 code_lines.append("D=D+M")
             elif op_type == 'sub':
                 code_lines.append("D=D-M")
+            elif op_type == 'mul':
+                # Multiplication requires a loop in Hack assembly
+                code_lines.extend([
+                    "// Multiplication using repeated addition",
+                    "@R13",  # Use R13 as temporary register
+                    "M=D",   # Store first operand
+                    "D=M",   # Load second operand
+                    "@R14",  # Use R14 as counter
+                    "M=D",
+                    "D=0",   # Initialize result to 0
+                    f"({operation.upper()}_LOOP)",
+                    "@R14",
+                    "D=M",
+                    f"@{operation.upper()}_DONE",
+                    "D;JEQ", # If counter is 0, done
+                    "@R13",
+                    "D=D+M", # Add first operand to result
+                    "@R14",
+                    "M=M-1", # Decrement counter
+                    f"@{operation.upper()}_LOOP",
+                    "0;JMP",
+                    f"({operation.upper()}_DONE)"
+                ])
+            elif op_type == 'div':
+                # Division requires a loop in Hack assembly
+                code_lines.extend([
+                    "// Division using repeated subtraction",
+                    "@R13",  # Use R13 as dividend
+                    "M=D",   # Store first operand (dividend)
+                    "D=M",   # Load second operand (divisor)
+                    "@R14",  # Use R14 as divisor
+                    "M=D",
+                    "@R15",  # Use R15 as quotient counter
+                    "M=0",   # Initialize quotient to 0
+                    f"({operation.upper()}_LOOP)",
+                    "@R14",
+                    "D=M",
+                    f"@{operation.upper()}_DONE",
+                    "D;JEQ", # If divisor is 0, done (division by zero)
+                    "@R13",
+                    "D=M",
+                    f"@{operation.upper()}_DONE",
+                    "D;JLT", # If dividend < 0, done
+                    "@R14",
+                    "D=M",
+                    "@R13",
+                    "M=M-D", # Subtract divisor from dividend
+                    "@R15",
+                    "M=M+1", # Increment quotient
+                    f"@{operation.upper()}_LOOP",
+                    "0;JMP",
+                    f"({operation.upper()}_DONE)",
+                    "@R15",
+                    "D=M"    # Load quotient result
+                ])
             elif op_type == 'and':
                 code_lines.append("D=D&M")
             elif op_type == 'or':
@@ -1783,7 +2313,7 @@ level-based barriers for synchronization and distributed termination detection.
                     # Generate memory-optimized operation code
                     op_type = operation.split('_')[0]
                     
-                    if op_type in ['add', 'sub', 'and', 'or'] and len(transition.in_places) >= 2:
+                    if op_type in ['add', 'sub', 'mul', 'div', 'and', 'or'] and len(transition.in_places) >= 2:
                         # Binary operations with memory locations
                         loc_a = memory_map['location_map'][transition.in_places[0].name]
                         loc_b = memory_map['location_map'][transition.in_places[1].name]
@@ -1799,6 +2329,61 @@ level-based barriers for synchronization and distributed termination detection.
                             assembly_lines.append("D=D+M")
                         elif op_type == 'sub':
                             assembly_lines.append("D=D-M")
+                        elif op_type == 'mul':
+                            # Simple multiplication for multi-core assembly
+                            assembly_lines.extend([
+                                "// Multiplication (simplified)",
+                                "@R13",
+                                "M=D",
+                                "D=M",
+                                "@R14", 
+                                "M=D",
+                                "D=0",
+                                f"(MUL_LOOP_{level})",
+                                "@R14",
+                                "D=M",
+                                f"@MUL_DONE_{level}",
+                                "D;JEQ",
+                                "@R13",
+                                "D=D+M",
+                                "@R14",
+                                "M=M-1",
+                                f"@MUL_LOOP_{level}",
+                                "0;JMP",
+                                f"(MUL_DONE_{level})"
+                            ])
+                        elif op_type == 'div':
+                            # Simple division for multi-core assembly
+                            assembly_lines.extend([
+                                "// Division (simplified)",
+                                "@R13",
+                                "M=D",
+                                "D=M",
+                                "@R14", 
+                                "M=D",
+                                "@R15",
+                                "M=0",
+                                f"(DIV_LOOP_{level})",
+                                "@R14",
+                                "D=M",
+                                f"@DIV_DONE_{level}",
+                                "D;JEQ",
+                                "@R13",
+                                "D=M",
+                                f"@DIV_DONE_{level}",
+                                "D;JLT",
+                                "@R14",
+                                "D=M",
+                                "@R13",
+                                "M=M-D",
+                                "@R15",
+                                "M=M+1",
+                                f"@DIV_LOOP_{level}",
+                                "0;JMP",
+                                f"(DIV_DONE_{level})",
+                                "@R15",
+                                "D=M"
+                            ])
                         elif op_type == 'and':
                             assembly_lines.append("D=D&M")
                         elif op_type == 'or':

@@ -51,75 +51,75 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
     - Test memory optimization with locals
     - _Requirements: US-1.1, US-1.2_
 
-- [ ] 2. Implement arithmetic extensions
-  - [ ] 2.1 Implement mul operation
+- [x] 2. Implement arithmetic extensions
+  - [x] 2.1 Implement mul operation
     - Add mul_operation method following binary operation pattern
     - Handle integer overflow according to VM specification
     - Integrate with multi-core execution and memory optimization
     - _Requirements: US-2.1_
 
-  - [ ] 2.2 Implement div operation
+  - [x] 2.2 Implement div operation
     - Add div_operation method for integer division
     - Handle division by zero appropriately
     - Maintain VM semantic consistency
     - _Requirements: US-2.2_
 
-  - [ ] 2.3 Write property test for arithmetic operations
+  - [x] 2.3 Write property test for arithmetic operations
     - **Property 2: Arithmetic operation correctness**
     - **Validates: Requirements US-2.1, US-2.2**
 
-  - [ ] 2.4 Write unit tests for arithmetic edge cases
+  - [x] 2.4 Write unit tests for arithmetic edge cases
     - Test multiplication overflow
     - Test division by zero handling
     - Test arithmetic with negative numbers
     - _Requirements: US-2.1, US-2.2_
 
-- [ ] 3. Checkpoint - Ensure all tests pass
+- [x] 3. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Implement control flow framework
-  - [ ] 4.1 Design and implement label management system
+- [x] 4. Implement control flow framework
+  - [x] 4.1 Design and implement label management system
     - Create ControlFlowManager class
     - Implement label definition and resolution
     - Handle function-scoped labels
     - _Requirements: US-3.3_
 
-  - [ ] 4.2 Implement label operation
+  - [x] 4.2 Implement label operation
     - Add label_operation method
     - Create control flow places for labels
     - Integrate with function scoping
     - _Requirements: US-3.3_
 
-  - [ ] 4.3 Implement goto operation
+  - [x] 4.3 Implement goto operation
     - Add goto_operation method using choice primitive
     - Route execution tokens to target labels
     - Maintain Petri net structural semantics
     - _Requirements: US-3.2_
 
-  - [ ] 4.4 Write unit tests for basic control flow
+  - [x] 4.4 Write unit tests for basic control flow
     - Test label definition and goto operations
     - Test control flow within function boundaries
     - Test error handling for undefined labels
     - _Requirements: US-3.2, US-3.3_
 
-- [ ] 5. Implement conditional control flow
-  - [ ] 5.1 Implement if-goto operation
+- [x] 5. Implement conditional control flow
+  - [x] 5.1 Implement if-goto operation
     - Add if_goto_operation method using choice primitive
     - Handle conditional execution based on stack value
     - Route tokens based on condition evaluation
     - _Requirements: US-3.1_
 
-  - [ ] 5.2 Update _execute_command to handle control flow
+  - [x] 5.2 Update _execute_command to handle control flow
     - Add cases for "label", "goto", "if-goto" commands
     - Ensure proper command parsing and execution
     - Maintain compatibility with existing operations
     - _Requirements: US-3.1, US-3.2, US-3.3_
 
-  - [ ] 5.3 Write property test for control flow operations
+  - [x] 5.3 Write property test for control flow operations
     - **Property 3: Control flow correctness**
     - **Validates: Requirements US-3.1, US-3.2, US-3.3**
 
-  - [ ] 5.4 Write integration tests for control flow patterns
+  - [x] 5.4 Write integration tests for control flow patterns
     - Test simple loops using goto/if-goto
     - Test conditional execution patterns
     - Test nested control structures

@@ -11,8 +11,12 @@ class Place:
         self.in_transitions = []
 
     def put_token(self, token):
-        """Add a token to this place"""
-        self.tokens.append(token)
+        """Add a token to this place - only one token allowed"""
+        if self.has_token():
+            # Replace existing token instead of accumulating
+            self.tokens = [token]
+        else:
+            self.tokens.append(token)
 
     def get_token(self):
         """Remove and return a token from this place"""
