@@ -37,7 +37,7 @@ def generate_actual_assembly_files():
     core_assignments = translator._assign_operations_to_cores(execution_plan, 1)
     memory_map = translator._optimize_memory_allocation()
     
-    single_core_assembly = translator._generate_single_core_assembly(core_assignments[0], memory_map)
+    single_core_assembly = translator._generate_core_rom(0, core_assignments[0], memory_map, 1)
     
     print("Single-core assembly (showing memory usage):")
     for i, line in enumerate(single_core_assembly):

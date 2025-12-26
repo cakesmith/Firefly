@@ -837,7 +837,7 @@ class VMToPetriTranslator:
     def generate_multicore_assembly(self, num_cores=1, output_dir="test_results"):
         """
         Analyze the Petri net and generate assembly code for n cores
-        For multi-core, creates separate ROM files for each core
+        Uses unified core generation logic for both single and multi-core cases
         """
         if num_cores < 1:
             raise ValueError("Number of cores must be >= 1")
@@ -851,10 +851,12 @@ class VMToPetriTranslator:
         
         # Generate core assignments
         core_assignments = self._assign_operations_to_cores(execution_plan, num_cores)
+        memory_map = self._optimize_memory_allocation()
         
         if num_cores == 1:
-            # Single core - return assembly as before
-            assembly_code = self._generate_single_core_assembly(core_assignments[0], self._optimize_memory_allocation())
+            # Single core - use same core generation logic but return assembly directly
+            operations = core_assignments[0]
+            assembly_code = self._generate_core_rom(0, operations, memory_map, num_cores)
             return assembly_code
         else:
             # Multi-core - create separate ROM files for each core
@@ -914,59 +916,108 @@ class VMToPetriTranslator:
         return all_roms
         
     def _generate_core_rom(self, core_id, operations, memory_map, num_cores):
-        """Generate ROM content for a specific core with distributed termination"""
+        """Generate ROM content for a specific core with unified single/multi-core logic"""
         rom_lines = [
-            f"// Core {core_id} ROM - Distributed Petri-net Execution",
+            f"// Core {core_id} ROM - Unified Petri-net Execution",
             f"// Generated for {num_cores}-core system",
             f"// Operations: {len(operations)}",
             "//",
-            f"// Memory Layout:",
-            f"// @0-15: System registers",
-            f"// @16-31: Core status flags (debugging only)",
-            f"// @32-47: Level synchronization area (coordination)", 
-            f"// @256+: Optimized place memory",
-            f"// @512+: Shared results area",
-            "//",
-            "",
-            f"// Core {core_id} initialization",
-            f"@{16 + core_id}",
-            "M=0  // Set status to idle (debugging)",
-            ""
         ]
+        
+        # Add memory layout info
+        if num_cores == 1:
+            rom_lines.extend([
+                f"// Single-core Memory Layout:",
+                f"// @0-15: System registers",
+                f"// @256+: Optimized place memory",
+                f"// @512+: Stack area",
+                "//",
+                "",
+                "// Initialize stack pointer", 
+                "@512",  # Use higher stack for consistency
+                "D=A",
+                "@SP",
+                "M=D",
+                ""
+            ])
+        else:
+            rom_lines.extend([
+                f"// Multi-core Memory Layout:",
+                f"// @0-15: System registers",
+                f"// @16-31: Core status flags (debugging only)",
+                f"// @32-47: Level synchronization area (coordination)", 
+                f"// @256+: Optimized place memory",
+                f"// @512+: Shared results area",
+                "//",
+                "",
+                f"// Core {core_id} initialization",
+                f"@{16 + core_id}",
+                "M=0  // Set status to idle (debugging)",
+                ""
+            ])
+        
+        # Initialize constants in optimized memory locations (same for both single/multi-core)
+        rom_lines.append("// Initialize constants in optimized memory")
+        for place_name, place in self.net.places.items():
+            if place_name.startswith("const_") and place.has_token():
+                value = place.tokens[0].value
+                memory_loc = memory_map['location_map'][place_name]
+                rom_lines.extend([
+                    f"// Constant {value} -> @{memory_loc}",
+                    f"@{value}",
+                    "D=A",
+                    f"@{memory_loc}",
+                    "M=D"
+                ])
+        rom_lines.append("")
         
         # Check if this core has any operations
         if not operations:
-            # Idle core - just wait and terminate when final level completes
-            rom_lines.extend([
-                f"(CORE_{core_id}_IDLE)",
-                f"// Core {core_id} has no operations - wait for program completion",
-                f"// Wait for final level completion (distributed termination)",
-                f"@{32 + self._get_final_level(operations)}",  # Final level sync
-                "D=M",
-                f"@{(1 << num_cores) - 1}",  # All cores mask
-                "D=D-A",
-                f"@CORE_{core_id}_TERMINATE",
-                "D;JEQ",  # Final level complete, terminate
-                f"@CORE_{core_id}_IDLE",
-                "0;JMP",  # Keep waiting
-                "",
-                f"(CORE_{core_id}_TERMINATE)",
-                f"// Program complete - core {core_id} self-terminates",
-                f"@{16 + core_id}",
-                "M=2  // Set status to done (debugging)",
-                f"@CORE_{core_id}_HALT",
-                "0;JMP"
-            ])
+            # Idle core - different handling for single vs multi-core
+            if num_cores == 1:
+                rom_lines.extend([
+                    "// No operations to execute",
+                    "(END)",
+                    "@END", 
+                    "0;JMP"
+                ])
+            else:
+                rom_lines.extend([
+                    f"(CORE_{core_id}_IDLE)",
+                    f"// Core {core_id} has no operations - wait for program completion",
+                    f"// Wait for final level completion (distributed termination)",
+                    f"@{32 + self._get_final_level(operations)}",  # Final level sync
+                    "D=M",
+                    f"@{(1 << num_cores) - 1}",  # All cores mask
+                    "D=D-A",
+                    f"@CORE_{core_id}_TERMINATE",
+                    "D;JEQ",  # Final level complete, terminate
+                    f"@CORE_{core_id}_IDLE",
+                    "0;JMP",  # Keep waiting
+                    "",
+                    f"(CORE_{core_id}_TERMINATE)",
+                    f"// Program complete - core {core_id} self-terminates",
+                    f"@{16 + core_id}",
+                    "M=2  // Set status to done (debugging)",
+                    f"@CORE_{core_id}_HALT",
+                    "0;JMP"
+                ])
             return rom_lines
         
-        # Working core - execute operations then self-terminate
-        rom_lines.extend([
-            f"(CORE_{core_id}_START)",
-            f"// Core {core_id} execution begins",
-            f"@{16 + core_id}",
-            "M=1  // Set status to working (debugging)",
-            ""
-        ])
+        # Working core - execute operations
+        if num_cores == 1:
+            rom_lines.extend([
+                f"// Single-core execution begins",
+                ""
+            ])
+        else:
+            rom_lines.extend([
+                f"(CORE_{core_id}_START)",
+                f"// Core {core_id} execution begins",
+                f"@{16 + core_id}",
+                "M=1  // Set status to working (debugging)",
+                ""
+            ])
         
         # Group operations by execution level for synchronization
         operations_by_level = {}
@@ -978,79 +1029,110 @@ class VMToPetriTranslator:
         
         final_level = max(operations_by_level.keys()) if operations_by_level else 0
         
-        # Generate code for each level with synchronization
+        # Generate code for each level - simplified for single-core
         for level in sorted(operations_by_level.keys()):
             level_ops = operations_by_level[level]
             
             rom_lines.extend([
                 f"// === Level {level} Operations ===",
-                f"// Level-based barrier synchronization",
-                f"(LEVEL_{level}_BARRIER)",
             ])
             
-            # Level barrier synchronization (distributed)
-            rom_lines.extend([
-                f"// Signal ready for level {level}",
-                f"@{32 + level}",  # Sync area for this level
-                "D=M",
-                f"@{1 << core_id}",  # Set bit for this core
-                "D=D|A",
-                f"@{32 + level}",
-                "M=D",
-                "",
-                f"// Wait for all cores ready at level {level}",
-                f"(LEVEL_{level}_WAIT)",
-                f"@{32 + level}",
-                "D=M",
-                f"@{self._get_active_cores_mask(num_cores)}",  # Only active cores
-                "D=D-A",
-                f"@LEVEL_{level}_EXECUTE",
-                "D;JEQ",  # All active cores ready, proceed
-                f"@LEVEL_{level}_WAIT",
-                "0;JMP",  # Keep waiting
-                "",
-                f"(LEVEL_{level}_EXECUTE)"
-            ])
+            # Level barrier synchronization (only for multi-core)
+            if num_cores > 1:
+                rom_lines.extend([
+                    f"// Level-based barrier synchronization",
+                    f"(LEVEL_{level}_BARRIER)",
+                    f"// Signal ready for level {level}",
+                    f"@{32 + level}",  # Sync area for this level
+                    "D=M",
+                    f"@{1 << core_id}",  # Set bit for this core
+                    "D=D|A",
+                    f"@{32 + level}",
+                    "M=D",
+                    "",
+                    f"// Wait for all cores ready at level {level}",
+                    f"(LEVEL_{level}_WAIT)",
+                    f"@{32 + level}",
+                    "D=M",
+                    f"@{self._get_active_cores_mask(num_cores)}",  # Only active cores
+                    "D=D-A",
+                    f"@LEVEL_{level}_EXECUTE",
+                    "D;JEQ",  # All active cores ready, proceed
+                    f"@LEVEL_{level}_WAIT",
+                    "0;JMP",  # Keep waiting
+                    "",
+                    f"(LEVEL_{level}_EXECUTE)"
+                ])
             
-            # Execute operations for this level
+            # Execute operations for this level (same logic for single/multi-core)
             for op_info in level_ops:
                 operation = op_info['operation']
                 transition = op_info['transition']
                 
                 rom_lines.extend([
                     f"// Operation: {operation}",
-                    f"// Core {core_id} executing {operation}"
                 ])
                 
-                # Generate memory-optimized operation code
+                if num_cores > 1:
+                    rom_lines.append(f"// Core {core_id} executing {operation}")
+                
+                # Generate memory-optimized operation code (unified logic)
                 op_code = self._generate_core_operation_code(operation, transition, memory_map)
                 rom_lines.extend(op_code)
                 rom_lines.append("")
         
-        # Distributed termination - no coordinator needed
-        rom_lines.extend([
-            f"// Distributed termination - final level barrier IS completion detection",
-            f"// Core {core_id} completed all operations",
-            f"@{16 + core_id}",
-            "M=2  // Set status to done (debugging)",
-            "",
-            f"// Wait for final level completion (level {final_level})",
-            f"(FINAL_BARRIER_WAIT)",
-            f"@{32 + final_level}",
-            "D=M", 
-            f"@{self._get_active_cores_mask(num_cores)}",  # All active cores mask
-            "D=D-A",
-            f"@CORE_{core_id}_TERMINATE",
-            "D;JEQ",  # All cores finished final level
-            f"@FINAL_BARRIER_WAIT",
-            "0;JMP",  # Keep waiting
-            "",
-            f"(CORE_{core_id}_TERMINATE)",
-            f"// Program complete - core {core_id} self-terminates",
-            f"(CORE_{core_id}_HALT)",
-            f"@CORE_{core_id}_HALT",
-            "0;JMP  // Halt core"
-        ])
+        # Termination logic - different for single vs multi-core
+        if num_cores == 1:
+            # Single-core: push results to stack and terminate
+            rom_lines.extend([
+                "// Push final results onto stack"
+            ])
+            
+            for place in self.result_places:
+                if place.name in memory_map['location_map']:
+                    memory_loc = memory_map['location_map'][place.name]
+                    rom_lines.extend([
+                        f"// Push result from @{memory_loc}",
+                        f"@{memory_loc}",
+                        "D=M",
+                        "@SP",
+                        "M=M+1",
+                        "A=M-1",
+                        "M=D"
+                    ])
+                    
+            rom_lines.extend([
+                "//",
+                "// End of program",
+                "(END)",
+                "@END", 
+                "0;JMP"
+            ])
+        else:
+            # Multi-core: distributed termination
+            rom_lines.extend([
+                f"// Distributed termination - final level barrier IS completion detection",
+                f"// Core {core_id} completed all operations",
+                f"@{16 + core_id}",
+                "M=2  // Set status to done (debugging)",
+                "",
+                f"// Wait for final level completion (level {final_level})",
+                f"(FINAL_BARRIER_WAIT)",
+                f"@{32 + final_level}",
+                "D=M", 
+                f"@{self._get_active_cores_mask(num_cores)}",  # All active cores mask
+                "D=D-A",
+                f"@CORE_{core_id}_TERMINATE",
+                "D;JEQ",  # All cores finished final level
+                f"@FINAL_BARRIER_WAIT",
+                "0;JMP",  # Keep waiting
+                "",
+                f"(CORE_{core_id}_TERMINATE)",
+                f"// Program complete - core {core_id} self-terminates",
+                f"(CORE_{core_id}_HALT)",
+                f"@CORE_{core_id}_HALT",
+                "0;JMP  // Halt core"
+            ])
         
         return rom_lines
         
@@ -1320,11 +1402,13 @@ level-based barriers for synchronization and distributed termination detection.
     def _generate_assembly_code(self, core_assignments, num_cores):
         """
         Generate Hack assembly code for multi-core execution
-        This method is kept for backward compatibility but now delegates to the new ROM generation
+        Uses unified core generation logic for both single and multi-core cases
         """
+        memory_map = self._optimize_memory_allocation()
+        
         if num_cores == 1:
-            memory_map = self._optimize_memory_allocation()
-            return self._generate_single_core_assembly(core_assignments[0], memory_map)
+            # Single core - use unified core generation logic
+            return self._generate_core_rom(0, core_assignments[0], memory_map, num_cores)
         else:
             # For multi-core, return a summary instead of monolithic assembly
             roms = self._generate_multicore_roms(core_assignments, num_cores)
@@ -1520,135 +1604,6 @@ level-based barriers for synchronization and distributed termination detection.
             'location_to_places': location_to_places,
             'total_locations': next_location - 256
         }
-        
-    def _generate_single_core_assembly(self, operations, memory_map):
-        """Generate assembly for single core execution with memory optimization"""
-        assembly_lines = [
-            "// Single-core sequential execution with memory optimization",
-            "// Initialize stack pointer", 
-            "@256",
-            "D=A",
-            "@SP",
-            "M=D",
-            "//"
-        ]
-        
-        # Initialize constants in their allocated memory locations
-        assembly_lines.append("// Initialize constants in optimized memory locations")
-        for place_name, place in self.net.places.items():
-            if place_name.startswith("const_") and place.has_token():
-                value = place.tokens[0].value
-                memory_loc = memory_map['location_map'][place_name]
-                assembly_lines.extend([
-                    f"// Constant {value} -> @{memory_loc}",
-                    f"@{value}",
-                    "D=A",
-                    f"@{memory_loc}",
-                    "M=D"
-                ])
-                
-        assembly_lines.append("//")
-        
-        # Generate code for each operation in order
-        for op_info in operations:
-            operation = op_info['operation']
-            transition = op_info['transition']
-            
-            assembly_lines.extend([
-                f"// Operation: {operation}",
-                f"// Level: {op_info['level']}"
-            ])
-            
-            # Generate operation-specific assembly with memory locations
-            op_type = operation.split('_')[0]
-            
-            if op_type in ['add', 'sub', 'and', 'or']:
-                # Binary operations: load from memory locations, compute, store result
-                input_places = transition.in_places
-                output_places = transition.out_places
-                
-                if len(input_places) >= 2 and len(output_places) >= 1:
-                    loc_a = memory_map['location_map'][input_places[0].name]
-                    loc_b = memory_map['location_map'][input_places[1].name]
-                    loc_result = memory_map['location_map'][output_places[0].name]
-                    
-                    assembly_lines.extend([
-                        f"// Load operands from @{loc_a} and @{loc_b}",
-                        f"@{loc_a}",
-                        "D=M",
-                        f"@{loc_b}",
-                    ])
-                    
-                    if op_type == 'add':
-                        assembly_lines.append("D=D+M")
-                    elif op_type == 'sub':
-                        assembly_lines.append("D=D-M")
-                    elif op_type == 'and':
-                        assembly_lines.append("D=D&M")
-                    elif op_type == 'or':
-                        assembly_lines.append("D=D|M")
-                        
-                    assembly_lines.extend([
-                        f"// Store result to @{loc_result}",
-                        f"@{loc_result}",
-                        "M=D"
-                    ])
-                    
-            elif op_type in ['neg', 'not']:
-                # Unary operations
-                input_places = transition.in_places
-                output_places = transition.out_places
-                
-                if len(input_places) >= 1 and len(output_places) >= 1:
-                    loc_input = memory_map['location_map'][input_places[0].name]
-                    loc_result = memory_map['location_map'][output_places[0].name]
-                    
-                    assembly_lines.extend([
-                        f"// Load operand from @{loc_input}",
-                        f"@{loc_input}",
-                        "D=M",
-                    ])
-                    
-                    if op_type == 'neg':
-                        assembly_lines.append("D=-D")
-                    elif op_type == 'not':
-                        assembly_lines.append("D=!D")
-                        
-                    assembly_lines.extend([
-                        f"// Store result to @{loc_result}",
-                        f"@{loc_result}",
-                        "M=D"
-                    ])
-                    
-            assembly_lines.append("//")
-            
-        # Push final results onto stack
-        assembly_lines.extend([
-            "// Push final results onto stack"
-        ])
-        
-        for place in self.result_places:
-            if place.name in memory_map['location_map']:
-                memory_loc = memory_map['location_map'][place.name]
-                assembly_lines.extend([
-                    f"// Push result from @{memory_loc}",
-                    f"@{memory_loc}",
-                    "D=M",
-                    "@SP",
-                    "M=M+1",
-                    "A=M-1",
-                    "M=D"
-                ])
-                
-        assembly_lines.extend([
-            "//",
-            "// End of program",
-            "(END)",
-            "@END", 
-            "0;JMP"
-        ])
-        
-        return assembly_lines
         
     def _generate_multi_core_assembly(self, core_assignments, num_cores, memory_map):
         """Generate assembly for distributed multi-core execution (no coordinator)"""

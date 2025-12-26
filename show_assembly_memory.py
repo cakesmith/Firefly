@@ -41,10 +41,10 @@ def show_assembly_generation():
     print("\n3. GENERATED ASSEMBLY CODE")
     print("-" * 30)
     
-    # Generate assembly for single core
+    # Generate assembly for single core using unified approach
     execution_plan = translator._analyze_execution_dependencies()
     core_assignments = translator._assign_operations_to_cores(execution_plan, 1)
-    assembly = translator._generate_single_core_assembly(core_assignments[0], memory_map)
+    assembly = translator._generate_core_rom(0, core_assignments[0], memory_map, 1)
     
     print("Generated assembly:")
     for line in assembly:

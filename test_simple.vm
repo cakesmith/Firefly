@@ -1,0 +1,6 @@
+// Simple test VM file
+push constant 7
+push constant 8
+add
+push constant 2
+sub
