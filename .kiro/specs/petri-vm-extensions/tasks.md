@@ -126,7 +126,7 @@ This implementation plan extends the Petri Net VM with local variables, arithmet
     - _Requirements: US-3.1, US-3.2, US-3.3_
 
 - [ ] 6. Integrate control flow with multi-core execution
-  - [-] 6.1 Update execution dependency analysis for control flow
+  - [x] 6.1 Update execution dependency analysis for control flow
     - Modify _analyze_execution_dependencies to handle control flow
     - Implement conservative level assignment for goto/if-goto
     - Ensure distributed coordination works with control flow

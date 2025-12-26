@@ -2001,27 +2001,16 @@ level-based barriers for synchronization and distributed termination detection.
             
             # Handle goto operations
             if trans_name.startswith("goto_"):
-                # goto operations create dependencies on their target labels
-                # Conservative approach: goto depends on all operations before it
-                label_name = trans_name.replace("goto_", "").split("_")[0]
-                
-                # Find the target label transition
-                target_label_trans = None
-                for other_trans_name in self.net.transitions.keys():
-                    if other_trans_name.startswith(f"label_{label_name}") or \
-                       (f"label_{label_name}" in other_trans_name):
-                        target_label_trans = other_trans_name
-                        break
-                
-                if target_label_trans:
-                    # goto depends on the label being defined
-                    control_flow_deps[trans_name].append(target_label_trans)
+                # Extract label name from transition name
+                # Format: goto_LABELNAME_N
+                parts = trans_name.split("_")
+                if len(parts) >= 2:
+                    label_name = parts[1]
                     
-                    # Conservative: all operations that might execute after the label
-                    # must wait for the goto to potentially redirect control
+                    # Conservative approach: goto operations create dependencies
+                    # All operations that might execute after the goto must wait for it
                     for other_trans_name in self.net.transitions.keys():
                         if (other_trans_name != trans_name and 
-                            other_trans_name != target_label_trans and
                             not other_trans_name.startswith("goto_") and
                             not other_trans_name.startswith("if_goto_")):
                             # Other operations depend on control flow resolution
@@ -2029,53 +2018,83 @@ level-based barriers for synchronization and distributed termination detection.
             
             # Handle if-goto operations  
             elif trans_name.startswith("if_goto_"):
-                # if-goto operations create choice dependencies
-                label_name = trans_name.replace("if_goto_", "").split("_")[0]
-                
-                # Find the target label transition
-                target_label_trans = None
-                for other_trans_name in self.net.transitions.keys():
-                    if other_trans_name.startswith(f"label_{label_name}") or \
-                       (f"label_{label_name}" in other_trans_name):
-                        target_label_trans = other_trans_name
-                        break
-                
-                if target_label_trans:
-                    # if-goto depends on the label being defined
-                    control_flow_deps[trans_name].append(target_label_trans)
+                # Extract label name from transition name
+                # Format: if_goto_LABELNAME_N
+                parts = trans_name.split("_")
+                if len(parts) >= 3:
+                    label_name = parts[2]  # Skip "if" and "goto"
                     
-                    # Conservative: operations after if-goto must wait for choice resolution
-                    # Both the jump path and continue path are possible
+                    # Conservative approach: if-goto creates choice dependencies
+                    # Operations that might be affected by the conditional jump
+                    # must wait for the choice to be resolved
+                    
+                    # Find related operations that might be in the jump path
                     for other_trans_name in self.net.transitions.keys():
                         if (other_trans_name != trans_name and 
-                            other_trans_name != target_label_trans and
                             not other_trans_name.startswith("goto_") and
-                            not other_trans_name.startswith("if_goto_") and
-                            not other_trans_name.startswith("label_")):
-                            # Other operations depend on control flow choice resolution
-                            control_flow_deps[other_trans_name].append(trans_name)
-            
-            # Handle label operations
-            elif trans_name.startswith("label_"):
-                # Labels create synchronization points
-                # All operations that might jump to this label depend on it being defined
-                label_name = trans_name.replace("label_", "").split("_")[0]
-                
-                # Find goto/if-goto operations that target this label
-                for other_trans_name in self.net.transitions.keys():
-                    if (other_trans_name.startswith(f"goto_{label_name}") or 
-                        other_trans_name.startswith(f"if_goto_{label_name}")):
-                        # These operations depend on the label
-                        control_flow_deps[other_trans_name].append(trans_name)
+                            not other_trans_name.startswith("if_goto_")):
+                            
+                            # Check if this operation might be affected by the jump
+                            # Conservative: assume all subsequent operations depend on choice
+                            if self._is_potentially_affected_by_control_flow(trans_name, other_trans_name):
+                                control_flow_deps[other_trans_name].append(trans_name)
+        
+        # Add inter-control-flow dependencies
+        # Multiple control flow operations in sequence create dependencies
+        control_flow_transitions = [name for name in self.net.transitions.keys() 
+                                  if name.startswith(('goto_', 'if_goto_'))]
+        
+        for i, cf_trans1 in enumerate(control_flow_transitions):
+            for cf_trans2 in control_flow_transitions[i+1:]:
+                # Later control flow operations depend on earlier ones
+                # This ensures proper sequencing of control flow decisions
+                control_flow_deps[cf_trans2].append(cf_trans1)
         
         # Log control flow dependencies for debugging
         cf_deps_found = {k: v for k, v in control_flow_deps.items() if v}
         if cf_deps_found:
             print(f"\nControl Flow Dependencies Found:")
-            for trans_name, deps in cf_deps_found.items():
-                print(f"  {trans_name} depends on: {deps}")
+            for trans_name, deps in list(cf_deps_found.items())[:3]:  # Show first 3
+                print(f"  {trans_name} depends on: {deps[:3]}{'...' if len(deps) > 3 else ''}")
+            if len(cf_deps_found) > 3:
+                print(f"  ... and {len(cf_deps_found) - 3} more")
         
         return control_flow_deps
+        
+    def _is_potentially_affected_by_control_flow(self, cf_transition, other_transition):
+        """
+        Determine if a transition might be affected by a control flow operation
+        More refined conservative approach: focus on operations that could be in control flow paths
+        """
+        # Skip other control flow operations (they have their own dependencies)
+        if other_transition.startswith(('goto_', 'if_goto_')):
+            return False
+            
+        # Skip operations that are clearly independent (constants, sources)
+        if other_transition.startswith(('const_', 'source_')):
+            return False
+            
+        # Operations that are likely to be in the execution path and could be affected
+        # by control flow decisions should depend on control flow operations
+        
+        # Local variable operations could be in loops
+        if other_transition.startswith(('dup_local_', 'pop_local_')):
+            return True
+            
+        # Arithmetic operations could be in loops  
+        if any(other_transition.startswith(op) for op in ['add_', 'sub_', 'mul_', 'div_', 'neg_']):
+            return True
+            
+        # Comparison operations could be in conditional paths
+        if any(other_transition.startswith(op) for op in ['eq_', 'lt_', 'gt_', 'and_', 'or_', 'not_']):
+            return True
+            
+        # Function call operations could be affected by control flow
+        if other_transition.startswith(('call_', 'return_')):
+            return True
+            
+        # Most other operations are potentially affected by control flow
+        return True
         
     def _assign_operations_to_cores(self, execution_plan, num_cores):
         """
