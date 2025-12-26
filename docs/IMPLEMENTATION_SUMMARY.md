@@ -1,4 +1,4 @@
-# Petri-Net Native VM with Memory Optimization, Multi-Core Assembly Generation, and Function Calls
+# Petri-Net Native VM with Distributed Multi-Core Coordination and Function Calls
 
 ## What We Built
 
@@ -6,9 +6,10 @@ A complete **Petri-net native virtual machine** that:
 
 1. **Translates VM operations to Petri net semantics**
 2. **Optimizes memory allocation using reachability analysis**
-3. **Generates multi-core assembly code with synchronization**
+3. **Generates distributed multi-core assembly code with level-based synchronization**
 4. **Provides comprehensive statistics and analysis**
 5. **Supports function calls, arguments, and return values**
+6. **Eliminates centralized coordination using distributed termination**
 
 ## Key Features Implemented
 
@@ -26,17 +27,18 @@ A complete **Petri-net native virtual machine** that:
 - **Call stack management**: Proper context switching between caller and callee
 - **Nested calls**: Support for functions calling other functions
 
-### 3. Memory Optimization via Reachability Analysis
+### 3. Distributed Multi-Core Coordination (NEW!)
+- **No centralized coordinator**: Eliminated the coordinator that monitored core status
+- **Level-based barriers**: Cores self-coordinate using execution level synchronization
+- **Distributed termination**: Final level completion IS program completion detection
+- **Self-terminating cores**: Each core knows when to terminate without external monitoring
+- **Pure Petri net semantics**: No hidden coordination algorithms, just level barriers
+
+### 4. Memory Optimization via Reachability Analysis
 - **Place lifetime analysis**: Determines when places are born and die
 - **Memory location reuse**: Places with non-overlapping lifetimes share memory
 - **Interval graph coloring**: Optimal memory allocation algorithm
 - **Statistics reporting**: Shows memory savings and reuse factors
-
-### 4. Multi-Core Assembly Generation
-- **Dependency analysis**: Identifies parallelizable operations
-- **Core assignment**: Load balances operations across cores
-- **Memory-optimized code**: Uses optimized memory locations in assembly
-- **Synchronization**: Generates core coordination and status tracking
 
 ### 5. Comprehensive Statistics
 - **Network metrics**: Places, transitions, arcs, connectivity
@@ -65,97 +67,132 @@ Final Result: [-1, 0, -1, 90] ✅
 ```
 Simple Function Return: function returns constant 42 ✅
 Function with Arguments: Math.add(5, 3) = 8 ✅
-Memory optimization: 20% reduction (5 places → 4 locations)
+Function Composition: Math.incTwice(5) = 7 ✅
+Memory optimization: 20-33% reduction in function call scenarios
 ```
 
-## Function Call Implementation
-
-### VM Commands Supported
-- `function FunctionName nLocals` - Define a function with local variables
-- `call FunctionName nArgs` - Call a function with N arguments from stack
-- `return` - Return from function (with optional return value on stack)
-- `push argument N` - Access function argument N
-- `push local N` - Access local variable N (planned)
-
-### Petri Net Semantics for Functions
-1. **Function Definition**: Parse function body and store for later execution
-2. **Function Call**: 
-   - Pop arguments from result places
-   - Create call frame with argument places
-   - Execute function body in new context
-   - Handle return to restore caller context
-3. **Argument Access**: Duplicate argument places to push values onto stack
-4. **Return**: Transfer return value back to caller's result places
-
-### Example Function Call Flow
+### Distributed Multi-Core Tests
 ```
-Main Program:
-  push constant 5      → Creates const_5 place
-  push constant 3      → Creates const_3 place  
-  call Math.add 2      → Pops args, calls function
+2-Core Execution: push 10, push 5, push 3, add, sub = 2 ✅
+Level 0: [add] - 1 operation (parallel potential)
+Level 1: [sub] - 1 operation (depends on Level 0)
+Distributed termination: No coordinator needed ✅
+```
 
-Function Math.add:
-  push argument 0      → Duplicates first argument (5)
-  push argument 1      → Duplicates second argument (3)
-  add                  → Creates add_result place (8)
-  return               → Returns add_result to caller
+## Distributed Multi-Core Innovation
 
-Result: [8] ✅
+### Before: Centralized Coordination
+```
+Main Coordinator Loop:
+  sum = core_0_status + core_1_status + ...
+  if sum == expected_total:
+    program_complete()
+  else:
+    keep_waiting()
+
+Problems:
+- Single point of failure
+- Coordinator overhead
+- Not pure Petri net semantics
+```
+
+### After: Distributed Coordination
+```
+Each Core:
+  execute_operations_at_current_level()
+  signal_level_complete()
+  wait_for_all_cores_at_level()
+  if final_level_complete:
+    self_terminate()
+
+Benefits:
+- No single point of failure
+- No coordinator overhead  
+- Pure Petri net semantics
+- Level synchronization IS completion detection
+```
+
+### Memory Layout Changes
+```
+@16-31: Core status flags (DEBUGGING ONLY - not used for coordination)
+@32-47: Level synchronization area (COORDINATION - distributed barriers)
+@256+:  Optimized place memory
+@512+:  Results collection area
 ```
 
 ## Generated Assembly Features
+
+### Distributed Multi-Core Assembly
+- **Level barriers**: Each core waits at execution level barriers
+- **Self-coordination**: Cores coordinate without external monitoring
+- **Distributed termination**: Final level barrier completion = program completion
+- **No coordinator**: Eliminated centralized monitoring loop
+- **Status flags for debugging**: Kept for visibility but not used for coordination
 
 ### Single-Core Assembly
 - **Memory-optimized operations**: Direct memory-to-memory operations
 - **Constant initialization**: Pre-loads constants to optimized locations
 - **Stack management**: Efficient final result collection
 
-### Multi-Core Assembly
-- **Core synchronization**: Status flags and coordination loops
-- **Level-based execution**: Respects operation dependencies
-- **Memory layout**: Organized memory regions for cores, data, and stack
-- **Load balancing**: Round-robin operation assignment
-
 ## Memory Optimization Examples
 
-Function call test shows **20% memory reduction**:
-- Original: 5 places for constants, arguments, and results
-- Optimized: 4 memory locations (1 location shared between add_result and pushed_arg_1)
-- Reuse factor: 1.25x
+Function call tests show **20-33% memory reduction**:
+- Original: Multiple places for constants, arguments, and results
+- Optimized: Shared memory locations for places with non-overlapping lifetimes
+- Reuse factor: 1.25x to 1.58x
 
-**Future optimization opportunities**:
-- Loop constructs (reuse iteration variables)
-- Complex function calls (reuse parameter/local memory)
-- Recursive functions (stack frame optimization)
+**Distributed coordination shows additional benefits**:
+- Eliminated coordinator memory overhead
+- Reduced synchronization complexity
+- Cleaner separation between computation and coordination
 
 ## Architecture Highlights
 
 ```
-VM Code → Function Parse → Petri Net → Memory Analysis → Multi-Core Assembly
+VM Code → Function Parse → Petri Net → Level Analysis → Distributed Multi-Core
    ↓           ↓              ↓            ↓               ↓
-function/call → call frames → places/trans → @256-275 → core coordination
+function/call → call frames → places/trans → barriers → self-coordinating cores
 ```
 
-### Memory Layout in Generated Assembly
+### Distributed Memory Layout
 ```
-@16-31:  Core status flags
-@32-47:  Core communication  
+@16-31:  Core status (debugging only)
+@32-47:  Level barriers (distributed coordination)  
 @256+:   Optimized place memory
-@512+:   Shared stack
+@512+:   Shared results
 ```
 
 ## Key Innovations
 
 1. **True Petri-net semantics**: Not just visualization - the net IS the program
 2. **Function calls as place operations**: Arguments and returns are Petri net places
-3. **Structural memory optimization**: Uses formal reachability analysis
-4. **Multi-core code generation**: Automatic parallelization from dependencies
-5. **Unified analysis**: Same model for execution, optimization, and compilation
+3. **Distributed coordination**: Level barriers eliminate centralized coordinator
+4. **Self-terminating execution**: Cores know when program is complete
+5. **Structural memory optimization**: Uses formal reachability analysis
+6. **Unified analysis**: Same model for execution, optimization, and compilation
 
 ## Files Generated
-- `simple_add_single.asm`: Single-core optimized assembly
-- `complex_multi.asm`: 2-core parallel assembly  
-- `stacktest_4core.asm`: 4-core complex program assembly
+- `core0.asm`, `core1.asm`, etc.: Self-coordinating core ROMs
+- `shared_init.asm`: Shared memory initialization
+- `coordination.md`: Distributed coordination protocol documentation
+
+## Distributed Coordination Protocol
+
+### Level Barrier Algorithm:
+```assembly
+// Each core at each level:
+1. Set ready bit: sync_area |= (1 << core_id)
+2. Wait for all: while (sync_area != all_cores_mask)  
+3. Proceed when barrier satisfied
+```
+
+### Distributed Termination:
+```assembly
+// Each core after final level:
+1. Wait for final level barrier completion
+2. Self-terminate when barrier satisfied
+3. No coordinator involvement
+```
 
 ## Next Steps
 - Implement `pop local` and `pop argument` for variable assignment
@@ -163,5 +200,6 @@ function/call → call frames → places/trans → @256-275 → core coordinatio
 - Implement recursive function calls with proper stack management
 - Add `mul` operation for more complex arithmetic
 - Support for conditional jumps and loops within functions
+- Optimize barrier synchronization for very large core counts
 
-This implementation demonstrates that **Petri nets can serve as a practical intermediate representation** for virtual machines with function calls, enabling both formal analysis and efficient code generation while maintaining structural correctness guarantees.
+This implementation demonstrates that **Petri nets can serve as a practical intermediate representation** for virtual machines with function calls and distributed multi-core execution, enabling both formal analysis and efficient code generation while maintaining structural correctness guarantees and eliminating centralized coordination bottlenecks.

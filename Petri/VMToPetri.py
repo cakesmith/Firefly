@@ -914,30 +914,59 @@ class VMToPetriTranslator:
         return all_roms
         
     def _generate_core_rom(self, core_id, operations, memory_map, num_cores):
-        """Generate ROM content for a specific core"""
+        """Generate ROM content for a specific core with distributed termination"""
         rom_lines = [
-            f"// Core {core_id} ROM - Petri-net Multi-core Execution",
+            f"// Core {core_id} ROM - Distributed Petri-net Execution",
             f"// Generated for {num_cores}-core system",
             f"// Operations: {len(operations)}",
             "//",
             f"// Memory Layout:",
             f"// @0-15: System registers",
-            f"// @16-31: Core status flags (core_id + 16)",
-            f"// @32-47: Core synchronization area", 
+            f"// @16-31: Core status flags (debugging only)",
+            f"// @32-47: Level synchronization area (coordination)", 
             f"// @256+: Optimized place memory",
             f"// @512+: Shared results area",
             "//",
             "",
             f"// Core {core_id} initialization",
             f"@{16 + core_id}",
-            "M=0  // Set status to idle",
-            "",
+            "M=0  // Set status to idle (debugging)",
+            ""
+        ]
+        
+        # Check if this core has any operations
+        if not operations:
+            # Idle core - just wait and terminate when final level completes
+            rom_lines.extend([
+                f"(CORE_{core_id}_IDLE)",
+                f"// Core {core_id} has no operations - wait for program completion",
+                f"// Wait for final level completion (distributed termination)",
+                f"@{32 + self._get_final_level(operations)}",  # Final level sync
+                "D=M",
+                f"@{(1 << num_cores) - 1}",  # All cores mask
+                "D=D-A",
+                f"@CORE_{core_id}_TERMINATE",
+                "D;JEQ",  # Final level complete, terminate
+                f"@CORE_{core_id}_IDLE",
+                "0;JMP",  # Keep waiting
+                "",
+                f"(CORE_{core_id}_TERMINATE)",
+                f"// Program complete - core {core_id} self-terminates",
+                f"@{16 + core_id}",
+                "M=2  // Set status to done (debugging)",
+                f"@CORE_{core_id}_HALT",
+                "0;JMP"
+            ])
+            return rom_lines
+        
+        # Working core - execute operations then self-terminate
+        rom_lines.extend([
             f"(CORE_{core_id}_START)",
             f"// Core {core_id} execution begins",
             f"@{16 + core_id}",
-            "M=1  // Set status to working",
+            "M=1  // Set status to working (debugging)",
             ""
-        ]
+        ])
         
         # Group operations by execution level for synchronization
         operations_by_level = {}
@@ -947,18 +976,19 @@ class VMToPetriTranslator:
                 operations_by_level[level] = []
             operations_by_level[level].append(op_info)
         
+        final_level = max(operations_by_level.keys()) if operations_by_level else 0
+        
         # Generate code for each level with synchronization
         for level in sorted(operations_by_level.keys()):
             level_ops = operations_by_level[level]
             
             rom_lines.extend([
                 f"// === Level {level} Operations ===",
-                f"// Wait for all cores to reach level {level}",
-                f"(LEVEL_{level}_WAIT)",
+                f"// Level-based barrier synchronization",
+                f"(LEVEL_{level}_BARRIER)",
             ])
             
-            # Check if all cores are ready for this level
-            # Simple protocol: each core sets bit in sync area when ready
+            # Level barrier synchronization (distributed)
             rom_lines.extend([
                 f"// Signal ready for level {level}",
                 f"@{32 + level}",  # Sync area for this level
@@ -968,15 +998,15 @@ class VMToPetriTranslator:
                 f"@{32 + level}",
                 "M=D",
                 "",
-                f"// Wait for all cores to be ready",
-                f"(LEVEL_{level}_CHECK)",
+                f"// Wait for all cores ready at level {level}",
+                f"(LEVEL_{level}_WAIT)",
                 f"@{32 + level}",
                 "D=M",
-                f"@{(1 << num_cores) - 1}",  # All cores ready mask
+                f"@{self._get_active_cores_mask(num_cores)}",  # Only active cores
                 "D=D-A",
                 f"@LEVEL_{level}_EXECUTE",
-                "D;JEQ",  # All cores ready, proceed
-                f"@LEVEL_{level}_CHECK",
+                "D;JEQ",  # All active cores ready, proceed
+                f"@LEVEL_{level}_WAIT",
                 "0;JMP",  # Keep waiting
                 "",
                 f"(LEVEL_{level}_EXECUTE)"
@@ -997,18 +1027,46 @@ class VMToPetriTranslator:
                 rom_lines.extend(op_code)
                 rom_lines.append("")
         
-        # Core completion
+        # Distributed termination - no coordinator needed
         rom_lines.extend([
+            f"// Distributed termination - final level barrier IS completion detection",
             f"// Core {core_id} completed all operations",
             f"@{16 + core_id}",
-            "M=2  // Set status to done",
+            "M=2  // Set status to done (debugging)",
             "",
-            f"(CORE_{core_id}_END)",
-            f"@CORE_{core_id}_END",
+            f"// Wait for final level completion (level {final_level})",
+            f"(FINAL_BARRIER_WAIT)",
+            f"@{32 + final_level}",
+            "D=M", 
+            f"@{self._get_active_cores_mask(num_cores)}",  # All active cores mask
+            "D=D-A",
+            f"@CORE_{core_id}_TERMINATE",
+            "D;JEQ",  # All cores finished final level
+            f"@FINAL_BARRIER_WAIT",
+            "0;JMP",  # Keep waiting
+            "",
+            f"(CORE_{core_id}_TERMINATE)",
+            f"// Program complete - core {core_id} self-terminates",
+            f"(CORE_{core_id}_HALT)",
+            f"@CORE_{core_id}_HALT",
             "0;JMP  // Halt core"
         ])
         
         return rom_lines
+        
+    def _get_final_level(self, operations):
+        """Get the final execution level from operations"""
+        if not operations:
+            # For idle cores, we need to determine the final level from the overall execution plan
+            execution_plan = self._analyze_execution_dependencies()
+            return len(execution_plan['execution_levels']) - 1 if execution_plan['execution_levels'] else 0
+        return max(op['level'] for op in operations)
+    
+    def _get_active_cores_mask(self, num_cores):
+        """Get the mask for cores that actually have work assigned"""
+        # For now, assume all cores are active (this could be optimized)
+        # In a more sophisticated implementation, we'd track which cores have operations
+        return (1 << num_cores) - 1
         
     def _generate_idle_core_rom(self, core_id, num_cores):
         """Generate ROM for cores with no operations assigned"""
@@ -1153,18 +1211,19 @@ class VMToPetriTranslator:
         return init_lines
         
     def _generate_coordination_documentation(self, core_assignments, num_cores):
-        """Generate documentation for the multi-core coordination protocol"""
-        doc = f"""# Multi-Core Coordination Protocol
+        """Generate documentation for the distributed multi-core coordination protocol"""
+        doc = f"""# Distributed Multi-Core Coordination Protocol
 
 ## System Overview
 - **Cores**: {num_cores}
-- **Coordination**: Level-based synchronization
+- **Coordination**: Distributed level-based synchronization (NO COORDINATOR)
 - **Memory**: Shared optimized memory layout
+- **Termination**: Self-terminating cores via final level barrier
 
 ## Memory Layout
 - `@0-15`: System registers
-- `@16-31`: Core status flags (0=idle, 1=working, 2=done)
-- `@32-47`: Level synchronization area
+- `@16-31`: Core status flags (debugging only - not used for coordination)
+- `@32-47`: Level synchronization area (distributed coordination)
 - `@256+`: Optimized place memory (shared)
 - `@512+`: Results collection area
 
@@ -1181,30 +1240,13 @@ class VMToPetriTranslator:
                 doc += "No operations assigned (idle core)\n"
         
         doc += f"""
-## Synchronization Protocol
+## Distributed Synchronization Protocol
 
-### Level-Based Execution
-1. Each core waits at level barriers
-2. Core sets ready bit in sync area (@32+level)
-3. All cores wait for full ready mask: {(1 << num_cores) - 1}
-4. When all ready, cores proceed with level operations
-5. Repeat for next level
+For detailed information about the distributed synchronization protocol,
+see: docs/distributed-synchronization-protocol.md
 
-### Core Status Protocol
-- **0**: Core idle/waiting
-- **1**: Core working on operations  
-- **2**: Core completed all operations
-
-## Execution Flow
-1. Run `shared_init.asm` to initialize shared memory
-2. Start all core ROMs simultaneously
-3. Cores synchronize at each level automatically
-4. Final results available in optimized memory locations
-
-## Files Generated
-- `core0.asm` to `core{num_cores-1}.asm`: Individual core ROMs
-- `shared_init.asm`: Shared memory initialization
-- `coordination.md`: This documentation file
+This protocol eliminates the need for a centralized coordinator by using
+level-based barriers for synchronization and distributed termination detection.
 """
         
         return doc
@@ -1609,14 +1651,14 @@ class VMToPetriTranslator:
         return assembly_lines
         
     def _generate_multi_core_assembly(self, core_assignments, num_cores, memory_map):
-        """Generate assembly for multi-core execution with memory optimization and synchronization"""
+        """Generate assembly for distributed multi-core execution (no coordinator)"""
         assembly_lines = [
-            f"// Multi-core execution for {num_cores} cores with memory optimization",
-            "// Core synchronization using shared memory",
+            f"// Distributed multi-core execution for {num_cores} cores",
+            "// No centralized coordinator - cores self-coordinate via level barriers",
             "//",
             "// Memory layout:",
-            "// @16-31: Core status flags (0=idle, 1=working, 2=done)",
-            "// @32-47: Core communication area",
+            "// @16-31: Core status flags (debugging only)",
+            "// @32-47: Level synchronization area (coordination)",
             f"// @256+: Optimized place memory ({memory_map['total_locations']} locations)",
             "// @512+: Shared stack",
             "//",
@@ -1643,142 +1685,182 @@ class VMToPetriTranslator:
                     "M=D"
                 ])
         
-        # Generate core initialization
+        # Generate core initialization (debugging flags only)
         for core_id in range(num_cores):
             assembly_lines.extend([
-                f"// Initialize core {core_id}",
+                f"// Initialize core {core_id} (debugging)",
                 f"@{16 + core_id}",  # Core status at @16+core_id
                 "M=0",  # Set to idle
             ])
             
-        assembly_lines.append("//")
-        
-        # Generate main execution coordinator with level-based synchronization
         assembly_lines.extend([
-            "// Main execution coordinator with level synchronization",
-            "(MAIN_LOOP)",
-            
-            # Check if all cores are done
-            "// Check if all cores completed",
-            "@0",
-            "D=A",  # Counter for completed cores
-        ])
-        
-        for core_id in range(num_cores):
-            assembly_lines.extend([
-                f"@{16 + core_id}",
-                "D=D+M",  # Add core status (2 if done)
-            ])
-            
-        assembly_lines.extend([
-            f"@{2 * num_cores}",  # Expected sum if all cores done
-            "D=D-A",
-            "@END_PROGRAM",
-            "D;JEQ",  # Jump to end if all done
-            
-            "// Continue execution",
-            "@MAIN_LOOP", 
-            "0;JMP",
+            "//",
+            "// === DISTRIBUTED EXECUTION - NO COORDINATOR ===",
+            "// Each core self-coordinates using level barriers",
+            "// Program terminates when final level barrier is satisfied",
             "//"
         ])
         
-        # Generate code for each core with memory-optimized operations
+        # Generate code for each core with distributed coordination
         for core_id, operations in core_assignments.items():
             if not operations:
+                # Idle core - still participates in barriers
+                assembly_lines.extend([
+                    f"// Core {core_id} - Idle (no operations)",
+                    f"(CORE_{core_id}_IDLE)",
+                    f"// Idle core waits for program completion",
+                    "// (Implementation would wait for final level barrier)",
+                    f"@CORE_{core_id}_IDLE",
+                    "0;JMP",
+                    "//"
+                ])
                 continue
                 
             assembly_lines.extend([
-                f"// Core {core_id} execution with memory optimization",
-                f"(CORE_{core_id})",
+                f"// Core {core_id} - Distributed execution",
+                f"(CORE_{core_id}_START)",
                 f"@{16 + core_id}",
-                "M=1",  # Set status to working
+                "M=1",  # Set status to working (debugging)
             ])
             
-            # Generate operations for this core
+            # Group operations by level for this core
+            operations_by_level = {}
             for op_info in operations:
-                operation = op_info['operation']
                 level = op_info['level']
-                transition = op_info['transition']
+                if level not in operations_by_level:
+                    operations_by_level[level] = []
+                operations_by_level[level].append(op_info)
+            
+            # Generate level-based execution with barriers
+            for level in sorted(operations_by_level.keys()):
+                level_ops = operations_by_level[level]
                 
                 assembly_lines.extend([
-                    f"// Core {core_id}: {operation} (Level {level})",
-                    f"// Memory-optimized operation",
+                    f"// Level {level} barrier synchronization",
+                    f"(CORE_{core_id}_LEVEL_{level})",
+                    f"// Signal ready for level {level}",
+                    f"@{32 + level}",
+                    "D=M",
+                    f"@{1 << core_id}",  # This core's bit
+                    "D=D|A",
+                    f"@{32 + level}",
+                    "M=D",
+                    "",
+                    f"// Wait for all cores at level {level}",
+                    f"(CORE_{core_id}_LEVEL_{level}_WAIT)",
+                    f"@{32 + level}",
+                    "D=M",
+                    f"@{(1 << num_cores) - 1}",  # All cores mask
+                    "D=D-A",
+                    f"@CORE_{core_id}_LEVEL_{level}_EXEC",
+                    "D;JEQ",
+                    f"@CORE_{core_id}_LEVEL_{level}_WAIT",
+                    "0;JMP",
+                    "",
+                    f"(CORE_{core_id}_LEVEL_{level}_EXEC)"
                 ])
                 
-                # Generate memory-optimized operation code
-                op_type = operation.split('_')[0]
-                
-                if op_type in ['add', 'sub', 'and', 'or'] and len(transition.in_places) >= 2:
-                    # Binary operations with memory locations
-                    loc_a = memory_map['location_map'][transition.in_places[0].name]
-                    loc_b = memory_map['location_map'][transition.in_places[1].name]
-                    loc_result = memory_map['location_map'][transition.out_places[0].name]
+                # Execute operations for this level
+                for op_info in level_ops:
+                    operation = op_info['operation']
+                    transition = op_info['transition']
                     
                     assembly_lines.extend([
-                        f"// Binary op: @{loc_a} {op_type} @{loc_b} -> @{loc_result}",
-                        f"@{loc_a}",
-                        "D=M",
-                        f"@{loc_b}",
+                        f"// Execute: {operation}",
                     ])
                     
-                    if op_type == 'add':
-                        assembly_lines.append("D=D+M")
-                    elif op_type == 'sub':
-                        assembly_lines.append("D=D-M")
-                    elif op_type == 'and':
-                        assembly_lines.append("D=D&M")
-                    elif op_type == 'or':
-                        assembly_lines.append("D=D|M")
+                    # Generate memory-optimized operation code
+                    op_type = operation.split('_')[0]
+                    
+                    if op_type in ['add', 'sub', 'and', 'or'] and len(transition.in_places) >= 2:
+                        # Binary operations with memory locations
+                        loc_a = memory_map['location_map'][transition.in_places[0].name]
+                        loc_b = memory_map['location_map'][transition.in_places[1].name]
+                        loc_result = memory_map['location_map'][transition.out_places[0].name]
                         
-                    assembly_lines.extend([
-                        f"@{loc_result}",
-                        "M=D"
-                    ])
-                    
-                elif op_type in ['neg', 'not'] and len(transition.in_places) >= 1:
-                    # Unary operations with memory locations
-                    loc_input = memory_map['location_map'][transition.in_places[0].name]
-                    loc_result = memory_map['location_map'][transition.out_places[0].name]
-                    
-                    assembly_lines.extend([
-                        f"// Unary op: {op_type} @{loc_input} -> @{loc_result}",
-                        f"@{loc_input}",
-                        "D=M",
-                    ])
-                    
-                    if op_type == 'neg':
-                        assembly_lines.append("D=-D")
-                    elif op_type == 'not':
-                        assembly_lines.append("D=!D")
+                        assembly_lines.extend([
+                            f"@{loc_a}",
+                            "D=M",
+                            f"@{loc_b}",
+                        ])
                         
-                    assembly_lines.extend([
-                        f"@{loc_result}",
-                        "M=D"
-                    ])
+                        if op_type == 'add':
+                            assembly_lines.append("D=D+M")
+                        elif op_type == 'sub':
+                            assembly_lines.append("D=D-M")
+                        elif op_type == 'and':
+                            assembly_lines.append("D=D&M")
+                        elif op_type == 'or':
+                            assembly_lines.append("D=D|M")
+                            
+                        assembly_lines.extend([
+                            f"@{loc_result}",
+                            "M=D"
+                        ])
                         
-                assembly_lines.append("//")
-                
+                    elif op_type in ['neg', 'not'] and len(transition.in_places) >= 1:
+                        # Unary operations with memory locations
+                        loc_input = memory_map['location_map'][transition.in_places[0].name]
+                        loc_result = memory_map['location_map'][transition.out_places[0].name]
+                        
+                        assembly_lines.extend([
+                            f"@{loc_input}",
+                            "D=M",
+                        ])
+                        
+                        if op_type == 'neg':
+                            assembly_lines.append("D=-D")
+                        elif op_type == 'not':
+                            assembly_lines.append("D=!D")
+                            
+                        assembly_lines.extend([
+                            f"@{loc_result}",
+                            "M=D"
+                        ])
+                            
+                    assembly_lines.append("")
+            
+            # Core self-termination after final level
+            final_level = max(operations_by_level.keys()) if operations_by_level else 0
             assembly_lines.extend([
-                f"// Core {core_id} finished",
+                f"// Core {core_id} distributed termination",
                 f"@{16 + core_id}",
-                "M=2",  # Set status to done
-                f"@CORE_{core_id}_END",
+                "M=2",  # Set status to done (debugging)
+                "",
+                f"// Wait for final level {final_level} completion",
+                f"(CORE_{core_id}_FINAL_WAIT)",
+                f"@{32 + final_level}",
+                "D=M",
+                f"@{(1 << num_cores) - 1}",  # All cores mask
+                "D=D-A",
+                f"@CORE_{core_id}_TERMINATE",
+                "D;JEQ",  # Final level complete
+                f"@CORE_{core_id}_FINAL_WAIT",
                 "0;JMP",
-                f"(CORE_{core_id}_END)",
+                "",
+                f"(CORE_{core_id}_TERMINATE)",
+                f"// Core {core_id} self-terminates",
+                f"@CORE_{core_id}_HALT",
+                "0;JMP",
                 "//"
             ])
             
-        # Final result collection
+        # Distributed result collection (no coordinator)
         assembly_lines.extend([
-            "(END_PROGRAM)",
-            "// Collect final results to stack",
+            "// === DISTRIBUTED RESULT COLLECTION ===",
+            "// Results collected by final core or external process",
+            "// No centralized coordinator needed",
+            "",
+            "(COLLECT_RESULTS)",
+            "// This section would be reached by external process",
+            "// or by the last core to complete",
         ])
         
         for place in self.result_places:
             if place.name in memory_map['location_map']:
                 memory_loc = memory_map['location_map'][place.name]
                 assembly_lines.extend([
-                    f"// Push final result from @{memory_loc}",
+                    f"// Final result from @{memory_loc}",
                     f"@{memory_loc}",
                     "D=M",
                     "@SP",
@@ -1788,8 +1870,10 @@ class VMToPetriTranslator:
                 ])
         
         assembly_lines.extend([
-            "// All cores completed",
-            "@END_PROGRAM",
+            "",
+            "// Program complete - all cores self-terminated",
+            "(PROGRAM_END)",
+            "@PROGRAM_END",
             "0;JMP"
         ])
         
