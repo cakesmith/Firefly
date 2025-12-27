@@ -67,24 +67,20 @@ class ContinuationTransformer:
                         continuation_name
                     ))
                     
-                    # IMPORTANT: Don't break here! We need to continue processing
-                    # the rest of the function body to preserve labels and other commands
-                    # that might be needed (like base cases)
+                    # IMPORTANT: We need to preserve the rest of the function body
+                    # including labels and base case logic, but skip the commands
+                    # that are now in the continuation
                     
-                    # Skip the commands that are now in the continuation
-                    # but keep processing any labels or other control flow
-                    i += 1
+                    # The continuation contains the commands immediately after the call
+                    # We need to find where the continuation ends and normal function logic resumes
+                    continuation_end = self._find_continuation_end(function_body, i+1)
+                    
+                    # Skip to after the continuation commands
+                    i = continuation_end
+                    
+                    # Continue processing the rest of the function (labels, base cases, etc.)
                     while i < len(function_body):
-                        next_cmd = function_body[i]
-                        if next_cmd[0] == "label":
-                            # Keep labels in the main function body
-                            transformed_body.append(next_cmd)
-                        elif next_cmd[0] in ["return", "add", "sub", "mul", "div"]:
-                            # Skip commands that are now in the continuation
-                            pass
-                        else:
-                            # Keep other commands (like base case logic)
-                            transformed_body.append(next_cmd)
+                        transformed_body.append(function_body[i])
                         i += 1
                     break
             else:
@@ -121,6 +117,35 @@ class ContinuationTransformer:
         is_tail = next_command[0] == "return"
         print(f"Is tail call: {is_tail}")
         return is_tail
+    
+    def _find_continuation_end(self, function_body, start_index):
+        """
+        Find where the continuation commands end and normal function logic resumes
+        
+        Args:
+            function_body: List of function commands
+            start_index: Index to start searching from
+            
+        Returns:
+            int: Index where continuation ends
+        """
+        # For now, simple heuristic: continuation ends at the first label or end of function
+        # This works for the factorial case where the continuation is just [mul, return]
+        # and then we have [label BASE_CASE, push constant 1, return]
+        
+        i = start_index
+        while i < len(function_body):
+            cmd = function_body[i]
+            if cmd[0] == "label":
+                # Found a label - continuation ends here
+                return i
+            elif cmd[0] == "return":
+                # Found return - continuation includes this, so end after it
+                return i + 1
+            i += 1
+        
+        # If no label found, continuation goes to end of function
+        return len(function_body)
     
     def _create_continuation_transition(self, function_name, rest_of_function, call_index):
         """
