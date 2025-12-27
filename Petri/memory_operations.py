@@ -79,7 +79,7 @@ class MemoryOperations:
     
     def push_local(self, translator, index):
         """
-        Push local[index] onto stack with level-aware token handling
+        Push local[index] onto stack - simplified approach without dup transition
         """
         if not translator.current_function:
             raise RuntimeError("No function context for local variable access")
@@ -90,31 +90,20 @@ class MemoryOperations:
         if index >= translator.function_locals[translator.current_function]:
             raise RuntimeError(f"Local index {index} out of bounds for function {translator.current_function}")
         
-        # Get or create the local variable place
-        local_place_name = f"local_{translator.current_function}_{index}"
+        # Get or create the local variable place with call-specific scoping
+        call_depth = len(translator.call_stack)
+        local_place_name = f"local_{translator.current_function}_{call_depth}_{index}"
         local_place = self._get_or_create_local_place(translator, local_place_name, index)
         
-        # Create a new place for the pushed value
+        # Create a new place for the pushed value and directly copy the value
         pushed_place = translator.net.add_place(translator.get_unique_place_name(f"pushed_local_{index}"))
         
-        # Create dup transition to copy the local value with level preservation
-        def dup_local_func(tokens):
-            if tokens:
-                token = tokens[0]
-                val = token.value
-                level = getattr(token, 'level', 0)
-                return [Token(val, level), Token(val, level)]  # Original and copy with same level
-            return [Token(0), Token(0)]  # Default value if uninitialized
-        
-        dup_transition = translator.net.add_transition(
-            translator.get_unique_transition_name(f"dup_local_{index}"),
-            dup_local_func
-        )
-        
-        # Wire: local_place -> dup_transition -> [local_place, pushed_place]
-        translator.net.add_arc(local_place, dup_transition)
-        translator.net.add_arc(dup_transition, local_place)  # Keep original
-        translator.net.add_arc(dup_transition, pushed_place)  # Create copy
+        # Directly copy the value from local place to pushed place
+        if local_place.has_token():
+            local_value = local_place.tokens[0].value
+            pushed_place.put_token(Token(local_value))
+        else:
+            pushed_place.put_token(Token(0))  # Default value
         
         # Add to result places
         translator.result_places.append(pushed_place)
@@ -141,8 +130,9 @@ class MemoryOperations:
         # Get the value to store
         value_place = translator.result_places.pop()
         
-        # Get or create local variable place
-        local_place_name = f"local_{translator.current_function}_{index}"
+        # Get or create local variable place with call-specific scoping
+        call_depth = len(translator.call_stack)
+        local_place_name = f"local_{translator.current_function}_{call_depth}_{index}"
         local_place = self._get_or_create_local_place(translator, local_place_name, index)
         
         # With single-token constraint, we can directly replace the token
@@ -158,10 +148,11 @@ class MemoryOperations:
         return local_place
     
     def _get_or_create_local_place(self, translator, local_place_name, index):
-        """Get existing local place or create new one"""
-        local_key = (translator.current_function, index)
+        """Get existing local place or create new one with call-specific scoping"""
+        call_depth = len(translator.call_stack)
+        local_key = (translator.current_function, call_depth, index)
         
-        # Check if local place already exists
+        # Check if local place already exists for this specific call
         if local_key in translator.local_places:
             place = translator.local_places[local_key]
             return place
@@ -172,7 +163,7 @@ class MemoryOperations:
         # Initialize with default value (0) if needed
         local_place.put_token(Token(0))
         
-        # Store in local places dictionary
+        # Store in local places dictionary with call-specific key
         translator.local_places[local_key] = local_place
         
         return local_place

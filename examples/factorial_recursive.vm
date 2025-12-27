@@ -1,0 +1,30 @@
+// Recursive Factorial Function Example
+// Demonstrates: recursion, local variables, control flow, arithmetic
+
+// Function: Calculate factorial using recursion
+function factorial 0
+    // Check base case: if n <= 1 return 1
+    push argument 0
+    push constant 1
+    gt
+    if-goto RECURSIVE_CASE
+    
+    // Base case: return 1
+    push constant 1
+    return
+    
+    label RECURSIVE_CASE
+    // Recursive case: n * factorial(n-1)
+    push argument 0        // n
+    push argument 0        // n (for recursive call)
+    push constant 1        // 1
+    sub                    // n - 1
+    call factorial 1       // factorial(n-1)
+    mul                    // n * factorial(n-1)
+    return
+
+// Main program: Calculate factorial(6) = 720
+push constant 6
+call factorial 1
+
+// Result should be 720

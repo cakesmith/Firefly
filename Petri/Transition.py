@@ -37,7 +37,7 @@ class Transition:
             output_tokens = [output_tokens]
             
         for i, place in enumerate(self.out_places):
-            if i < len(output_tokens):
+            if i < len(output_tokens) and output_tokens[i] is not None:
                 place.put_token(output_tokens[i])
                 
         return True

@@ -1,0 +1,68 @@
+// Iterative Fibonacci Function Example  
+// Demonstrates: local variables, control flow, loops, arithmetic
+
+// Function: Calculate Fibonacci number iteratively
+function fibonacci 3
+    // locals: a=0, b=1, counter=2
+    
+    // Check base cases
+    push argument 0
+    push constant 0
+    eq
+    if-goto RETURN_ZERO
+    
+    push argument 0
+    push constant 1
+    eq
+    if-goto RETURN_ONE
+    
+    // Initialize for iteration (n >= 2)
+    push constant 0
+    pop local 0        // a = 0
+    push constant 1
+    pop local 1        // b = 1
+    push constant 2
+    pop local 2        // counter = 2
+    
+    label LOOP_START
+    // Check if counter <= n
+    push local 2       // counter
+    push argument 0    // n
+    gt                 // counter > n?
+    if-goto LOOP_END   // If counter > n, exit loop
+    
+    // Calculate next Fibonacci: temp = a + b
+    push local 0       // a
+    push local 1       // b
+    add                // a + b
+    
+    // Update: a = b, b = temp
+    push local 1       // b
+    pop local 0        // a = b
+    pop local 1        // b = temp (a + b from stack)
+    
+    // Increment counter
+    push local 2       // counter
+    push constant 1    // 1
+    add                // counter + 1
+    pop local 2        // counter = counter + 1
+    
+    goto LOOP_START    // Continue loop
+    
+    label RETURN_ZERO
+    push constant 0
+    return
+    
+    label RETURN_ONE
+    push constant 1
+    return
+    
+    label LOOP_END
+    push local 1       // Return final b value
+    return
+
+// Main program: Calculate fibonacci(10) = 55
+push constant 10
+call fibonacci 1
+
+// Result should be 55

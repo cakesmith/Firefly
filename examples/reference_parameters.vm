@@ -1,0 +1,143 @@
+// Reference Parameters Example
+// Demonstrates: pop argument for modifying caller's data
+
+// Function: Swap two arguments (reference parameters)
+function swap 0
+    // Swap the values of the two arguments
+    push argument 1    // Get second argument
+    push argument 0    // Get first argument
+    pop argument 1     // Store first in second position
+    pop argument 0     // Store second in first position
+    return
+
+// Function: Double the first argument, negate the second
+function modify_args 0
+    // Double first argument
+    push argument 0
+    push constant 2
+    mul
+    pop argument 0
+    
+    // Negate second argument
+    push argument 1
+    neg
+    pop argument 1
+    
+    return
+
+// Function: Increment argument by specified amount
+function increment_by 0
+    // Add second argument to first argument
+    push argument 0    // base value
+    push argument 1    // increment amount
+    add                // base + increment
+    pop argument 0     // store back to first argument
+    return
+
+// Function: Apply mathematical operation to argument
+function apply_operation 0
+    // Apply operation based on second argument:
+    // 1 = square, 2 = double, 3 = negate, other = no change
+    
+    push argument 1
+    push constant 1
+    eq
+    if-goto SQUARE_IT
+    
+    push argument 1
+    push constant 2
+    eq
+    if-goto DOUBLE_IT
+    
+    push argument 1
+    push constant 3
+    eq
+    if-goto NEGATE_IT
+    
+    // No change case
+    goto END_OPERATION
+    
+    label SQUARE_IT
+    push argument 0
+    push argument 0
+    mul
+    pop argument 0
+    goto END_OPERATION
+    
+    label DOUBLE_IT
+    push argument 0
+    push constant 2
+    mul
+    pop argument 0
+    goto END_OPERATION
+    
+    label NEGATE_IT
+    push argument 0
+    neg
+    pop argument 0
+    goto END_OPERATION
+    
+    label END_OPERATION
+    return
+
+// Function: Demonstrate reference parameter with local variables
+function complex_modify 2
+    // Use local variables to compute new values for arguments
+    
+    // Store original values in locals
+    push argument 0
+    pop local 0        // original first arg
+    push argument 1
+    pop local 1        // original second arg
+    
+    // Compute new first argument: (original_first + original_second) * 2
+    push local 0       // original first
+    push local 1       // original second
+    add                // sum
+    push constant 2    // 2
+    mul                // (sum) * 2
+    pop argument 0     // store to first argument
+    
+    // Compute new second argument: original_first - original_second
+    push local 0       // original first
+    push local 1       // original second
+    sub                // difference
+    pop argument 1     // store to second argument
+    
+    return
+
+// Main program: Test reference parameters
+
+// Test 1: Swap 10 and 20
+push constant 10
+push constant 20
+call swap 2
+// Arguments are now swapped: first=20, second=10
+
+// Test 2: Modify arguments (double first, negate second)
+push constant 5
+push constant 7
+call modify_args 2
+// Arguments are now: first=10, second=-7
+
+// Test 3: Increment 15 by 8
+push constant 15
+push constant 8
+call increment_by 2
+// First argument is now 23
+
+// Test 4: Apply square operation (op=1) to value 6
+push constant 6
+push constant 1
+call apply_operation 2
+// First argument is now 36
+
+// Test 5: Complex modification with 12 and 4
+push constant 12
+push constant 4
+call complex_modify 2
+// Arguments are now: first=(12+4)*2=32, second=12-4=8
+
+// Note: In a real VM, you would need to examine the modified
+// arguments through additional function calls or returns
+// This example demonstrates the reference parameter mechanism

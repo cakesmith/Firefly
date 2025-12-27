@@ -1,0 +1,167 @@
+// Comprehensive VM Program Testing All New Features
+// Tests local variables, arithmetic operations, control flow, and recursion
+
+// Function: Calculate factorial using recursion and control flow
+function factorial 1
+    // Check base case: if n <= 1 return 1
+    push argument 0
+    push constant 1
+    gt
+    if-goto RECURSIVE_CASE
+    
+    // Base case: return 1
+    push constant 1
+    return
+    
+    label RECURSIVE_CASE
+    // Recursive case: n * factorial(n-1)
+    push argument 0
+    push argument 0
+    push constant 1
+    sub
+    call factorial 1
+    mul
+    return
+
+// Function: Calculate Fibonacci iteratively using locals and control flow
+function fibonacci 3
+    // locals: a=0, b=1, counter=2
+    
+    // Check base cases
+    push argument 0
+    push constant 0
+    eq
+    if-goto RETURN_ZERO
+    
+    push argument 0
+    push constant 1
+    eq
+    if-goto RETURN_ONE
+    
+    // Initialize for iteration
+    push constant 0
+    pop local 0        // a = 0
+    push constant 1
+    pop local 1        // b = 1
+    push constant 2
+    pop local 2        // counter = 2
+    
+    label LOOP_START
+    // Check if counter <= n
+    push local 2
+    push argument 0
+    gt
+    if-goto LOOP_END
+    
+    // Calculate next Fibonacci: temp = a + b
+    push local 0
+    push local 1
+    add
+    // Update: a = b, b = temp
+    push local 1
+    pop local 0        // a = b
+    pop local 1        // b = temp
+    
+    // Increment counter
+    push local 2
+    push constant 1
+    add
+    pop local 2
+    
+    goto LOOP_START
+    
+    label RETURN_ZERO
+    push constant 0
+    return
+    
+    label RETURN_ONE
+    push constant 1
+    return
+    
+    label LOOP_END
+    push local 1
+    return
+
+// Function: Complex arithmetic using all operations
+function complex_math 4
+    // Calculate: (a * b) + (c / d) using locals
+    
+    // Store a * b in local 0
+    push argument 0
+    push argument 1
+    mul
+    pop local 0
+    
+    // Store c / d in local 1
+    push argument 2
+    push argument 3
+    div
+    pop local 1
+    
+    // Calculate final result
+    push local 0
+    push local 1
+    add
+    return
+
+// Function: Demonstrate reference parameters
+function modify_params 0
+    // Double the first parameter, negate the second
+    push argument 0
+    push constant 2
+    mul
+    pop argument 0
+    
+    push argument 1
+    neg
+    pop argument 1
+    
+    return
+
+// Function: GCD using recursion and control flow
+function gcd 0
+    // Base case: if b == 0, return a
+    push argument 1
+    push constant 0
+    eq
+    if-goto RETURN_A
+    
+    // Recursive case: gcd(b, a % b)
+    // Simulate a % b with a - (a/b)*b
+    push argument 1
+    push argument 0
+    push argument 0
+    push argument 1
+    div
+    push argument 1
+    mul
+    sub
+    call gcd 2
+    return
+    
+    label RETURN_A
+    push argument 0
+    return
+
+// Main program: Test all functions
+// Test factorial(5) = 120
+push constant 5
+call factorial 1
+
+// Test fibonacci(7) = 13
+push constant 7
+call fibonacci 1
+
+// Test complex_math(6, 7, 20, 4) = (6*7) + (20/4) = 42 + 5 = 47
+push constant 6
+push constant 7
+push constant 20
+push constant 4
+call complex_math 4
+
+// Test gcd(48, 18) = 6
+push constant 48
+push constant 18
+call gcd 2
+
+// Final result should have: [120, 13, 47, 6] on the stack

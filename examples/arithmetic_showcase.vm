@@ -1,0 +1,85 @@
+// Arithmetic Operations Showcase
+// Demonstrates: all arithmetic operations, local variables, complex expressions
+
+// Function: Demonstrate all arithmetic operations
+function arithmetic_demo 5
+    // Calculate: ((a + b) * c) / d - neg(e)
+    // Using all arithmetic operations: add, sub, mul, div, neg
+    
+    // Store arguments in locals for clarity
+    push argument 0    // a
+    pop local 0
+    push argument 1    // b  
+    pop local 1
+    push argument 2    // c
+    pop local 2
+    push argument 3    // d
+    pop local 3
+    push argument 4    // e
+    pop local 4
+    
+    // Step 1: a + b
+    push local 0       // a
+    push local 1       // b
+    add                // a + b
+    pop local 0        // Store result in local 0
+    
+    // Step 2: (a + b) * c
+    push local 0       // a + b
+    push local 2       // c
+    mul                // (a + b) * c
+    pop local 1        // Store result in local 1
+    
+    // Step 3: ((a + b) * c) / d
+    push local 1       // (a + b) * c
+    push local 3       // d
+    div                // ((a + b) * c) / d
+    pop local 2        // Store result in local 2
+    
+    // Step 4: neg(e)
+    push local 4       // e
+    neg                // -e
+    pop local 3        // Store result in local 3
+    
+    // Step 5: Final result: ((a + b) * c) / d - neg(e)
+    push local 2       // ((a + b) * c) / d
+    push local 3       // -e
+    sub                // ((a + b) * c) / d - (-e) = result + e
+    return
+
+// Function: Test division edge cases
+function division_test 0
+    push argument 0    // dividend
+    push argument 1    // divisor
+    div                // Integer division
+    return
+
+// Function: Test multiplication with large numbers
+function multiplication_test 0
+    push argument 0    // first number
+    push argument 1    // second number
+    mul                // Product
+    return
+
+// Main program: Test all arithmetic operations
+
+// Test 1: Complex expression with a=8, b=4, c=3, d=2, e=5
+// Expected: ((8+4)*3)/2 - neg(5) = (12*3)/2 - (-5) = 36/2 + 5 = 18 + 5 = 23
+push constant 8
+push constant 4
+push constant 3
+push constant 2
+push constant 5
+call arithmetic_demo 5
+
+// Test 2: Division test with 20/4 = 5
+push constant 20
+push constant 4
+call division_test 2
+
+// Test 3: Multiplication test with 7*8 = 56
+push constant 7
+push constant 8
+call multiplication_test 2
+
+// Results should be: [23, 5, 56]

@@ -107,13 +107,15 @@ class ControlFlowOperations:
         # Get the label place for Petri net semantics
         label_place = translator.control_flow.get_label_place(label_name, translator.current_function)
         
-        # Create if-goto transition with conditional logic
+        # Create if-goto transition with conditional logic (CHOICE semantics)
         def if_goto_func(tokens):
             condition_value = tokens[0].value if tokens else 0
             if condition_value != 0:
-                return [Token("control"), Token("control")]  # Jump and continue paths
+                # True: return token for jump path (first output place)
+                return [Token("control"), None]  # Jump, no continue
             else:
-                return [Token("control")]  # Only continue path
+                # False: return token for continue path (second output place)  
+                return [None, Token("control")]  # No jump, continue
         
         if_goto_transition = translator.net.add_transition(
             translator.get_unique_transition_name(f"if_goto_{label_name}"),
@@ -123,10 +125,10 @@ class ControlFlowOperations:
         # Create continue place for when condition is false
         continue_place = translator.net.add_place(translator.get_unique_place_name(f"if_goto_continue_{label_name}"))
         
-        # Wire: condition_place -> if_goto_transition -> [label_place, continue_place]
+        # Always wire both paths - the transition function will choose which one to activate
         translator.net.add_arc(condition_place, if_goto_transition)
-        translator.net.add_arc(if_goto_transition, label_place)      # Jump path
-        translator.net.add_arc(if_goto_transition, continue_place)   # Continue path
+        translator.net.add_arc(if_goto_transition, label_place)      # Jump path (index 0)
+        translator.net.add_arc(if_goto_transition, continue_place)   # Continue path (index 1)
         
         # For program execution context, handle command index updates
         if hasattr(translator, 'program_commands') and translator.program_commands:

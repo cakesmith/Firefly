@@ -18,7 +18,6 @@ from .function_operations import FunctionOperations
 from .memory_optimizer import MemoryOptimizer
 from .execution_analyzer import ExecutionAnalyzer
 from .assembly_generator import AssemblyGenerator
-from .continuation_transformer import ContinuationTransformer
 
 class VMToPetriTranslator:
     def __init__(self):
@@ -172,9 +171,10 @@ class VMToPetriTranslator:
         
         print(f"Executing program with {len(commands)} commands")
         
-        # First pass: parse function definitions and build Petri net structure
+        # First pass: parse function definitions
         self._parse_functions()
-        self._build_petri_net_structure()
+        # Skip building Petri net structure to avoid duplication
+        # self._build_petri_net_structure()
         
         # Second pass: execute main program (commands after all function definitions)
         print(f"Starting main program execution")
@@ -214,14 +214,16 @@ class VMToPetriTranslator:
             main_cmd_index += 1
                 
         # Execute the Petri net to get final results
-        # Keep executing until no more transitions can fire
+        # Execute only a limited number of steps to prevent explosion
         steps = 0
-        max_steps = 100  # Prevent infinite loops
+        max_steps = 10  # Much more conservative limit
         while steps < max_steps:
             fired = self.execute_step()
             if not fired:
                 break
             steps += 1
+            
+        print(f"Executed {steps} Petri net steps")
             
         return self.get_result_values()
     
@@ -343,16 +345,6 @@ class VMToPetriTranslator:
             }
             self.function_locals[function_name] = num_locals
             print(f"Parsed function {function_name} with {len(function_body)} commands and {num_locals} locals")
-            
-            # Transform function for continuation-based non-tail calls
-            from .continuation_transformer import ContinuationTransformer
-            transformer = ContinuationTransformer(self)
-            transformed_body = transformer.transform_function_for_continuations(function_name, function_body)
-            
-            # Update function definition with transformed body
-            if transformed_body != function_body:
-                self.function_definitions[function_name]['body'] = transformed_body
-                print(f"Transformed function {function_name} for continuation-based calls")
             
             # Update main program start
             main_program_start = max(main_program_start, func_end)
@@ -482,14 +474,7 @@ class VMToPetriTranslator:
             return self.call_operation(function_name, num_args)
         elif cmd_type == "return":
             self.return_operation()
-        elif cmd_type == "return-continuation":
-            # Handle continuation return for trampolined execution
-            function_name = command[1]
-            num_args = command[2]
-            return self.function_ops._handle_continuation_return(self, function_name, num_args)
-        elif cmd_type == "return-value":
-            # Handle value return for trampolined execution
-            return self.function_ops._handle_value_return(self)
+
         elif cmd_type == "label":
             label_name = command[1]
             self.label_operation(label_name)
@@ -503,12 +488,15 @@ class VMToPetriTranslator:
             raise NotImplementedError(f"Command {cmd_type} not implemented")
         
         # Execute Petri net after each command to ensure values are available
-        if cmd_type not in ["label", "goto", "if-goto"]:  # Don't execute for control flow
-            # Only execute once per command to prevent over-execution
-            fired = self.net.execute_step()
-            # If a transition fired, execute one more time to handle cascading effects
-            if fired:
-                self.net.execute_step()
+        # But be more selective about when to execute to prevent over-execution
+        if cmd_type in ["gt", "lt", "eq", "and", "or", "not"]:  # Execute for comparisons
+            self.net.execute_step()
+        elif cmd_type in ["add", "sub", "mul", "div", "neg"]:  # Execute for arithmetic
+            self.net.execute_step()
+        elif cmd_type == "pop":  # Execute after pop to ensure values are stored
+            self.net.execute_step()
+        elif cmd_type == "push":  # Execute after push to ensure values are available
+            self.net.execute_step()
         
     def get_detailed_place_info(self):
         """Return detailed information about each place"""

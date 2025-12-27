@@ -1,22 +1,20 @@
 """
 Function Operations for Petri Net VM
-Handles function call and return operations with trampolined recursion
+Handles function call and return operations with recursion depth limits
 """
 
-from .Token import Token, ValueToken, ContinuationToken
+from .Token import Token, ValueToken
 
 class FunctionOperations:
     """
-    Handles function operations with trampolined recursion for infinite capability
+    Handles function operations with recursion depth limits
     """
     
     def __init__(self):
         """
-        Initialize function operations with trampolined recursion
+        Initialize function operations with recursion depth limit
         """
-        # For compatibility with tests that expect a recursion depth limit
-        # In reality, trampolined execution has no limit, but we set a reasonable value for tests
-        self.MAX_RECURSION_DEPTH = 1000  # Reasonable limit for test compatibility
+        self.MAX_RECURSION_DEPTH = 1000  # Maximum recursion depth to prevent stack overflow
     
     def get_current_recursion_level(self, translator):
         """
@@ -32,7 +30,7 @@ class FunctionOperations:
     
     def call_operation(self, translator, function_name, num_args):
         """
-        Trampolined function call implementation for infinite recursion capability
+        Function call implementation using continuation transitions
         
         Args:
             translator: VM translator instance
@@ -51,43 +49,54 @@ class FunctionOperations:
             args.append(translator.result_places.pop())
         args.reverse()  # Restore correct order
         
-        # Always use trampolined execution for infinite capability
-        return self._execute_trampolined_call(translator, function_name, args)
+        # Use direct execution for function calls
+        return self._execute_function_call(translator, function_name, args)
     
-    def _execute_trampolined_call(self, translator, function_name, args):
+    def _execute_function_call(self, translator, function_name, args):
         """
-        Execute function call using trampolined recursion (infinite capability)
+        Execute function call using direct execution with call stack and recursion limit
         
         Args:
             translator: VM translator instance
             function_name: Name of function to call
             args: Function arguments
         """
-        print(f"Trampolined call to {function_name}")
+        # Check recursion depth
+        current_depth = len(translator.call_stack)
+        if current_depth >= self.MAX_RECURSION_DEPTH:
+            raise RuntimeError(f"Maximum recursion depth exceeded: {current_depth} >= {self.MAX_RECURSION_DEPTH}")
         
-        # Import here to avoid circular imports
-        from .trampoline_executor import TrampolineExecutor
+        print(f"Direct call to {function_name} (depth: {current_depth})")
         
-        # Create trampoline executor
-        trampoline = TrampolineExecutor(translator)
+        # Create call frame
+        call_frame = {
+            'function_name': function_name,
+            'arguments': args,
+            'saved_result_places': translator.result_places.copy(),
+            'saved_function': translator.current_function,
+            'recursion_depth': current_depth,
+            'local_variables': {}
+        }
         
-        # Execute using trampolined approach
-        result_token = trampoline.execute_trampolined_call(function_name, args)
+        # Push call frame
+        translator.call_stack.append(call_frame)
+        translator.current_function = function_name
+        translator.result_places = []
         
-        # Create result place with the final value
-        result_place = translator.net.add_place(
-            translator.get_unique_place_name("trampolined_result")
-        )
-        result_place.put_token(result_token)
-        
-        # Add to result places
-        translator.result_places.append(result_place)
-        
-        return result_place
+        try:
+            # Execute function body directly
+            result = self._execute_function_body(translator, function_name)
+            return result
+            
+        except Exception as e:
+            # Clean up on error
+            if translator.call_stack and translator.call_stack[-1]['function_name'] == function_name:
+                translator.call_stack.pop()
+            raise e
     
     def _execute_function_body(self, translator, function_name):
         """
-        Execute function body with proper control flow (used by trampoline executor)
+        Execute function body with proper control flow
         """
         # Pre-process labels in function body before execution
         function_def = translator.function_definitions[function_name]
@@ -104,12 +113,6 @@ class FunctionOperations:
                 # Handle return - don't execute more commands
                 self.return_operation(translator)
                 break
-            elif command[0] == "return-continuation":
-                # Handle continuation return (for trampolined execution)
-                return self._handle_continuation_return(translator, command[1], command[2])
-            elif command[0] == "return-value":
-                # Handle value return (for trampolined execution)
-                return self._handle_value_return(translator)
             
             # Regular command execution
             # Maintain function execution context
@@ -150,32 +153,6 @@ class FunctionOperations:
         
         return translator.call_stack[-1] if translator.call_stack else None
     
-    def _handle_continuation_return(self, translator, function_name, num_args):
-        """
-        Handle return-continuation command for trampolined execution
-        
-        Args:
-            translator: VM translator instance
-            function_name: Name of function to continue with
-            num_args: Number of arguments for continuation
-        """
-        from .continuation_transformer import ContinuationTransformer
-        
-        transformer = ContinuationTransformer(translator)
-        return transformer.create_continuation_return_operation(translator, function_name, num_args)
-    
-    def _handle_value_return(self, translator):
-        """
-        Handle return-value command for trampolined execution
-        
-        Args:
-            translator: VM translator instance
-        """
-        from .continuation_transformer import ContinuationTransformer
-        
-        transformer = ContinuationTransformer(translator)
-        return transformer.create_value_return_operation(translator)
-        
     def _preprocess_function_labels(self, translator, function_body, function_name):
         """
         Pre-process all label definitions in a function body
@@ -195,7 +172,7 @@ class FunctionOperations:
         
     def return_operation(self, translator):
         """
-        Implement function return with trampolined token handling
+        Implement function return
         """
         if not translator.call_stack:
             # No active function call - this is a program return
@@ -226,25 +203,32 @@ class FunctionOperations:
     
     def get_stack_usage_info(self, translator):
         """
-        Get stack usage information for monitoring (trampolined execution doesn't have limits)
+        Get stack usage information for monitoring
         """
         current_depth = len(translator.call_stack)
+        max_depth = self.MAX_RECURSION_DEPTH
         
         return {
             'current_depth': current_depth,
-            'max_depth': float('inf'),  # No limit with trampolined execution
-            'utilization_percent': 0,   # No utilization limit
-            'remaining_depth': float('inf'),
-            'is_near_limit': False,
-            'uses_trampoline': True
+            'max_depth': max_depth,
+            'utilization_percent': (current_depth / max_depth) * 100,
+            'remaining_depth': max_depth - current_depth,
+            'is_near_limit': current_depth > (max_depth * 0.8)
         }
     
     def check_stack_health(self, translator):
         """
-        Check stack health (always healthy with trampolined execution)
+        Check stack health
         """
         current_depth = len(translator.call_stack)
-        return True, f"Trampolined execution: {current_depth} depth (no limits)"
+        max_depth = self.MAX_RECURSION_DEPTH
+        
+        if current_depth > max_depth:
+            return False, f"Stack overflow: {current_depth} > {max_depth}"
+        elif current_depth > (max_depth * 0.8):
+            return True, f"Stack near limit: {current_depth}/{max_depth}"
+        else:
+            return True, f"Stack healthy: {current_depth}/{max_depth}"
     
     def analyze_tail_call_opportunities(self, translator):
         """
