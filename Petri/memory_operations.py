@@ -39,8 +39,7 @@ class MemoryOperations:
     
     def push_argument(self, translator, index):
         """
-        Push argument[index] onto stack
-        Arguments are passed from the caller
+        Push argument[index] onto stack with level-aware token handling
         """
         if not translator.call_stack:
             raise RuntimeError("No function call context for argument access")
@@ -55,11 +54,13 @@ class MemoryOperations:
         # Create a new place for the pushed value (duplicate the argument)
         pushed_place = translator.net.add_place(translator.get_unique_place_name(f"pushed_arg_{index}"))
         
-        # Create dup transition to copy the argument value
+        # Create dup transition to copy the argument value with level preservation
         def dup_arg_func(tokens):
             if tokens:
-                val = tokens[0].value
-                return [Token(val), Token(val)]  # Original and copy
+                token = tokens[0]
+                val = token.value
+                level = getattr(token, 'level', 0)
+                return [Token(val, level), Token(val, level)]  # Original and copy with same level
             return [Token(0), Token(0)]
         
         dup_transition = translator.net.add_transition(
@@ -78,8 +79,7 @@ class MemoryOperations:
     
     def push_local(self, translator, index):
         """
-        Push local[index] onto stack with enhanced reliability
-        Improved error handling and memory optimization integration
+        Push local[index] onto stack with level-aware token handling
         """
         if not translator.current_function:
             raise RuntimeError("No function context for local variable access")
@@ -90,18 +90,20 @@ class MemoryOperations:
         if index >= translator.function_locals[translator.current_function]:
             raise RuntimeError(f"Local index {index} out of bounds for function {translator.current_function}")
         
-        # Get or create the local variable place (handles uninitialized locals gracefully)
+        # Get or create the local variable place
         local_place_name = f"local_{translator.current_function}_{index}"
         local_place = self._get_or_create_local_place(translator, local_place_name, index)
         
         # Create a new place for the pushed value
         pushed_place = translator.net.add_place(translator.get_unique_place_name(f"pushed_local_{index}"))
         
-        # Create dup transition to copy the local value (memory optimization friendly)
+        # Create dup transition to copy the local value with level preservation
         def dup_local_func(tokens):
             if tokens:
-                val = tokens[0].value
-                return [Token(val), Token(val)]  # Original and copy
+                token = tokens[0]
+                val = token.value
+                level = getattr(token, 'level', 0)
+                return [Token(val, level), Token(val, level)]  # Original and copy with same level
             return [Token(0), Token(0)]  # Default value if uninitialized
         
         dup_transition = translator.net.add_transition(

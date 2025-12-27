@@ -18,6 +18,7 @@ from .function_operations import FunctionOperations
 from .memory_optimizer import MemoryOptimizer
 from .execution_analyzer import ExecutionAnalyzer
 from .assembly_generator import AssemblyGenerator
+from .continuation_transformer import ContinuationTransformer
 
 class VMToPetriTranslator:
     def __init__(self):
@@ -144,8 +145,8 @@ class VMToPetriTranslator:
         return self.control_flow_ops.if_goto_operation(self, label_name)
         
     # Function operations
-    def call_operation(self, function_name, num_args, is_tail_call=False):
-        return self.function_ops.call_operation(self, function_name, num_args, is_tail_call)
+    def call_operation(self, function_name, num_args):
+        return self.function_ops.call_operation(self, function_name, num_args)
         
     def return_operation(self):
         return self.function_ops.return_operation(self)
@@ -171,8 +172,9 @@ class VMToPetriTranslator:
         
         print(f"Executing program with {len(commands)} commands")
         
-        # First pass: parse function definitions
+        # First pass: parse function definitions and build Petri net structure
         self._parse_functions()
+        self._build_petri_net_structure()
         
         # Second pass: execute main program (commands after all function definitions)
         print(f"Starting main program execution")
@@ -223,6 +225,80 @@ class VMToPetriTranslator:
             
         return self.get_result_values()
     
+    def _build_petri_net_structure(self):
+        """
+        Build the Petri net structure without executing it
+        This allows analysis of the net structure before execution
+        """
+        # Build net structure for all functions
+        for function_name, func_def in self.function_definitions.items():
+            self._build_function_net_structure(function_name, func_def['body'])
+        
+        # Build net structure for main program
+        for original_index, command in self.main_program_commands:
+            self._build_command_net_structure(command)
+    
+    def _build_function_net_structure(self, function_name, function_body):
+        """Build Petri net structure for a function without executing it"""
+        # This is a simplified version that creates the basic structure
+        # without actually executing the commands
+        for command in function_body:
+            self._build_command_net_structure(command)
+    
+    def _build_command_net_structure(self, command):
+        """Build Petri net structure for a single command without executing it"""
+        cmd_type = command[0]
+        
+        # Create basic places and transitions for each command type
+        # This gives the execution analyzer something to work with
+        if cmd_type in ["push", "pop"]:
+            # Memory operations create places and transitions
+            place_name = self.get_unique_place_name(f"{cmd_type}_place")
+            trans_name = self.get_unique_transition_name(f"{cmd_type}_trans")
+            
+            place = self.net.add_place(place_name)
+            transition = self.net.add_transition(trans_name)
+            
+        elif cmd_type in ["add", "sub", "mul", "div", "neg"]:
+            # Arithmetic operations
+            place_name = self.get_unique_place_name(f"{cmd_type}_result")
+            trans_name = self.get_unique_transition_name(f"{cmd_type}_op")
+            
+            place = self.net.add_place(place_name)
+            transition = self.net.add_transition(trans_name)
+            
+        elif cmd_type in ["eq", "lt", "gt", "and", "or", "not"]:
+            # Logical operations
+            place_name = self.get_unique_place_name(f"{cmd_type}_result")
+            trans_name = self.get_unique_transition_name(f"{cmd_type}_op")
+            
+            place = self.net.add_place(place_name)
+            transition = self.net.add_transition(trans_name)
+            
+        elif cmd_type in ["goto", "if-goto", "label"]:
+            # Control flow operations
+            place_name = self.get_unique_place_name(f"{cmd_type}_place")
+            trans_name = self.get_unique_transition_name(f"{cmd_type}_trans")
+            
+            place = self.net.add_place(place_name)
+            transition = self.net.add_transition(trans_name)
+            
+        elif cmd_type == "call":
+            # Function calls
+            place_name = self.get_unique_place_name("call_place")
+            trans_name = self.get_unique_transition_name("call_trans")
+            
+            place = self.net.add_place(place_name)
+            transition = self.net.add_transition(trans_name)
+            
+        elif cmd_type == "return":
+            # Return statements
+            place_name = self.get_unique_place_name("return_place")
+            trans_name = self.get_unique_transition_name("return_trans")
+            
+            place = self.net.add_place(place_name)
+            transition = self.net.add_transition(trans_name)
+    
     def _parse_functions(self):
         """Parse all function definitions from the command list"""
         i = 0
@@ -267,6 +343,16 @@ class VMToPetriTranslator:
             }
             self.function_locals[function_name] = num_locals
             print(f"Parsed function {function_name} with {len(function_body)} commands and {num_locals} locals")
+            
+            # Transform function for continuation-based non-tail calls
+            from .continuation_transformer import ContinuationTransformer
+            transformer = ContinuationTransformer(self)
+            transformed_body = transformer.transform_function_for_continuations(function_name, function_body)
+            
+            # Update function definition with transformed body
+            if transformed_body != function_body:
+                self.function_definitions[function_name]['body'] = transformed_body
+                print(f"Transformed function {function_name} for continuation-based calls")
             
             # Update main program start
             main_program_start = max(main_program_start, func_end)
@@ -396,6 +482,14 @@ class VMToPetriTranslator:
             return self.call_operation(function_name, num_args)
         elif cmd_type == "return":
             self.return_operation()
+        elif cmd_type == "return-continuation":
+            # Handle continuation return for trampolined execution
+            function_name = command[1]
+            num_args = command[2]
+            return self.function_ops._handle_continuation_return(self, function_name, num_args)
+        elif cmd_type == "return-value":
+            # Handle value return for trampolined execution
+            return self.function_ops._handle_value_return(self)
         elif cmd_type == "label":
             label_name = command[1]
             self.label_operation(label_name)
