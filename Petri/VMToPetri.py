@@ -15,6 +15,7 @@ from .logical_operations import LogicalOperations
 from .stack_operations import StackOperations
 from .control_flow_operations import ControlFlowOperations
 from .function_operations import FunctionOperations
+from .function_context_manager import FunctionContextManager
 from .memory_optimizer import MemoryOptimizer
 from .execution_analyzer import ExecutionAnalyzer
 from .assembly_generator import AssemblyGenerator
@@ -40,6 +41,9 @@ class VMToPetriTranslator:
         
         # Control flow management
         self.control_flow = ControlFlowManager(self.net)
+        
+        # Function context management
+        self.function_context_manager = FunctionContextManager(self)
         
         # Cross-scope jump management
         self._cross_scope_jump_pending = False

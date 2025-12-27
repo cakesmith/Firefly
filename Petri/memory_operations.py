@@ -39,112 +39,108 @@ class MemoryOperations:
     
     def push_argument(self, translator, index):
         """
-        Push argument[index] onto stack with level-aware token handling
+        Push argument[index] onto stack using FunctionContextManager
         """
-        if not translator.call_stack:
-            raise RuntimeError("No function call context for argument access")
+        # Use function context manager for proper argument access
+        arg_place = translator.function_context_manager.get_argument_place(index)
         
-        current_call = translator.call_stack[-1]
-        if index >= len(current_call['arguments']):
-            raise RuntimeError(f"Argument index {index} out of bounds")
-        
-        # Get the argument place
-        arg_place = current_call['arguments'][index]
-        
-        # Create a new place for the pushed value (duplicate the argument)
+        # Create a new place for the pushed value
         pushed_place = translator.net.add_place(translator.get_unique_place_name(f"pushed_arg_{index}"))
         
-        # Create dup transition to copy the argument value with level preservation
-        def dup_arg_func(tokens):
+        # Create transition to copy value from argument place to pushed place
+        trans_name = translator.get_unique_transition_name("push_arg")
+        transition = translator.net.add_transition(trans_name)
+        
+        # Connect: arg_place -> transition -> arg_place, pushed_place
+        translator.net.add_arc(arg_place, transition)
+        translator.net.add_arc(transition, arg_place)  # Keep original
+        translator.net.add_arc(transition, pushed_place)  # Create copy
+        
+        # Set operation to copy token
+        def copy_arg_op(tokens):
             if tokens:
                 token = tokens[0]
-                val = token.value
-                level = getattr(token, 'level', 0)
-                return [Token(val, level), Token(val, level)]  # Original and copy with same level
-            return [Token(0), Token(0)]
-        
-        dup_transition = translator.net.add_transition(
-            translator.get_unique_transition_name(f"dup_arg_{index}"),
-            dup_arg_func
-        )
-        
-        # Wire: arg_place -> dup_transition -> [arg_place, pushed_place]
-        translator.net.add_arc(arg_place, dup_transition)
-        translator.net.add_arc(dup_transition, arg_place)  # Keep original
-        translator.net.add_arc(dup_transition, pushed_place)  # Create copy
+                return [token, Token(token.value)]  # Original and copy
+            return [Token(0), Token(0)]  # Default values
+            
+        transition.operation = copy_arg_op
         
         # Add to result places
         translator.result_places.append(pushed_place)
+        
+        current_context = translator.function_context_manager.get_current_context()
+        function_name = current_context['function_name'] if current_context else 'unknown'
+        print(f"Pushed argument {index} (function: {function_name})")
         return pushed_place
     
     def push_local(self, translator, index):
         """
-        Push local[index] onto stack - simplified approach without dup transition
+        Push local[index] onto stack using FunctionContextManager
         """
-        if not translator.current_function:
-            raise RuntimeError("No function context for local variable access")
+        # Use function context manager for proper scope isolation
+        local_place = translator.function_context_manager.get_local_place(index)
         
-        if translator.current_function not in translator.function_locals:
-            raise RuntimeError(f"Function {translator.current_function} not defined")
-        
-        if index >= translator.function_locals[translator.current_function]:
-            raise RuntimeError(f"Local index {index} out of bounds for function {translator.current_function}")
-        
-        # Get or create the local variable place with call-specific scoping
-        call_depth = len(translator.call_stack)
-        local_place_name = f"local_{translator.current_function}_{call_depth}_{index}"
-        local_place = self._get_or_create_local_place(translator, local_place_name, index)
-        
-        # Create a new place for the pushed value and directly copy the value
+        # Create a new place for the pushed value
         pushed_place = translator.net.add_place(translator.get_unique_place_name(f"pushed_local_{index}"))
         
-        # Directly copy the value from local place to pushed place
-        if local_place.has_token():
-            local_value = local_place.tokens[0].value
-            pushed_place.put_token(Token(local_value))
-        else:
-            pushed_place.put_token(Token(0))  # Default value
+        # Create transition to copy value from local place to pushed place
+        trans_name = translator.get_unique_transition_name("push_local")
+        transition = translator.net.add_transition(trans_name)
+        
+        # Connect: local_place -> transition -> local_place, pushed_place
+        translator.net.add_arc(local_place, transition)
+        translator.net.add_arc(transition, local_place)  # Keep original
+        translator.net.add_arc(transition, pushed_place)  # Create copy
+        
+        # Set operation to copy token
+        def copy_local_op(tokens):
+            if tokens:
+                token = tokens[0]
+                return [token, Token(token.value)]  # Original and copy
+            return [Token(0), Token(0)]  # Default values
+            
+        transition.operation = copy_local_op
         
         # Add to result places
         translator.result_places.append(pushed_place)
-        print(f"Pushed local variable {index} (function: {translator.current_function})")
+        
+        current_context = translator.function_context_manager.get_current_context()
+        function_name = current_context['function_name'] if current_context else 'unknown'
+        print(f"Pushed local variable {index} (function: {function_name})")
         return pushed_place
     
     def pop_local(self, translator, index):
         """
-        Store top stack element to local variable N
-        Implements pop local using Petri net semantics with single-token constraint
+        Store top stack element to local variable using FunctionContextManager
         """
-        if not translator.current_function:
-            raise RuntimeError("No function context for local variable")
-        
-        if translator.current_function not in translator.function_locals:
-            raise RuntimeError(f"Function {translator.current_function} not defined")
-        
-        if index >= translator.function_locals[translator.current_function]:
-            raise RuntimeError(f"Local index {index} out of bounds for function {translator.current_function}")
-        
         if len(translator.result_places) < 1:
             raise RuntimeError("No value to pop")
         
         # Get the value to store
         value_place = translator.result_places.pop()
         
-        # Get or create local variable place with call-specific scoping
-        call_depth = len(translator.call_stack)
-        local_place_name = f"local_{translator.current_function}_{call_depth}_{index}"
-        local_place = self._get_or_create_local_place(translator, local_place_name, index)
+        # Use function context manager for proper scope isolation
+        local_place = translator.function_context_manager.get_local_place(index)
         
-        # With single-token constraint, we can directly replace the token
-        # Get the value from the value_place and put it in the local_place
-        if value_place.has_token():
-            new_value = value_place.get_token()
-            local_place.put_token(new_value)  # This will replace existing token
-        else:
-            # Default value if no token
-            local_place.put_token(Token(0))
+        # Create transition to move value from value_place to local_place
+        trans_name = translator.get_unique_transition_name("pop_local")
+        transition = translator.net.add_transition(trans_name)
         
-        print(f"Stored value to local variable {index}")
+        # Connect: value_place -> transition -> local_place
+        translator.net.add_arc(value_place, transition)
+        translator.net.add_arc(transition, local_place)
+        
+        # Set operation to move token (replacing existing token in local_place)
+        def move_to_local_op(tokens):
+            if tokens:
+                return [tokens[0]]  # Move the token
+            return [Token(0)]  # Default value
+            
+        transition.operation = move_to_local_op
+        
+        current_context = translator.function_context_manager.get_current_context()
+        function_name = current_context['function_name'] if current_context else 'unknown'
+        print(f"Stored value to local variable {index} (function: {function_name})")
         return local_place
     
     def _get_or_create_local_place(self, translator, local_place_name, index):
@@ -170,35 +166,37 @@ class MemoryOperations:
     
     def pop_argument(self, translator, index):
         """
-        Store top stack element back to caller's argument location
-        Implements reference parameter semantics - changes are visible to caller
+        Store top stack element back to caller's argument location using FunctionContextManager
         """
-        if not translator.call_stack:
-            raise RuntimeError("No function call context for argument modification")
-        
-        current_call = translator.call_stack[-1]
-        if index >= len(current_call['arguments']):
-            raise RuntimeError(f"Argument index {index} out of bounds")
-        
         if len(translator.result_places) < 1:
             raise RuntimeError("No value to pop")
         
         # Get the value to store
         value_place = translator.result_places.pop()
         
-        # Get the caller's argument place (shared reference)
-        caller_arg_place = current_call['arguments'][index]
+        # Use function context manager for proper argument access
+        arg_place = translator.function_context_manager.get_argument_place(index)
         
-        # With single-token constraint, directly replace the token in caller's argument
-        if value_place.has_token():
-            new_value = value_place.get_token()
-            caller_arg_place.put_token(new_value)  # This modifies caller's data directly
-        else:
-            # Default value if no token
-            caller_arg_place.put_token(Token(0))
+        # Create transition to move value from value_place to argument place
+        trans_name = translator.get_unique_transition_name("pop_arg")
+        transition = translator.net.add_transition(trans_name)
         
-        print(f"Modified caller's argument {index} (reference parameter)")
-        return caller_arg_place
+        # Connect: value_place -> transition -> arg_place
+        translator.net.add_arc(value_place, transition)
+        translator.net.add_arc(transition, arg_place)
+        
+        # Set operation to move token (replacing existing token in arg_place)
+        def move_to_arg_op(tokens):
+            if tokens:
+                return [tokens[0]]  # Move the token
+            return [Token(0)]  # Default value
+            
+        transition.operation = move_to_arg_op
+        
+        current_context = translator.function_context_manager.get_current_context()
+        function_name = current_context['function_name'] if current_context else 'unknown'
+        print(f"Modified caller's argument {index} (function: {function_name})")
+        return arg_place
     
     def pop_operation(self, translator, segment, index):
         """General pop operation for different memory segments"""

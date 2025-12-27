@@ -40,7 +40,7 @@ class TestRunner:
         
         if category == 'all':
             # Search all subdirectories
-            for test_dir in ['unit', 'integration', 'property']:
+            for test_dir in ['unit', 'integration', 'property', 'comprehensive']:
                 test_path = base_path / test_dir
                 if test_path.exists():
                     test_files.extend(self._find_test_files(test_path, test_dir))
