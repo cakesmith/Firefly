@@ -1,5 +1,11 @@
 class CPU:
-    def __init__(self, program=None, RAM=[]):
+    def __init__(self, program=None, RAM=None):
+        
+        # Initialize RAM - use provided RAM or create new one
+        if RAM is not None:
+            self.RAM = RAM
+        else:
+            self.RAM = []
         
         # Load the passed program into the ROM and reset the CPU
         self.reset()
@@ -19,8 +25,12 @@ class CPU:
         self.D = 0
         self.KBD = 0
 
-        for i in range(24576):
-            RAM.append(0)
+        # Initialize RAM if it's empty or ensure it has the right size
+        if len(self.RAM) == 0:
+            self.RAM = [0] * 24576
+        elif len(self.RAM) < 24576:
+            # Extend RAM to required size
+            self.RAM.extend([0] * (24576 - len(self.RAM)))
 
     def step(self, PC):
 
@@ -36,7 +46,7 @@ class CPU:
             jump = command["VAL"]["JUMP"]
 
             if 'M' in comp:
-                result = self.ALU[comp.replace("M", "A")](RAM[self.A], self.D)
+                result = self.ALU[comp.replace("M", "A")](self.RAM[self.A], self.D)
             else:
                 result = self.ALU[comp](self.A, self.D)
 
@@ -49,7 +59,7 @@ class CPU:
                 self.ng = 1
 
             if 'M' in dest:
-                RAM[self.A] = result
+                self.RAM[self.A] = result
             if 'A' in dest:
                 self.A = result
             if 'D' in dest:
