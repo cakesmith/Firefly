@@ -365,9 +365,81 @@ class PetriEmitter:
         return self._insert_operation(neg_transition, result_place, consumes_stack=1, produces_stack=1)
 
     def lt(self, vmc):
-        # """Handle lt (less than) operation"""
-        # Add your custom logic here
-        pass
+        """
+        Implement lt (less than) operation by creating a transition that consumes two values
+        from the stack and produces -1 (true) if second operand < first operand, 0 (false) otherwise.
+        Stack semantics: second_operand < first_operand
+        """
+        # Create a place to hold the result
+        result_place_name = f"lt_result_{len(self.net.places)}"
+        result_place = Place(result_place_name)
+        self.net.add_place(result_place)
+        
+        # Create emit function for lt operation
+        def emit_lt(transition):
+            assembly = []
+            
+            # Get input places (should be 2) and output place
+            if len(transition.in_places) != 2:
+                return ["// lt - invalid input configuration"]
+            
+            input_place1 = transition.in_places[0]  # Second operand (top of stack)
+            input_place2 = transition.in_places[1]  # First operand (second from top)
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load first operand (second from top) into D register
+            if input_place2.memory_address is not None:
+                assembly.append(f"@R{input_place2.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// lt - first operand has no memory address")
+                return assembly
+            
+            # Subtract second operand (top of stack) from D register
+            # D = second_operand - first_operand
+            if input_place1.memory_address is not None:
+                assembly.append(f"@R{input_place1.memory_address}")
+                assembly.append("D=D-M")
+            else:
+                assembly.append("// lt - second operand has no memory address")
+                return assembly
+            
+            # Generate unique labels for this comparison
+            true_label = f"LT_TRUE_{id(transition)}"
+            end_label = f"LT_END_{id(transition)}"
+            
+            # Jump to true label if D < 0 (second_operand < first_operand)
+            assembly.append(f"@{true_label}")
+            assembly.append("D;JLT")
+            
+            # False case: set D = 0
+            assembly.append("D=0")
+            assembly.append(f"@{end_label}")
+            assembly.append("0;JMP")
+            
+            # True case: set D = -1
+            assembly.append(f"({true_label})")
+            assembly.append("D=-1")
+            
+            # End label
+            assembly.append(f"({end_label})")
+            
+            # Store result in output place
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that performs the less than comparison
+        lt_transition = Transition(
+            name=f"lt_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(-1 if tokens[1].value < tokens[0].value else 0)],  # tokens[1] < tokens[0] (stack order)
+            emit_function=emit_lt
+        )
+        
+        # Use the general method to add this operation (consumes 2, produces 1)
+        return self._insert_operation(lt_transition, result_place, consumes_stack=2, produces_stack=1)
 
     def eq(self, vmc):
         # """Handle eq (equals) operation"""

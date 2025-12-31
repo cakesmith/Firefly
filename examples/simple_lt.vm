@@ -1,0 +1,7 @@
+// Simple less than comparison example
+// This VM code pushes two constants and compares them
+// Expected result: 5 < 10 = true = -1
+
+push constant 5
+push constant 10
+lt
