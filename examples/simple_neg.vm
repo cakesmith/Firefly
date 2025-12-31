@@ -1,0 +1,6 @@
+// Simple negation example
+// This VM code pushes a constant and negates it
+// Expected result: -(15) = -15
+
+push constant 15
+neg

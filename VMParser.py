@@ -222,5 +222,11 @@ class VMParser:
 
         
 if __name__ == "__main__":
-    vm = VMParser('tecs/projects/07/MemoryAccess/BasicTest')
+    import sys
+    if len(sys.argv) > 1:
+        directory = sys.argv[1]
+    else:
+        directory = 'tecs/projects/07/MemoryAccess/BasicTest'
+    
+    vm = VMParser(directory)
     

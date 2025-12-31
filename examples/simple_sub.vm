@@ -1,0 +1,7 @@
+// Simple subtraction example
+// This VM code pushes two constants and subtracts them
+// Expected result: 20 - 7 = 13
+
+push constant 20
+push constant 7
+sub

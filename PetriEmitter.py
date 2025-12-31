@@ -261,14 +261,108 @@ class PetriEmitter:
         return self._insert_operation(add_transition, result_place, consumes_stack=2, produces_stack=1)
 
     def sub(self, vmc):
-        # """Handle sub operation"""
-        # Add your custom logic here
-        pass
+        """
+        Implement sub operation by creating a transition that consumes two values
+        from the stack and produces their difference (second operand - first operand).
+        """
+        # Create a place to hold the result
+        result_place_name = f"sub_result_{len(self.net.places)}"
+        result_place = Place(result_place_name)
+        self.net.add_place(result_place)
+        
+        # Create emit function for sub operation
+        def emit_sub(transition):
+            assembly = []
+            
+            # Get input places (should be 2) and output place
+            if len(transition.in_places) != 2:
+                return ["// sub - invalid input configuration"]
+            
+            input_place1 = transition.in_places[0]  # Second operand (top of stack)
+            input_place2 = transition.in_places[1]  # First operand (second from top)
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load first operand (second from top) into D register
+            if input_place2.memory_address is not None:
+                assembly.append(f"@R{input_place2.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// sub - first operand has no memory address")
+                return assembly
+            
+            # Subtract second operand (top of stack) from D register
+            if input_place1.memory_address is not None:
+                assembly.append(f"@R{input_place1.memory_address}")
+                assembly.append("D=D-M")
+            else:
+                assembly.append("// sub - second operand has no memory address")
+                return assembly
+            
+            # Store result in output place
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that performs the subtraction
+        sub_transition = Transition(
+            name=f"sub_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(tokens[1].value - tokens[0].value)],  # tokens[1] - tokens[0] (stack order)
+            emit_function=emit_sub
+        )
+        
+        # Use the general method to add this operation (consumes 2, produces 1)
+        return self._insert_operation(sub_transition, result_place, consumes_stack=2, produces_stack=1)
 
     def neg(self, vmc):
-        # """Handle neg operation"""
-        # Add your custom logic here
-        pass
+        """
+        Implement neg operation by creating a transition that consumes one value
+        from the stack and produces its negation (-value).
+        """
+        # Create a place to hold the result
+        result_place_name = f"neg_result_{len(self.net.places)}"
+        result_place = Place(result_place_name)
+        self.net.add_place(result_place)
+        
+        # Create emit function for neg operation
+        def emit_neg(transition):
+            assembly = []
+            
+            # Get input place (should be 1) and output place
+            if len(transition.in_places) != 1:
+                return ["// neg - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load operand into D register
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// neg - operand has no memory address")
+                return assembly
+            
+            # Negate D register (D = -D)
+            assembly.append("D=-D")
+            
+            # Store result in output place
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that performs the negation
+        neg_transition = Transition(
+            name=f"neg_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(-tokens[0].value)],  # Negate the single token
+            emit_function=emit_neg
+        )
+        
+        # Use the general method to add this operation (consumes 1, produces 1)
+        return self._insert_operation(neg_transition, result_place, consumes_stack=1, produces_stack=1)
 
     def lt(self, vmc):
         # """Handle lt (less than) operation"""
