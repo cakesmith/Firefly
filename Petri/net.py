@@ -236,3 +236,278 @@ class PetriNet:
             coloring[place] = color
         
         return coloring
+    def assign_cpu_cores(self, num_cores):
+        """
+        Assign CPU cores to transitions using graph coloring based on level system.
+        Transitions at the same level that can execute in parallel get different cores.
+        """
+        self.cpu_cores = num_cores
+        
+        # Step 1: Compute levels for all transitions
+        self._compute_transition_levels()
+        
+        # Step 2: Build conflict graph for transitions at each level
+        conflict_graph = self._build_transition_conflict_graph()
+        
+        # Step 3: Use graph coloring to assign CPU cores
+        self.cpu_assignments = self._color_transition_graph(conflict_graph, num_cores)
+        
+        return self.cpu_assignments
+    
+    def _compute_transition_levels(self):
+        """
+        Compute the level of each transition based on longest path from start.
+        Transitions at the same level can potentially execute in parallel.
+        """
+        self.transition_levels = {}
+        
+        # Find starting transitions (no input places or input from init)
+        start_transitions = []
+        for transition in self.transitions.values():
+            if (not transition.in_places or 
+                (len(transition.in_places) == 1 and transition.in_places[0].name == "init")):
+                start_transitions.append(transition)
+        
+        # BFS to assign levels
+        visited = set()
+        queue = [(t, 0) for t in start_transitions]  # (transition, level)
+        
+        while queue:
+            transition, level = queue.pop(0)
+            
+            if transition.name in visited:
+                # Update level if we found a longer path
+                if level > self.transition_levels.get(transition.name, -1):
+                    self.transition_levels[transition.name] = level
+                    # Re-queue successors with updated level
+                    for successor in self._get_successor_transitions(transition):
+                        if successor.name not in visited or level + 1 > self.transition_levels.get(successor.name, -1):
+                            queue.append((successor, level + 1))
+                continue
+            
+            visited.add(transition.name)
+            self.transition_levels[transition.name] = level
+            
+            # Add successor transitions to queue
+            for successor in self._get_successor_transitions(transition):
+                queue.append((successor, level + 1))
+    
+    def _get_successor_transitions(self, transition):
+        """Get transitions that can execute after the given transition"""
+        successors = []
+        
+        # Find transitions that consume from this transition's output places
+        for output_place in transition.out_places:
+            for other_transition in self.transitions.values():
+                if output_place in other_transition.in_places:
+                    successors.append(other_transition)
+        
+        return successors
+    
+    def _build_transition_conflict_graph(self):
+        """
+        Build conflict graph for transitions.
+        Transitions conflict if they:
+        1. Are at the same level AND
+        2. Share input or output places (resource conflicts)
+        """
+        conflict_graph = {name: set() for name in self.transitions.keys()}
+        
+        # Group transitions by level
+        levels = {}
+        for trans_name, level in self.transition_levels.items():
+            if level not in levels:
+                levels[level] = []
+            levels[level].append(trans_name)
+        
+        # For each level, find conflicts between transitions
+        for level, trans_names in levels.items():
+            for i, trans1_name in enumerate(trans_names):
+                for j, trans2_name in enumerate(trans_names):
+                    if i != j:
+                        trans1 = self.transitions[trans1_name]
+                        trans2 = self.transitions[trans2_name]
+                        
+                        # Check for resource conflicts
+                        if self._transitions_conflict(trans1, trans2):
+                            conflict_graph[trans1_name].add(trans2_name)
+                            conflict_graph[trans2_name].add(trans1_name)
+        
+        return conflict_graph
+    
+    def _transitions_conflict(self, trans1, trans2):
+        """
+        Check if two transitions conflict (cannot execute simultaneously).
+        They conflict if they share input or output places.
+        """
+        # Check shared input places
+        trans1_inputs = set(p.name for p in trans1.in_places)
+        trans2_inputs = set(p.name for p in trans2.in_places)
+        if trans1_inputs & trans2_inputs:
+            return True
+        
+        # Check shared output places
+        trans1_outputs = set(p.name for p in trans1.out_places)
+        trans2_outputs = set(p.name for p in trans2.out_places)
+        if trans1_outputs & trans2_outputs:
+            return True
+        
+        # Check if one's output is another's input
+        if trans1_outputs & trans2_inputs or trans2_outputs & trans1_inputs:
+            return True
+        
+        return False
+    
+    def _color_transition_graph(self, conflict_graph, num_cores):
+        """
+        Use graph coloring to assign CPU cores to transitions.
+        Conflicting transitions get different cores (colors).
+        Also distribute non-conflicting transitions across cores for load balancing.
+        """
+        assignments = {}
+        
+        # Sort transitions by conflict degree (most constrained first), then by level
+        sorted_transitions = sorted(self.transitions.keys(),
+                                  key=lambda t: (len(conflict_graph[t]), self.transition_levels.get(t, 0)),
+                                  reverse=True)
+        
+        for trans_name in sorted_transitions:
+            # Find cores used by conflicting transitions
+            used_cores = set()
+            for conflicting_trans in conflict_graph[trans_name]:
+                if conflicting_trans in assignments:
+                    used_cores.add(assignments[conflicting_trans])
+            
+            # If there are no conflicts, distribute across cores for load balancing
+            if not used_cores:
+                # Count current assignments per core
+                core_counts = {}
+                for core in range(num_cores):
+                    core_counts[core] = 0
+                
+                for assigned_core in assignments.values():
+                    if assigned_core < num_cores:
+                        core_counts[assigned_core] += 1
+                
+                # Assign to the core with the least work
+                core = min(core_counts.keys(), key=lambda c: core_counts[c])
+            else:
+                # Find the lowest available core not used by conflicts
+                core = 0
+                while core in used_cores and core < num_cores:
+                    core += 1
+                
+                # If all cores are used by conflicts, use round-robin assignment
+                if core >= num_cores:
+                    # Count assignments per core excluding conflicts
+                    core_counts = {}
+                    for c in range(num_cores):
+                        if c not in used_cores:
+                            core_counts[c] = sum(1 for assigned_core in assignments.values() if assigned_core == c)
+                    
+                    if core_counts:
+                        core = min(core_counts.keys(), key=lambda c: core_counts[c])
+                    else:
+                        # All cores have conflicts, use modulo assignment
+                        core = len(assignments) % num_cores
+            
+            assignments[trans_name] = core
+        
+        return assignments
+    
+    def generate_roms(self):
+        """
+        Generate ROM programs for each CPU core.
+        Each ROM contains the firing sequence for transitions assigned to that core.
+        """
+        if not self.cpu_assignments:
+            raise RuntimeError("CPU cores not assigned. Call assign_cpu_cores() first.")
+        
+        # Group transitions by CPU core
+        core_transitions = {}
+        for trans_name, core in self.cpu_assignments.items():
+            if core not in core_transitions:
+                core_transitions[core] = []
+            core_transitions[core].append(trans_name)
+        
+        # Sort transitions within each core by level
+        for core in core_transitions:
+            core_transitions[core].sort(key=lambda t: self.transition_levels.get(t, 0))
+        
+        # Generate ROM for each core
+        roms = {}
+        for core in range(self.cpu_cores):
+            if core in core_transitions:
+                roms[core] = self._generate_core_rom(core_transitions[core])
+            else:
+                roms[core] = []  # Empty ROM for unused cores
+        
+        return roms
+    
+    def _generate_core_rom(self, transition_names):
+        """
+        Generate ROM program for a specific core's transitions.
+        """
+        rom = []
+        
+        for trans_name in transition_names:
+            transition = self.transitions[trans_name]
+            
+            # Add synchronization check (wait for input places to have tokens)
+            rom.extend(self._generate_sync_check(transition))
+            
+            # Add the transition's assembly code
+            assembly = transition.emit_assembly()
+            if isinstance(assembly, list):
+                rom.extend(assembly)
+            else:
+                rom.append(assembly)
+            
+            # Add synchronization signal (mark output places as ready)
+            rom.extend(self._generate_sync_signal(transition))
+        
+        return rom
+    
+    def _generate_sync_check(self, transition):
+        """
+        Generate assembly code to check if transition can fire.
+        Wait for all input places to have tokens.
+        """
+        sync_code = []
+        
+        if not transition.in_places:
+            return sync_code
+        
+        # For each input place, check if it has a token
+        for place in transition.in_places:
+            if place.name == "init":
+                continue  # Init place is always ready
+            
+            # Wait loop for this place to be ready
+            sync_code.append(f"// Wait for {place.name}")
+            sync_code.append(f"({place.name}_WAIT)")
+            if place.memory_address is not None:
+                sync_code.append(f"@R{place.memory_address + 1000}")  # Use high memory for flags
+                sync_code.append("D=M")
+                sync_code.append(f"@{place.name}_WAIT")
+                sync_code.append("D;JEQ")  # Jump back if not ready
+        
+        return sync_code
+    
+    def _generate_sync_signal(self, transition):
+        """
+        Generate assembly code to signal that transition has completed.
+        Mark output places as having tokens.
+        """
+        sync_code = []
+        
+        # For each output place, set its ready flag
+        for place in transition.out_places:
+            sync_code.append(f"// Signal {place.name} ready")
+            if place.memory_address is not None:
+                sync_code.append("@1")  # Set ready flag
+                sync_code.append("D=A")
+                sync_code.append(f"@R{place.memory_address + 1000}")  # Use high memory for flags
+                sync_code.append("M=D")
+        
+        return sync_code
