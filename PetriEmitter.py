@@ -10,6 +10,7 @@ class PetriEmitter:
 
         self.net.add_place(Place("init"))
         self.net.add_place(Place("end"))
+
         def emit_nop(transition):
             input_place = transition.in_places[0] if transition.in_places else None
             output_place = transition.out_places[0] if transition.out_places else None
@@ -29,9 +30,6 @@ class PetriEmitter:
                 assembly.append(f"@R{output_place.memory_address}")
                 assembly.append("M=D")
                 
-            print(f"Emitting for {transition.name}: {assembly}")
-            return assembly
-            print(f"Emitting for {transition.name}: {assembly}")
             return assembly
 
         self.net.add_transition(Transition(
@@ -43,30 +41,9 @@ class PetriEmitter:
         self.net.add_arc(self.net.places["init"], self.net.transitions["nop"])
         self.net.add_arc(self.net.transitions["nop"], self.net.places["end"])
 
-        # Perform memory allocation before execution
-        total_slots = self.net.allocate_memory()
-        print(f"Total memory slots allocated: {total_slots}")
-        
-        # Print memory assignments
-        for place_name, place in self.net.places.items():
-            print(f"Place '{place_name}' -> Memory slot R{place.memory_address}")
-
         self.net.places["init"].put_token(Token("hello world"))
 
-        fired = self.net.execute_step()
-        
-        # Test the emit function
-        nop_transition = self.net.transitions["nop"]
-        assembly_code = nop_transition.emit_assembly()
-        print(f"Generated assembly: {assembly_code}")
-
-        print(f"Transitions fired: {fired}")
-
-        self.net.add_arc(self.net.places["init"], self.net.transitions["nop"])
-        self.net.add_arc(self.net.transitions["nop"], self.net.places["end"])
-
-        self.net.places["init"].put_token(Token("hello world"))
-
+        self.net.allocate_memory()
         self.net.execute_step()
 
         print(self.net.places["end"].token.value)

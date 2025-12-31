@@ -17,7 +17,7 @@ class VMParser:
         self.emitter = PetriEmitter.PetriEmitter()
         
         self.countlines = 0
-        
+
         dirname = os.path.dirname(programdir)
         _, self.progname = os.path.split(dirname)
             
