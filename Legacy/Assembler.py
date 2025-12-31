@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-# This code is due for a major tuneup.
-
 from tkinter import Tk, Frame, PhotoImage, Label, BOTH
 from os import system
 from collections import namedtuple

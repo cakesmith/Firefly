@@ -26,11 +26,15 @@ class PetriNet:
         
     def execute_step(self):
         """Execute one step of the Petri net"""
+        # First, collect all transitions that can fire BEFORE any firing happens
+        # This prevents transitions enabled by firings within this step from also firing
+        enabled = [t for t in self.transitions.values() if t.can_fire()]
+        
+        # Now fire all the enabled transitions
         fired = []
-        for transition in self.transitions.values():
-            if transition.can_fire():
-                transition.fire()
-                fired.append(transition.name)
+        for transition in enabled:
+            transition.fire()
+            fired.append(transition.name)
         return fired
 
     def allocate_memory(self, next_slot=0):

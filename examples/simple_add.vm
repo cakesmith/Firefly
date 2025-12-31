@@ -1,0 +1,7 @@
+// Simple addition example
+// This VM code pushes two constants and adds them
+// Expected result: 7 + 13 = 20
+
+push constant 7
+push constant 13
+add

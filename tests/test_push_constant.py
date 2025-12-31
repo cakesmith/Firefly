@@ -99,9 +99,16 @@ push constant 15
         print(f"Transitions in net: {list(net.transitions.keys())}")
         print(f"Control stack size: {len(emitter.control_stack)}")
         
-        # Verify net structure
-        assert len(net.places) == 5, f"Expected 5 places (init, end, 3 constants), got {len(net.places)}"
-        assert len(net.transitions) == 3, f"Expected 3 transitions, got {len(net.transitions)}"
+        # Verify net structure (now includes dup transitions and intermediate places)
+        expected_min_places = 5  # init, end, 3 constants (minimum)
+        assert len(net.places) >= expected_min_places, f"Expected at least {expected_min_places} places, got {len(net.places)}"
+        
+        # Should have push transitions and dup transitions
+        push_transitions = [name for name in net.transitions.keys() if name.startswith("push_const")]
+        dup_transitions = [name for name in net.transitions.keys() if name.startswith("dup_")]
+        
+        assert len(push_transitions) == 3, f"Expected 3 push transitions, got {len(push_transitions)}"
+        assert len(dup_transitions) >= 1, f"Expected at least 1 dup transition, got {len(dup_transitions)}"
         assert len(emitter.control_stack) == 3, f"Expected 3 items on stack, got {len(emitter.control_stack)}"
         
         # Check stack order (should be [const_5, const_10, const_15] with 15 on top)
@@ -130,6 +137,8 @@ push constant 15
                 break
             print(f"Step {step}: Fired {fired}")
             step += 1
+            if step > 10:  # Safety break
+                break
         
         # Check final token values
         print("\nFinal token values:")

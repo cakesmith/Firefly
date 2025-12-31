@@ -1,0 +1,11 @@
+// Multiple additions example
+// This VM code demonstrates chaining multiple add operations
+// Expected result: ((10 + 20) + 5) + 15 = 50
+
+push constant 10
+push constant 20
+add
+push constant 5
+add
+push constant 15
+add
