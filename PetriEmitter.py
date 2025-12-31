@@ -11,7 +11,7 @@ class PetriEmitter:
         self.net.add_place(Place("init"))
         self.net.add_place(Place("end"))
 
-        def emit_nop(transition):
+        def emit_pass(transition):
             input_place = transition.in_places[0] if transition.in_places else None
             output_place = transition.out_places[0] if transition.out_places else None
             
@@ -33,13 +33,13 @@ class PetriEmitter:
             return assembly
 
         self.net.add_transition(Transition(
-            name = "nop", 
+            name = "pass", 
             operation = lambda tokens: tokens,
-            emit_function = emit_nop
+            emit_function = emit_pass
         ))
 
-        self.net.add_arc(self.net.places["init"], self.net.transitions["nop"])
-        self.net.add_arc(self.net.transitions["nop"], self.net.places["end"])
+        self.net.add_arc(self.net.places["init"], self.net.transitions["pass"])
+        self.net.add_arc(self.net.transitions["pass"], self.net.places["end"])
 
         self.net.places["init"].put_token(Token("hello world"))
 

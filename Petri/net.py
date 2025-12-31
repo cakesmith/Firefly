@@ -42,52 +42,19 @@ class PetriNet:
         for place in self.places.values():
             place.memory_address = None
         
-        # Step 1: Build topological ordering of places
-        topo_order = self._topological_sort_places()
-        
-        # Step 2: Perform liveness analysis to find interference
+        # Step 1: Perform liveness analysis to find interference
         interference_graph = self._build_interference_graph()
         
-        # Step 3: Use graph coloring to assign memory slots
+        # Step 2: Use graph coloring to assign memory slots
         slot_assignment = self._color_interference_graph(interference_graph)
         
-        # Step 4: Assign memory addresses based on coloring
+        # Step 3: Assign memory addresses based on coloring
         max_slot = 0
         for place_name, slot in slot_assignment.items():
             self.places[place_name].memory_address = slot
             max_slot = max(max_slot, slot)
         
         return max_slot + 1
-    
-    def _topological_sort_places(self):
-        """Create a topological ordering of places based on data flow"""
-        # Build adjacency list for places (through transitions)
-        place_graph = {name: set() for name in self.places.keys()}
-        
-        for transition in self.transitions.values():
-            for input_place in transition.in_places:
-                for output_place in transition.out_places:
-                    place_graph[input_place.name].add(output_place.name)
-        
-        # Kahn's algorithm for topological sort
-        in_degree = {name: 0 for name in self.places.keys()}
-        for name in self.places.keys():
-            for neighbor in place_graph[name]:
-                in_degree[neighbor] += 1
-        
-        queue = [name for name, degree in in_degree.items() if degree == 0]
-        topo_order = []
-        
-        while queue:
-            current = queue.pop(0)
-            topo_order.append(current)
-            
-            for neighbor in place_graph[current]:
-                in_degree[neighbor] -= 1
-                if in_degree[neighbor] == 0:
-                    queue.append(neighbor)
-        
-        return topo_order
     
     def _build_interference_graph(self):
         """
