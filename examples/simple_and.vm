@@ -1,0 +1,15 @@
+// Test and (bitwise AND) operation
+// Push 12, then 10, then AND: 12 & 10 = 8 (1100 & 1010 = 1000)
+push constant 12
+push constant 10
+and
+
+// Push 15, then 7, then AND: 15 & 7 = 7 (1111 & 0111 = 0111)
+push constant 15
+push constant 7
+and
+
+// Push 8, then 4, then AND: 8 & 4 = 0 (1000 & 0100 = 0000)
+push constant 8
+push constant 4
+and

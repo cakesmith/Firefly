@@ -1,0 +1,15 @@
+// Test gt (greater than) operation
+// Push 7, then 3, then compare: 7 > 3 should be true (-1)
+push constant 7
+push constant 3
+gt
+
+// Push 2, then 5, then compare: 2 > 5 should be false (0)
+push constant 2
+push constant 5
+gt
+
+// Push 4, then 4, then compare: 4 > 4 should be false (0)
+push constant 4
+push constant 4
+gt
