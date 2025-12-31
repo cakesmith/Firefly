@@ -1,5 +1,5 @@
 class CPU:
-    def __init__(self, program=None):
+    def __init__(self, program=None, RAM=[]):
         
         # Load the passed program into the ROM and reset the CPU
         self.reset()
@@ -18,11 +18,9 @@ class CPU:
         self.A = 0
         self.D = 0
         self.KBD = 0
-        
-        self.RAM = []
 
         for i in range(24576):
-            self.RAM.append(0)
+            RAM.append(0)
 
     def step(self, PC):
 
@@ -38,7 +36,7 @@ class CPU:
             jump = command["VAL"]["JUMP"]
 
             if 'M' in comp:
-                result = self.ALU[comp.replace("M", "A")](self.RAM[self.A], self.D)
+                result = self.ALU[comp.replace("M", "A")](RAM[self.A], self.D)
             else:
                 result = self.ALU[comp](self.A, self.D)
 
@@ -51,7 +49,7 @@ class CPU:
                 self.ng = 1
 
             if 'M' in dest:
-                self.RAM[self.A] = result
+                RAM[self.A] = result
             if 'A' in dest:
                 self.A = result
             if 'D' in dest:

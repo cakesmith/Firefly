@@ -62,22 +62,39 @@ class PetriEmitter:
         
         return transition
 
+    def _create_dup_transition(self, input_place):
+        """
+        Create a dup transition that takes 1 input and produces 2 outputs.
+        Returns the two output places.
+        """
+        # Create dup transition
+        dup_transition = Transition(
+            name=f"dup_{len(self.net.transitions)}",
+            operation=lambda tokens: [tokens[0], tokens[0]],  # Duplicate the token
+            emit_function=self._emit_dup_assembly
+        )
+        self.net.add_transition(dup_transition)
+        
+        # Create output places
+        dup_out1 = Place(f"dup_out1_{len(self.net.places)}")
+        dup_out2 = Place(f"dup_out2_{len(self.net.places)}")
+        self.net.add_place(dup_out1)
+        self.net.add_place(dup_out2)
+        
+        # Connect: input_place -> dup -> {dup_out1, dup_out2}
+        self.net.add_arc(input_place, dup_transition)
+        self.net.add_arc(dup_transition, dup_out1)
+        self.net.add_arc(dup_transition, dup_out2)
+        
+        return dup_out1, dup_out2
+
     def _create_dup_branch(self, new_transition):
         """
         Create a dup transition to enable branching when multiple operations
         need to consume from the same source.
         """
-        # For operations that consume 0 from stack, we need to branch from the current control state
-        # This could be 'init' or the result of the last operation that didn't consume from stack
-        
-        # Find the current control source - either init or the last place on the control stack
-        if len(self.control_stack) == 0:
-            # No operations have produced anything yet - branch from init
-            control_source = self.net.places["init"]
-        else:
-            # There are operations on the stack, but this operation consumes 0
-            # It should branch from init, not from stack results
-            control_source = self.net.places["init"]
+        # Always branch from init for operations that consume 0 from stack
+        control_source = self.net.places["init"]
         
         # Find existing transitions that consume from the control source
         source_consumers = []
@@ -94,24 +111,8 @@ class PetriEmitter:
                            if not (src == control_source.name and tgt == existing_transition.name)]
             existing_transition.in_places.remove(control_source)
             
-            # Create dup transition
-            dup_transition = Transition(
-                name=f"dup_{len(self.net.transitions)}",
-                operation=lambda tokens: [tokens[0], tokens[0]],  # Duplicate the token
-                emit_function=self._emit_dup_assembly
-            )
-            self.net.add_transition(dup_transition)
-            
-            # Create intermediate places for the dup outputs
-            dup_out1 = Place(f"dup_out1_{len(self.net.places)}")
-            dup_out2 = Place(f"dup_out2_{len(self.net.places)}")
-            self.net.add_place(dup_out1)
-            self.net.add_place(dup_out2)
-            
-            # Connect: source -> dup -> {dup_out1, dup_out2}
-            self.net.add_arc(control_source, dup_transition)
-            self.net.add_arc(dup_transition, dup_out1)
-            self.net.add_arc(dup_transition, dup_out2)
+            # Create dup transition using the helper method
+            dup_out1, dup_out2 = self._create_dup_transition(control_source)
             
             # Connect existing transition to one dup output
             self.net.add_arc(dup_out1, existing_transition)
