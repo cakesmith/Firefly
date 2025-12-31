@@ -1,0 +1,7 @@
+// Simple equality comparison example
+// This VM code pushes two constants and compares them
+// Expected result: 8 == 8 = true = -1
+
+push constant 8
+push constant 8
+eq
