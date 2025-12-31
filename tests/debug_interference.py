@@ -3,6 +3,10 @@
 Debug interference detection to understand why we're getting fewer slots than expected
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from Petri.net import PetriNet
 from Petri.Place import Place
 from Petri.Transition import Transition

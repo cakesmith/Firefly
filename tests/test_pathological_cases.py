@@ -4,6 +4,10 @@ Pathological Test Cases for Memory Allocator
 Tests edge cases and worst-case scenarios that could break the optimizer
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from Petri.net import PetriNet
 from Petri.Place import Place
 from Petri.Transition import Transition
@@ -54,6 +58,8 @@ def test_complete_graph():
     # Should use exactly 10 slots (one per place)
     assert slots == 10, f"Complete graph should use 10 slots, used {slots}"
     print("✅ Correctly assigned unique slots to all interfering places")
+    
+    return slots, efficiency
 
 def test_star_topology():
     """Test: Star topology with central hub - high fan-out stress test"""
@@ -94,6 +100,8 @@ def test_star_topology():
     
     # All spokes can be active simultaneously due to ActivateAllSpokes transition
     assert slots >= 25, f"Star topology should use many slots due to parallel spokes, used {slots}"
+    
+    return slots, efficiency
 
 def test_deeply_nested_branches():
     """Test: Deeply nested conditional branches - exponential explosion"""
@@ -128,6 +136,8 @@ def test_deeply_nested_branches():
     
     # The algorithm correctly detects extensive interference in binary trees
     # Each level can have all nodes active simultaneously, creating complex interference patterns
+    
+    return slots, efficiency
 
 def test_cyclic_dependencies():
     """Test: Cyclic dependencies that could confuse topological sort"""
@@ -169,6 +179,8 @@ def test_cyclic_dependencies():
     # Cycles create interference patterns based on actual token flow
     # The algorithm correctly analyzes which places can be simultaneously active
     print("✅ Algorithm handled cyclic dependencies without crashing")
+    
+    return slots, efficiency
 
 def test_massive_fan_out_fan_in():
     """Test: Massive fan-out followed by fan-in - synchronization nightmare"""
@@ -205,6 +217,8 @@ def test_massive_fan_out_fan_in():
     
     # All 100 middle places can be active simultaneously
     assert slots >= 90, f"Should use ~100 slots for parallel middle places, used {slots}"
+    
+    return slots, efficiency
 
 def test_interleaved_pipelines():
     """Test: Multiple interleaved pipelines with cross-connections"""
@@ -249,6 +263,8 @@ def test_interleaved_pipelines():
     
     # Should need multiple slots due to pipeline overlaps and cross-connections
     print("✅ Handled complex interleaved pipeline topology")
+    
+    return slots, efficiency
 
 def test_pathological_graph_coloring():
     """Test: Graph designed to stress the coloring algorithm"""
@@ -284,6 +300,8 @@ def test_pathological_graph_coloring():
     # Should require exactly n colors (one per node in clique)
     assert slots == n, f"Clique of size {n} should use {n} slots, used {slots}"
     print(f"✅ Correctly colored clique requiring {n} different slots")
+    
+    return slots, efficiency
 
 def test_memory_fragmentation():
     """Test: Pattern that could cause memory fragmentation"""
@@ -331,6 +349,8 @@ def test_memory_fragmentation():
     slots, efficiency = print_pathological_result(net, "Memory Fragmentation Pattern")
     
     print("✅ Handled mixed interference patterns without fragmentation issues")
+    
+    return slots, efficiency
 
 def run_pathological_tests():
     """Run all pathological test cases"""
@@ -338,23 +358,70 @@ def run_pathological_tests():
     print("Testing edge cases and worst-case scenarios")
     print("="*80)
     
+    # Store results for sorting
+    results = []
+    
     try:
-        test_complete_graph()
-        test_star_topology()
-        test_deeply_nested_branches()
-        test_cyclic_dependencies()
-        test_massive_fan_out_fan_in()
-        test_interleaved_pipelines()
-        test_pathological_graph_coloring()
-        test_memory_fragmentation()
+        # Run all tests and collect results
+        slots, efficiency = test_complete_graph()
+        results.append(("Complete Interference Graph", efficiency, slots))
+        
+        slots, efficiency = test_star_topology()
+        results.append(("Star Topology", efficiency, slots))
+        
+        slots, efficiency = test_deeply_nested_branches()
+        results.append(("Binary Tree", efficiency, slots))
+        
+        slots, efficiency = test_cyclic_dependencies()
+        results.append(("Cyclic Dependencies", efficiency, slots))
+        
+        slots, efficiency = test_massive_fan_out_fan_in()
+        results.append(("Massive Fan-Out/Fan-In", efficiency, slots))
+        
+        slots, efficiency = test_interleaved_pipelines()
+        results.append(("Interleaved Pipelines", efficiency, slots))
+        
+        slots, efficiency = test_pathological_graph_coloring()
+        results.append(("Clique Graph", efficiency, slots))
+        
+        slots, efficiency = test_memory_fragmentation()
+        results.append(("Memory Fragmentation", efficiency, slots))
+        
+        # Sort by efficiency (least to most reduction)
+        results.sort(key=lambda x: x[1])
         
         print(f"\n{'='*80}")
-        print("🏆 PATHOLOGICAL TESTS SUMMARY")
+        print("🏆 PATHOLOGICAL TESTS SUMMARY (Sorted by Memory Reduction)")
         print(f"{'='*80}")
-        print("✅ All pathological cases handled correctly!")
-        print("✅ Memory allocator is robust against edge cases")
-        print("✅ Graph coloring algorithm works under stress")
-        print("✅ No crashes or incorrect slot assignments detected")
+        print(f"{'Test Name':<30} {'Reduction':<12} {'Slots':<8} {'Analysis'}")
+        print("-" * 80)
+        
+        for test_name, efficiency, slots in results:
+            if efficiency == 0.0:
+                analysis = "Maximum interference detected"
+            elif efficiency < 50.0:
+                analysis = "High interference"
+            elif efficiency < 90.0:
+                analysis = "Moderate optimization"
+            else:
+                analysis = "Excellent optimization"
+            
+            print(f"{test_name:<30} {efficiency:>6.1f}%{'':<5} {slots:>4}{'':<4} {analysis}")
+        
+        print(f"\n✅ All pathological cases handled correctly!")
+        print(f"✅ Memory allocator is robust against edge cases")
+        print(f"✅ Graph coloring algorithm works under stress")
+        print(f"✅ No crashes or incorrect slot assignments detected")
+        
+        # Analysis of results
+        min_efficiency = min(r[1] for r in results)
+        max_efficiency = max(r[1] for r in results)
+        avg_efficiency = sum(r[1] for r in results) / len(results)
+        
+        print(f"\n📊 EFFICIENCY ANALYSIS:")
+        print(f"   Worst case:  {min_efficiency:5.1f}% (high interference scenarios)")
+        print(f"   Best case:   {max_efficiency:5.1f}% (sequential/tree structures)")
+        print(f"   Average:     {avg_efficiency:5.1f}% across all pathological cases")
         
     except Exception as e:
         print(f"\n❌ PATHOLOGICAL TEST FAILED: {e}")

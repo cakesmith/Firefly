@@ -3,6 +3,10 @@
 Debug the memory allocation algorithm to understand the high reduction rates
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from Petri.net import PetriNet
 from Petri.Place import Place
 from Petri.Transition import Transition

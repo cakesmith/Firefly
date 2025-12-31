@@ -4,6 +4,10 @@ Test cases for Petri net memory allocator
 Tests various topological patterns to ensure correct memory slot reuse
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from Petri.net import PetriNet
 from Petri.Place import Place
 from Petri.Transition import Transition

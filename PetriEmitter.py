@@ -41,12 +41,7 @@ class PetriEmitter:
         self.net.add_arc(self.net.places["init"], self.net.transitions["pass"])
         self.net.add_arc(self.net.transitions["pass"], self.net.places["end"])
 
-        self.net.places["init"].put_token(Token("hello world"))
-
-        self.net.allocate_memory()
-        self.net.execute_step()
-
-        print(self.net.places["end"].token.value)
+        self.net.places["init"].put_token(Token("control"))
 
 
     def label(self, vmc):
@@ -126,8 +121,8 @@ class PetriEmitter:
         pass
 
     def push_constant(self, vmc):
-        # """Handle push constant command"""
-        # Add your custom logic here
+        
+        
         pass
 
     def push_local(self, vmc):

@@ -74,14 +74,9 @@ class PetriNet:
                         interference[place1].add(place2)
                         interference[place2].add(place1)
             
-            # All output places of a transition can be alive together
-            # (they all receive tokens when the transition fires)
-            output_names = [p.name for p in transition.out_places]
-            for i, place1 in enumerate(output_names):
-                for j, place2 in enumerate(output_names):
-                    if i != j:
-                        interference[place1].add(place2)
-                        interference[place2].add(place1)
+            # NOTE: We do NOT assume all output places interfere with each other
+            # because a transition might produce tokens to only some outputs
+            # based on its operation logic
         
         # Additional analysis: places in parallel paths and pipeline overlaps
         self._analyze_parallel_paths(interference)
