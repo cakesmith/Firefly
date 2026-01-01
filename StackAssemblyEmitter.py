@@ -1,4 +1,6 @@
 
+# FUTURE USE, DO NOT USE THIS FILE YET
+
 class StackAssemblyEmitter:
 
     def label(self, vmc):

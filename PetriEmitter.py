@@ -336,19 +336,98 @@ class PetriEmitter:
         return ifgoto_transition
                 
     def function(self, vmc):
-        # """Handle function command"""
-        # Add your custom logic here
-        pass
+        """
+        Implement function declaration by creating a function entry place.
+        The function place serves as a control flow target for calls.
+        """
+        function_name = vmc.segment  # Function name
+        n_locals = vmc.index        # Number of local variables
+        
+        # Create a place to represent this function entry point
+        function_place_name = f"function_{function_name}"
+        function_place = Place(function_place_name)
+        function_place.function_name = function_name
+        function_place.n_locals = n_locals
+        function_place.is_function = True
+        self.net.add_place(function_place)
+        
+        # Store function in a registry for call to find
+        if not hasattr(self.net, 'functions'):
+            self.net.functions = {}
+        self.net.functions[function_name] = function_place
+        
+        # Create emit function for function declaration
+        def emit_function(transition):
+            assembly = []
+            # Generate function label - this is the main assembly output
+            assembly.append(f"({function_name})")
+            return assembly
+        
+        # Create transition for function entry
+        function_transition = Transition(
+            name=f"function_{function_name}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(f"function_{function_name}")],
+            emit_function=emit_function
+        )
+        
+        # Use the general method to add this operation
+        return self._insert_operation(function_transition, function_place, consumes_stack=0, produces_stack=1)
             
     def call(self, vmc):
-        # """Handle call command"""
-        # Add your custom logic here
-        pass
+        """
+        Implement function call by creating a call transition.
+        This represents the control flow to the called function.
+        """
+        function_name = vmc.segment  # Function name to call
+        n_args = vmc.index          # Number of arguments
+        
+        # Create a place to hold the call result
+        call_result_place = Place(f"call_result_{function_name}_{len(self.net.places)}")
+        self.net.add_place(call_result_place)
+        
+        # Create emit function for call
+        def emit_call(transition):
+            assembly = []
+            # Generate call assembly - minimal for Petri net approach
+            assembly.append(f"@{function_name}")
+            assembly.append("0;JMP")
+            return assembly
+        
+        # Create transition for function call
+        call_transition = Transition(
+            name=f"call_{function_name}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(f"call_{function_name}")],
+            emit_function=emit_call
+        )
+        
+        # Call consumes n_args from stack and produces 1 result
+        return self._insert_operation(call_transition, call_result_place, consumes_stack=n_args, produces_stack=1)
             
     def ret(self, vmc):
-        # """Handle return command"""
-        # Add your custom logic here
-        pass
+        """
+        Implement return from function by creating a return transition.
+        This represents the control flow back to the caller.
+        """
+        # Create a place to represent the return point
+        return_place = Place(f"return_{len(self.net.places)}")
+        self.net.add_place(return_place)
+        
+        # Create emit function for return
+        def emit_return(transition):
+            assembly = []
+            # Simple return assembly for Petri net approach
+            assembly.append("// return")
+            return assembly
+        
+        # Create transition for return
+        return_transition = Transition(
+            name=f"return_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token("return")],
+            emit_function=emit_return
+        )
+        
+        # Return consumes 1 from stack (the return value) and produces 1 (control flow)
+        return self._insert_operation(return_transition, return_place, consumes_stack=1, produces_stack=1)
 
 
     def add(self, vmc):
@@ -941,71 +1020,601 @@ class PetriEmitter:
         return self._insert_operation(push_const_transition, constant_place, consumes_stack=0, produces_stack=1)
 
     def push_local(self, vmc):
-        # """Handle push local command"""
-        # Add your custom logic here
-        pass
+        """Handle push local command - pushes local[index] onto stack"""
+        index = vmc.index
+        
+        # Create a place to hold the local value
+        local_place = Place(f"local_{index}_{len(self.net.places)}")
+        self.net.add_place(local_place)
+        
+        # Create emit function for push local
+        def emit_push_local(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load local[index] into D register
+            assembly.append("@LCL")
+            assembly.append("D=M")
+            assembly.append(f"@{index}")
+            assembly.append("A=D+A")
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the local value
+        push_local_transition = Transition(
+            name=f"push_local_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_local
+        )
+        
+        return self._insert_operation(push_local_transition, local_place, consumes_stack=0, produces_stack=1)
 
     def push_argument(self, vmc):
-        # """Handle push argument command"""
-        # Add your custom logic here
-        pass
+        """Handle push argument command - pushes argument[index] onto stack"""
+        index = vmc.index
+        
+        # Create a place to hold the argument value
+        arg_place = Place(f"arg_{index}_{len(self.net.places)}")
+        self.net.add_place(arg_place)
+        
+        # Create emit function for push argument
+        def emit_push_argument(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load argument[index] into D register
+            assembly.append("@ARG")
+            assembly.append("D=M")
+            assembly.append(f"@{index}")
+            assembly.append("A=D+A")
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the argument value
+        push_arg_transition = Transition(
+            name=f"push_arg_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_argument
+        )
+        
+        return self._insert_operation(push_arg_transition, arg_place, consumes_stack=0, produces_stack=1)
 
     def push_this(self, vmc):
-        # """Handle push this command"""
-        # Add your custom logic here
-        pass
+        """Handle push this command - pushes this[index] onto stack"""
+        index = vmc.index
+        
+        # Create a place to hold the this value
+        this_place = Place(f"this_{index}_{len(self.net.places)}")
+        self.net.add_place(this_place)
+        
+        # Create emit function for push this
+        def emit_push_this(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load this[index] into D register
+            assembly.append("@THIS")
+            assembly.append("D=M")
+            assembly.append(f"@{index}")
+            assembly.append("A=D+A")
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the this value
+        push_this_transition = Transition(
+            name=f"push_this_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_this
+        )
+        
+        return self._insert_operation(push_this_transition, this_place, consumes_stack=0, produces_stack=1)
 
     def push_that(self, vmc):
-        # """Handle push that command"""
-        # Add your custom logic here
-        pass
+        """Handle push that command - pushes that[index] onto stack"""
+        index = vmc.index
+        
+        # Create a place to hold the that value
+        that_place = Place(f"that_{index}_{len(self.net.places)}")
+        self.net.add_place(that_place)
+        
+        # Create emit function for push that
+        def emit_push_that(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load that[index] into D register
+            assembly.append("@THAT")
+            assembly.append("D=M")
+            assembly.append(f"@{index}")
+            assembly.append("A=D+A")
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the that value
+        push_that_transition = Transition(
+            name=f"push_that_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_that
+        )
+        
+        return self._insert_operation(push_that_transition, that_place, consumes_stack=0, produces_stack=1)
 
     def push_pointer(self, vmc):
-        # """Handle push pointer command"""
-        # Add your custom logic here
-        pass
+        """Handle push pointer command - pushes THIS (0) or THAT (1) pointer"""
+        index = vmc.index
+        
+        # Create a place to hold the pointer value
+        pointer_place = Place(f"pointer_{index}_{len(self.net.places)}")
+        self.net.add_place(pointer_place)
+        
+        # Create emit function for push pointer
+        def emit_push_pointer(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load pointer (THIS or THAT) into D register
+            if index == 0:
+                assembly.append("@THIS")
+            elif index == 1:
+                assembly.append("@THAT")
+            else:
+                assembly.append(f"// Invalid pointer index: {index}")
+                return assembly
+            
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the pointer value
+        push_pointer_transition = Transition(
+            name=f"push_pointer_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_pointer
+        )
+        
+        return self._insert_operation(push_pointer_transition, pointer_place, consumes_stack=0, produces_stack=1)
 
     def push_temp(self, vmc):
-        # """Handle push temp command"""
-        # Add your custom logic here
-        pass
+        """Handle push temp command - pushes temp[index] (R5-R12)"""
+        index = vmc.index
+        
+        # Create a place to hold the temp value
+        temp_place = Place(f"temp_{index}_{len(self.net.places)}")
+        self.net.add_place(temp_place)
+        
+        # Create emit function for push temp
+        def emit_push_temp(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load temp[index] (R5+index) into D register
+            temp_address = 5 + index
+            assembly.append(f"@R{temp_address}")
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the temp value
+        push_temp_transition = Transition(
+            name=f"push_temp_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_temp
+        )
+        
+        return self._insert_operation(push_temp_transition, temp_place, consumes_stack=0, produces_stack=1)
 
     def push_static(self, vmc):
-        # """Handle push static command"""
-        # Add your custom logic here
-        pass
+        """Handle push static command - pushes static variable"""
+        index = vmc.index
+        
+        # Create a place to hold the static value
+        static_place = Place(f"static_{index}_{len(self.net.places)}")
+        self.net.add_place(static_place)
+        
+        # Create emit function for push static
+        def emit_push_static(transition):
+            assembly = []
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load static variable into D register
+            # Static variables are typically named ClassName.index
+            assembly.append(f"@Static.{index}")
+            assembly.append("D=M")
+            
+            # Store in output place memory location
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+                
+            return assembly
+        
+        # Create transition that pushes the static value
+        push_static_transition = Transition(
+            name=f"push_static_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            emit_function=emit_push_static
+        )
+        
+        return self._insert_operation(push_static_transition, static_place, consumes_stack=0, produces_stack=1)
 
     def pop_local(self, vmc):
-        # """Handle pop local command"""
-        # Add your custom logic here
-        pass
+        """Handle pop local command - pops stack top to local[index]"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_local_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop local
+        def emit_pop_local(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop local - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop local - input has no memory address")
+                return assembly
+            
+            # Store to local[index] - need two-step addressing
+            assembly.append("@LCL")
+            assembly.append("A=M")
+            assembly.append(f"@{index}")
+            assembly.append("D=A+D")  # D = LCL + index
+            assembly.append("@R13")   # Use R13 as temp
+            assembly.append("M=D")    # R13 = address of local[index]
+            
+            # Get the value to store (already in D from input place)
+            assembly.append(f"@R{input_place.memory_address}")
+            assembly.append("D=M")
+            
+            # Store to local[index]
+            assembly.append("@R13")
+            assembly.append("A=M")
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to local
+        pop_local_transition = Transition(
+            name=f"pop_local_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_local
+        )
+        
+        return self._insert_operation(pop_local_transition, pop_result_place, consumes_stack=1, produces_stack=0)
 
     def pop_argument(self, vmc):
-        # """Handle pop argument command"""
-        # Add your custom logic here
-        pass
+        """Handle pop argument command - pops stack top to argument[index]"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_arg_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop argument
+        def emit_pop_argument(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop argument - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop argument - input has no memory address")
+                return assembly
+            
+            # Store to argument[index] - need two-step addressing
+            assembly.append("@ARG")
+            assembly.append("A=M")
+            assembly.append(f"@{index}")
+            assembly.append("D=A+D")  # D = ARG + index
+            assembly.append("@R13")   # Use R13 as temp
+            assembly.append("M=D")    # R13 = address of argument[index]
+            
+            # Get the value to store (already in D from input place)
+            assembly.append(f"@R{input_place.memory_address}")
+            assembly.append("D=M")
+            
+            # Store to argument[index]
+            assembly.append("@R13")
+            assembly.append("A=M")
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to argument
+        pop_arg_transition = Transition(
+            name=f"pop_arg_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_argument
+        )
+        
+        return self._insert_operation(pop_arg_transition, pop_result_place, consumes_stack=1, produces_stack=0)
 
     def pop_this(self, vmc):
-        # """Handle pop this command"""
-        # Add your custom logic here
-        pass
+        """Handle pop this command - pops stack top to this[index]"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_this_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop this
+        def emit_pop_this(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop this - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop this - input has no memory address")
+                return assembly
+            
+            # Store to this[index] - need two-step addressing
+            assembly.append("@THIS")
+            assembly.append("A=M")
+            assembly.append(f"@{index}")
+            assembly.append("D=A+D")  # D = THIS + index
+            assembly.append("@R13")   # Use R13 as temp
+            assembly.append("M=D")    # R13 = address of this[index]
+            
+            # Get the value to store (already in D from input place)
+            assembly.append(f"@R{input_place.memory_address}")
+            assembly.append("D=M")
+            
+            # Store to this[index]
+            assembly.append("@R13")
+            assembly.append("A=M")
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to this
+        pop_this_transition = Transition(
+            name=f"pop_this_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_this
+        )
+        
+        return self._insert_operation(pop_this_transition, pop_result_place, consumes_stack=1, produces_stack=0)
 
     def pop_that(self, vmc):
-        # """Handle pop that command"""
-        # Add your custom logic here
-        pass
+        """Handle pop that command - pops stack top to that[index]"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_that_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop that
+        def emit_pop_that(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop that - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop that - input has no memory address")
+                return assembly
+            
+            # Store to that[index] - need two-step addressing
+            assembly.append("@THAT")
+            assembly.append("A=M")
+            assembly.append(f"@{index}")
+            assembly.append("D=A+D")  # D = THAT + index
+            assembly.append("@R13")   # Use R13 as temp
+            assembly.append("M=D")    # R13 = address of that[index]
+            
+            # Get the value to store (already in D from input place)
+            assembly.append(f"@R{input_place.memory_address}")
+            assembly.append("D=M")
+            
+            # Store to that[index]
+            assembly.append("@R13")
+            assembly.append("A=M")
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to that
+        pop_that_transition = Transition(
+            name=f"pop_that_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_that
+        )
+        
+        return self._insert_operation(pop_that_transition, pop_result_place, consumes_stack=1, produces_stack=0)
 
     def pop_pointer(self, vmc):
-        # """Handle pop pointer command"""
-        # Add your custom logic here
-        pass
+        """Handle pop pointer command - pops stack top to THIS (0) or THAT (1) pointer"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_pointer_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop pointer
+        def emit_pop_pointer(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop pointer - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop pointer - input has no memory address")
+                return assembly
+            
+            # Store to pointer (THIS or THAT)
+            if index == 0:
+                assembly.append("@THIS")
+            elif index == 1:
+                assembly.append("@THAT")
+            else:
+                assembly.append(f"// Invalid pointer index: {index}")
+                return assembly
+            
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to pointer
+        pop_pointer_transition = Transition(
+            name=f"pop_pointer_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_pointer
+        )
+        
+        return self._insert_operation(pop_pointer_transition, pop_result_place, consumes_stack=1, produces_stack=0)
 
     def pop_temp(self, vmc):
-        # """Handle pop temp command"""
-        # Add your custom logic here
-        pass
+        """Handle pop temp command - pops stack top to temp[index] (R5-R12)"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_temp_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop temp
+        def emit_pop_temp(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop temp - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop temp - input has no memory address")
+                return assembly
+            
+            # Store to temp[index] (R5+index)
+            temp_address = 5 + index
+            assembly.append(f"@R{temp_address}")
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to temp
+        pop_temp_transition = Transition(
+            name=f"pop_temp_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_temp
+        )
+        
+        return self._insert_operation(pop_temp_transition, pop_result_place, consumes_stack=1, produces_stack=0)
 
     def pop_static(self, vmc):
-        # """Handle pop static command"""
-        # Add your custom logic here
-        pass
+        """Handle pop static command - pops stack top to static variable"""
+        index = vmc.index
+        
+        # Create a place to represent the pop operation result
+        pop_result_place = Place(f"pop_static_{index}_{len(self.net.places)}")
+        self.net.add_place(pop_result_place)
+        
+        # Create emit function for pop static
+        def emit_pop_static(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the value to pop
+            if len(transition.in_places) != 1:
+                return ["// pop static - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load value from input place
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// pop static - input has no memory address")
+                return assembly
+            
+            # Store to static variable
+            # Static variables are typically named ClassName.index
+            assembly.append(f"@Static.{index}")
+            assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that pops to static
+        pop_static_transition = Transition(
+            name=f"pop_static_{index}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            emit_function=emit_pop_static
+        )
+        
+        return self._insert_operation(pop_static_transition, pop_result_place, consumes_stack=1, produces_stack=0)
