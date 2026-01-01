@@ -19,9 +19,16 @@ from petri_memory_integration import integrate_petri_memory_sharing, PetriMemory
 
 class MockVMCommand:
     """Mock VM command for testing"""
-    def __init__(self, command_type, index=None):
+    def __init__(self, command_type, segment_or_index=None):
         self.command_type = command_type
-        self.index = index
+        # For control flow commands (label, goto, if-goto), segment holds the label name
+        # For push/pop commands, index holds the value
+        if command_type in ("label", "goto", "if-goto"):
+            self.segment = segment_or_index
+            self.index = None
+        else:
+            self.segment = None
+            self.index = segment_or_index
 
 
 class TestMemorySharingIntegration(unittest.TestCase):

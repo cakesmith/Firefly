@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""
+Test program flow operations with Petri net semantics.
+
+In the Petri net model:
+- Labels create places that serve as control flow merge points
+- goto creates transitions that output tokens to label places
+- if-goto creates conditional branches with two output places
+
+Control flow is handled via token placement, not assembly jumps.
+"""
 
 import sys
 import os
@@ -18,8 +28,7 @@ def test_basic_loop_pattern():
     # label LOOP_START
     # push constant 1
     # sub                  // counter--
-    # dup                  // duplicate for both condition check and next iteration
-    # if-goto LOOP_START   // continue if counter > 0
+    # if-goto LOOP_START   // continue if counter != 0
     # goto END
     # label END
     
@@ -28,7 +37,7 @@ def test_basic_loop_pattern():
     emitter.push_constant(push_cmd1)
     
     # Create loop start label
-    label_cmd = vmcommand("label", None, "LOOP_START", None)
+    label_cmd = vmcommand("label", "LOOP_START", None, None)
     emitter.label(label_cmd)
     
     # Push 1 for subtraction
@@ -40,16 +49,36 @@ def test_basic_loop_pattern():
     emitter.sub(sub_cmd)
     
     # Check if we should continue loop (if-goto consumes the value)
-    ifgoto_cmd = vmcommand("if-goto", None, "LOOP_START", None)
+    ifgoto_cmd = vmcommand("if-goto", "LOOP_START", None, None)
     emitter.ifgoto(ifgoto_cmd)
     
     # Unconditional jump to end
-    goto_cmd = vmcommand("goto", None, "END", None)
+    goto_cmd = vmcommand("goto", "END", None, None)
     emitter.goto(goto_cmd)
     
     # End label
-    end_label_cmd = vmcommand("label", None, "END", None)
+    end_label_cmd = vmcommand("label", "END", None, None)
     emitter.label(end_label_cmd)
+    
+    # Verify Petri net structure
+    # 1. Both labels should exist
+    assert "LOOP_START" in emitter.net.labels, "LOOP_START label not found"
+    assert "END" in emitter.net.labels, "END label not found"
+    
+    # 2. ifgoto transition should exist with 2 outputs
+    ifgoto_trans = [t for t in emitter.net.transitions.values() 
+                   if t.name.startswith("ifgoto_")]
+    assert len(ifgoto_trans) == 1, f"Expected 1 ifgoto transition"
+    assert len(ifgoto_trans[0].out_places) == 2, "ifgoto should have 2 outputs"
+    
+    # 3. goto transition should exist
+    goto_trans = [t for t in emitter.net.transitions.values() 
+                 if t.name.startswith("goto_")]
+    assert len(goto_trans) == 1, f"Expected 1 goto transition"
+    
+    # 4. goto should output to END label
+    end_place = emitter.net.labels["END"]
+    assert end_place in goto_trans[0].out_places, "goto should output to END label"
     
     # Allocate memory and generate assembly
     emitter.net.allocate_memory()
@@ -73,27 +102,20 @@ def test_basic_loop_pattern():
     label_assembly = emitter._generate_label_assembly()
     assembly_lines.extend(label_assembly)
     
-    # Verify assembly contains all expected elements
     assembly_text = '\n'.join(assembly_lines)
     print("Generated assembly:")
     print(assembly_text)
     
-    # Check for labels
+    # Check for labels in generated assembly
     assert "(LOOP_START)" in assembly_text, f"Label (LOOP_START) not found"
     assert "(END)" in assembly_text, f"Label (END) not found"
-    
-    # Check for jumps
-    assert "@LOOP_START" in assembly_text, f"@LOOP_START not found"
-    assert "D;JNE" in assembly_text, f"D;JNE (if-goto) not found"
-    assert "@END" in assembly_text, f"@END not found"
-    assert "0;JMP" in assembly_text, f"0;JMP (goto) not found"
     
     # Check for constants and arithmetic
     assert "@3" in assembly_text, f"@3 (initial counter) not found"
     assert "@1" in assembly_text, f"@1 (decrement) not found"
     assert "D=D-M" in assembly_text, f"D=D-M (subtraction) not found"
     
-    print("✓ Basic loop pattern test passed")
+    print("✓ Basic loop pattern test passed (Petri net semantics)")
 
 def test_simple_conditional():
     """Test a simple conditional jump pattern"""
@@ -104,7 +126,7 @@ def test_simple_conditional():
     # Simple pattern:
     # push constant 0
     # if-goto SKIP
-    # push constant 42    // This should be skipped
+    # push constant 42    // This path when condition is false
     # label SKIP
     
     # Push condition (0 = false)
@@ -112,16 +134,24 @@ def test_simple_conditional():
     emitter.push_constant(push_cmd1)
     
     # Conditional jump
-    ifgoto_cmd = vmcommand("if-goto", None, "SKIP", None)
+    ifgoto_cmd = vmcommand("if-goto", "SKIP", None, None)
     emitter.ifgoto(ifgoto_cmd)
     
-    # This should be skipped when condition is false
+    # This executes when condition is false (fallthrough)
     push_cmd2 = vmcommand("push", "constant", 42, None)
     emitter.push_constant(push_cmd2)
     
     # Skip label
-    label_cmd = vmcommand("label", None, "SKIP", None)
+    label_cmd = vmcommand("label", "SKIP", None, None)
     emitter.label(label_cmd)
+    
+    # Verify Petri net structure
+    assert "SKIP" in emitter.net.labels, "SKIP label not found"
+    
+    ifgoto_trans = [t for t in emitter.net.transitions.values() 
+                   if t.name.startswith("ifgoto_")]
+    assert len(ifgoto_trans) == 1, "Expected 1 ifgoto transition"
+    assert len(ifgoto_trans[0].out_places) == 2, "ifgoto should have 2 outputs"
     
     # Allocate memory and generate assembly
     emitter.net.allocate_memory()
@@ -139,19 +169,16 @@ def test_simple_conditional():
     label_assembly = emitter._generate_label_assembly()
     assembly_lines.extend(label_assembly)
     
-    # Verify assembly
     assembly_text = '\n'.join(assembly_lines)
     print("Generated assembly for conditional:")
     print(assembly_text)
     
     # Check basic structure
     assert "(SKIP)" in assembly_text, f"Label (SKIP) not found"
-    assert "@SKIP" in assembly_text, f"@SKIP not found"
-    assert "D;JNE" in assembly_text, f"D;JNE not found"
     assert "@0" in assembly_text, f"@0 (condition) not found"
-    assert "@42" in assembly_text, f"@42 (skipped value) not found"
+    assert "@42" in assembly_text, f"@42 (fallthrough value) not found"
     
-    print("✓ Simple conditional test passed")
+    print("✓ Simple conditional test passed (Petri net semantics)")
 
 if __name__ == "__main__":
     test_basic_loop_pattern()
