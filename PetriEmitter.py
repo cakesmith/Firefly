@@ -8,6 +8,7 @@ class PetriEmitter:
     def __init__(self):
         self.net = PetriNet()
         self.control_stack = []
+        self.memory_simulation = {}  # Shared memory for simulation: {segment_type: {index: value}}
 
         self.net.add_place(Place("init"))
         self.net.add_place(Place("end"))
@@ -45,16 +46,25 @@ class PetriEmitter:
                 input_place = self.control_stack.pop()
                 self.net.add_arc(input_place, transition)
         else:
-            # Operation consumes 0 from stack - needs to connect from init or create dup
-            if len(self.control_stack) == 0:
-                # First operation - connect directly from init
-                self.net.add_arc(self.net.places["init"], transition)
-            else:
-                # Need to create dup transition to branch from init
-                self._create_dup_branch(transition)
+            # Operation consumes 0 from stack - connect to program flow
+            if not hasattr(self, '_program_flow_place'):
+                # First operation connects to init
+                self._program_flow_place = self.net.places["init"]
+            
+            self.net.add_arc(self._program_flow_place, transition)
         
-        # Connect output place
+        # Connect output place (data)
         self.net.add_arc(transition, output_place)
+        
+        # Handle program flow for operations that consume 0 from stack
+        if consumes_stack == 0:
+            # Create next program flow place for sequential execution
+            next_flow_place = Place(f"flow_{len(self.net.places)}")
+            self.net.add_place(next_flow_place)
+            self.net.add_arc(transition, next_flow_place)
+            
+            # Update program flow for next operation
+            self._program_flow_place = next_flow_place
         
         # Push output place to stack if operation produces a value
         if produces_stack == 1:
@@ -1012,7 +1022,7 @@ class PetriEmitter:
         # Create transition that produces the constant
         push_const_transition = Transition(
             name=f"push_const_{constant_value}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(constant_value)],
+            operation=lambda tokens: [Token(constant_value), Token(constant_value)],  # Data token, then flow token
             emit_function=emit_push_constant
         )
         
@@ -1047,9 +1057,17 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the local value
+        def push_local_operation(tokens):
+            # Read the value from shared memory simulation
+            if 'local' in self.memory_simulation and index in self.memory_simulation['local']:
+                value = self.memory_simulation['local'][index]
+            else:
+                value = 0  # Default value if not set
+            return [Token(value), Token(value)]  # Data token, then flow token
+        
         push_local_transition = Transition(
             name=f"push_local_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=push_local_operation,
             emit_function=emit_push_local
         )
         
@@ -1083,9 +1101,18 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the argument value
+        # Create transition that pushes the argument value
+        def push_arg_operation(tokens):
+            # Read the value from shared memory simulation
+            if 'argument' in self.memory_simulation and index in self.memory_simulation['argument']:
+                value = self.memory_simulation['argument'][index]
+            else:
+                value = 0  # Default value if not set
+            return [Token(value), Token(value)]  # Data token, then flow token
+        
         push_arg_transition = Transition(
             name=f"push_arg_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=push_arg_operation,
             emit_function=emit_push_argument
         )
         
@@ -1119,9 +1146,18 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the this value
+        # Create transition that pushes the this value
+        def push_this_operation(tokens):
+            # Read the value from shared memory simulation
+            if 'this' in self.memory_simulation and index in self.memory_simulation['this']:
+                value = self.memory_simulation['this'][index]
+            else:
+                value = 0  # Default value if not set
+            return [Token(value), Token(value)]  # Data token, then flow token
+        
         push_this_transition = Transition(
             name=f"push_this_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=push_this_operation,
             emit_function=emit_push_this
         )
         
@@ -1155,9 +1191,18 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the that value
+        # Create transition that pushes the that value
+        def push_that_operation(tokens):
+            # Read the value from shared memory simulation
+            if 'that' in self.memory_simulation and index in self.memory_simulation['that']:
+                value = self.memory_simulation['that'][index]
+            else:
+                value = 0  # Default value if not set
+            return [Token(value), Token(value)]  # Data token, then flow token
+        
         push_that_transition = Transition(
             name=f"push_that_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=push_that_operation,
             emit_function=emit_push_that
         )
         
@@ -1197,7 +1242,7 @@ class PetriEmitter:
         # Create transition that pushes the pointer value
         push_pointer_transition = Transition(
             name=f"push_pointer_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=lambda tokens: [Token(0), Token(0)],  # Data token, then flow token
             emit_function=emit_push_pointer
         )
         
@@ -1229,9 +1274,18 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the temp value
+        # Create transition that pushes the temp value
+        def push_temp_operation(tokens):
+            # Read the value from shared memory simulation
+            if 'temp' in self.memory_simulation and index in self.memory_simulation['temp']:
+                value = self.memory_simulation['temp'][index]
+            else:
+                value = 0  # Default value if not set
+            return [Token(value), Token(value)]  # Data token, then flow token
+        
         push_temp_transition = Transition(
             name=f"push_temp_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=push_temp_operation,
             emit_function=emit_push_temp
         )
         
@@ -1265,7 +1319,7 @@ class PetriEmitter:
         # Create transition that pushes the static value
         push_static_transition = Transition(
             name=f"push_static_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder value for simulation
+            operation=lambda tokens: [Token(0), Token(0)],  # Data token, then flow token
             emit_function=emit_push_static
         )
         
@@ -1317,9 +1371,16 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to local
+        def pop_local_operation(tokens):
+            # Store the value in shared memory simulation
+            if 'local' not in self.memory_simulation:
+                self.memory_simulation['local'] = {}
+            self.memory_simulation['local'][index] = tokens[0].value
+            return [tokens[0]]  # Pass through the input token value
+        
         pop_local_transition = Transition(
             name=f"pop_local_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=pop_local_operation,
             emit_function=emit_pop_local
         )
         
@@ -1371,9 +1432,17 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to argument
+        # Create transition that pops to argument
+        def pop_arg_operation(tokens):
+            # Store the value in shared memory simulation
+            if 'argument' not in self.memory_simulation:
+                self.memory_simulation['argument'] = {}
+            self.memory_simulation['argument'][index] = tokens[0].value
+            return [tokens[0]]  # Pass through the input token value
+        
         pop_arg_transition = Transition(
             name=f"pop_arg_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=pop_arg_operation,
             emit_function=emit_pop_argument
         )
         
@@ -1425,9 +1494,17 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to this
+        # Create transition that pops to this
+        def pop_this_operation(tokens):
+            # Store the value in shared memory simulation
+            if 'this' not in self.memory_simulation:
+                self.memory_simulation['this'] = {}
+            self.memory_simulation['this'][index] = tokens[0].value
+            return [tokens[0]]  # Pass through the input token value
+        
         pop_this_transition = Transition(
             name=f"pop_this_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=pop_this_operation,
             emit_function=emit_pop_this
         )
         
@@ -1479,9 +1556,17 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to that
+        # Create transition that pops to that
+        def pop_that_operation(tokens):
+            # Store the value in shared memory simulation
+            if 'that' not in self.memory_simulation:
+                self.memory_simulation['that'] = {}
+            self.memory_simulation['that'][index] = tokens[0].value
+            return [tokens[0]]  # Pass through the input token value
+        
         pop_that_transition = Transition(
             name=f"pop_that_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=pop_that_operation,
             emit_function=emit_pop_that
         )
         
@@ -1529,7 +1614,7 @@ class PetriEmitter:
         # Create transition that pops to pointer
         pop_pointer_transition = Transition(
             name=f"pop_pointer_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=lambda tokens: [tokens[0]],  # Pass through the input token value
             emit_function=emit_pop_pointer
         )
         
@@ -1569,9 +1654,17 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to temp
+        # Create transition that pops to temp
+        def pop_temp_operation(tokens):
+            # Store the value in shared memory simulation
+            if 'temp' not in self.memory_simulation:
+                self.memory_simulation['temp'] = {}
+            self.memory_simulation['temp'][index] = tokens[0].value
+            return [tokens[0]]  # Pass through the input token value
+        
         pop_temp_transition = Transition(
             name=f"pop_temp_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=pop_temp_operation,
             emit_function=emit_pop_temp
         )
         
@@ -1613,7 +1706,7 @@ class PetriEmitter:
         # Create transition that pops to static
         pop_static_transition = Transition(
             name=f"pop_static_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0)],  # Placeholder for simulation
+            operation=lambda tokens: [tokens[0]],  # Pass through the input token value
             emit_function=emit_pop_static
         )
         

@@ -3,30 +3,25 @@ class CPU:
         
         self.cpu_id = cpu_id  # Unique identifier for this CPU core
         
-        # Initialize RAM - use provided RAM or create new one
+        # Initialize shared RAM - use provided RAM or create new one
         if RAM is not None:
             self.RAM = RAM
         else:
             self.RAM = []
         
-        # Each CPU has its own PC register for shared ROM execution
-        self.PC = 0
-        
         # Reset the CPU state
         self.reset()
 
     def __str__(self):
-        return str({"CPU": self.cpu_id, "PC": self.PC, "A": self.A, "D": self.D, "zr": self.zr, "ng": self.ng})
+        return str({"CPU": self.cpu_id, "A": self.A, "D": self.D, "zr": self.zr, "ng": self.ng})
 
     def reset(self):
-        # Initialize memory and registers
-
+        # Initialize registers - no PC since it's managed externally
         self.zr = 0
         self.ng = 0
         self.A = 0
         self.D = 0
         self.KBD = 0
-        self.PC = 0  # Reset program counter
 
         # Initialize RAM if it's empty or ensure it has the right size
         if len(self.RAM) == 0:
@@ -35,19 +30,27 @@ class CPU:
             # Extend RAM to required size
             self.RAM.extend([0] * (24576 - len(self.RAM)))
 
-    def step(self, instruction):
+    def execute_instruction(self, instruction):
         """
-        Execute one instruction.
+        Execute one instruction without managing PC.
+        PC management is handled externally by the multi-core controller.
         
         Args:
             instruction: Single instruction dictionary to execute
             
         Returns:
-            New PC value after instruction execution
+            Dictionary with execution result and any jump target
         """
+        
+        result = {
+            'jump_target': None,
+            'should_jump': False,
+            'result_value': None
+        }
         
         if instruction["TYPE"] == "A_COMMAND":
             self.A = instruction["VAL"]
+            result['result_value'] = self.A
 
         elif instruction["TYPE"] == "C_COMMAND":
 
@@ -56,67 +59,52 @@ class CPU:
             jump = instruction["VAL"]["JUMP"]
 
             if 'M' in comp:
-                result = self.ALU[comp.replace("M", "A")](self.RAM[self.A], self.D)
+                comp_result = self.ALU[comp.replace("M", "A")](self.RAM[self.A], self.D)
             else:
-                result = self.ALU[comp](self.A, self.D)
+                comp_result = self.ALU[comp](self.A, self.D)
 
             self.zr = 0
             self.ng = 0
 
-            if result == 0:
+            if comp_result == 0:
                 self.zr = 1
-            elif result < 0:
+            elif comp_result < 0:
                 self.ng = 1
 
+            # Store results in destinations
             if 'M' in dest:
-                self.RAM[self.A] = result
+                self.RAM[self.A] = comp_result
             if 'A' in dest:
-                self.A = result
+                self.A = comp_result
             if 'D' in dest:
-                self.D = result
+                self.D = comp_result
 
-            if jump == "":
-                self.PC += 1
-                return self.PC
-            else:
-                if jump == "JGT":
-                    if result > 0:
-                        self.PC = self.A
-                        return self.PC
-                elif jump == "JEQ":
-                    if result == 0:
-                        self.PC = self.A
-                        return self.PC
-                elif jump == "JGE":
-                    if result >= 0:
-                        self.PC = self.A
-                        return self.PC
-                elif jump == "JLT":
-                    if result < 0:
-                        self.PC = self.A
-                        return self.PC
-                elif jump == "JNE":
-                    if result != 0:
-                        self.PC = self.A
-                        return self.PC
-                elif jump == "JLE":
-                    if result <= 0:
-                        self.PC = self.A
-                        return self.PC
+            result['result_value'] = comp_result
+
+            # Handle jumps - return jump information instead of modifying PC
+            if jump != "":
+                should_jump = False
+                
+                if jump == "JGT" and comp_result > 0:
+                    should_jump = True
+                elif jump == "JEQ" and comp_result == 0:
+                    should_jump = True
+                elif jump == "JGE" and comp_result >= 0:
+                    should_jump = True
+                elif jump == "JLT" and comp_result < 0:
+                    should_jump = True
+                elif jump == "JNE" and comp_result != 0:
+                    should_jump = True
+                elif jump == "JLE" and comp_result <= 0:
+                    should_jump = True
                 elif jump == "JMP":
-                    self.PC = self.A
-                    return self.PC
+                    should_jump = True
+                
+                if should_jump:
+                    result['should_jump'] = True
+                    result['jump_target'] = self.A
 
-        self.PC += 1
-        return self.PC
-    
-    def set_pc(self, address):
-        """Set the program counter to a specific address"""
-        self.PC = address
-    
-    def get_pc(self):
-        """Get the current program counter value"""
-        return self.PC
+        return result
 
     ALU = { "0"   : lambda a,d: 0,
             "1"   : lambda a,d: 1,
