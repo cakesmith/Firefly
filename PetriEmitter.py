@@ -8,7 +8,6 @@ class PetriEmitter:
     def __init__(self):
         self.net = PetriNet()
         self.control_stack = []
-        self.memory_simulation = {}  # Shared memory for simulation: {segment_type: {index: value}}
 
         self.net.add_place(Place("init"))
         self.net.add_place(Place("end"))
@@ -532,9 +531,19 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the addition
+        def add_operation(tokens):
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic, return symbolic result
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"add({val1},{val0})")]
+            
+            return [Token(val1 + val0)]
+        
         add_transition = Transition(
             name=f"add_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(tokens[1].value + tokens[0].value)],  # tokens[1] + tokens[0] (stack order)
+            operation=add_operation,
             emit_function=emit_add
         )
         
@@ -587,9 +596,19 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the subtraction
+        def sub_operation(tokens):
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic, return symbolic result
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"sub({val1},{val0})")]
+            
+            return [Token(val1 - val0)]
+        
         sub_transition = Transition(
             name=f"sub_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(tokens[1].value - tokens[0].value)],  # tokens[1] - tokens[0] (stack order)
+            operation=sub_operation,
             emit_function=emit_sub
         )
         
@@ -636,9 +655,18 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the negation
+        def neg_operation(tokens):
+            val = tokens[0].value
+            
+            # If value is symbolic, return symbolic result
+            if isinstance(val, str):
+                return [Token(f"neg({val})")]
+            
+            return [Token(-val)]
+        
         neg_transition = Transition(
             name=f"neg_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(-tokens[0].value)],  # Negate the single token
+            operation=neg_operation,
             emit_function=emit_neg
         )
         
@@ -713,9 +741,22 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the less than comparison
+        def lt_operation(tokens):
+            # Handle symbolic tokens (from memory segment operations)
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic (string), return a symbolic result
+            # The actual comparison happens in assembly execution
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"lt({val1},{val0})")]
+            
+            # Both values are numeric - perform the comparison
+            return [Token(-1 if val1 < val0 else 0)]
+        
         lt_transition = Transition(
             name=f"lt_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(-1 if tokens[1].value < tokens[0].value else 0)],  # tokens[1] < tokens[0] (stack order)
+            operation=lt_operation,
             emit_function=emit_lt
         )
         
@@ -790,9 +831,22 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the equality comparison
+        def eq_operation(tokens):
+            # Handle symbolic tokens (from memory segment operations)
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic (string), return a symbolic result
+            # The actual comparison happens in assembly execution
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"eq({val1},{val0})")]
+            
+            # Both values are numeric - perform the comparison
+            return [Token(-1 if val1 == val0 else 0)]
+        
         eq_transition = Transition(
             name=f"eq_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(-1 if tokens[1].value == tokens[0].value else 0)],  # tokens[1] == tokens[0] (stack order)
+            operation=eq_operation,
             emit_function=emit_eq
         )
         
@@ -923,9 +977,19 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the bitwise AND
+        def and_operation(tokens):
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic, return symbolic result
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"and({val1},{val0})")]
+            
+            return [Token(val1 & val0)]
+        
         and_transition = Transition(
             name=f"and_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(tokens[1].value & tokens[0].value)],  # tokens[1] & tokens[0] (stack order)
+            operation=and_operation,
             emit_function=emit_and
         )
         
@@ -979,9 +1043,19 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the bitwise OR
+        def or_operation(tokens):
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic, return symbolic result
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"or({val1},{val0})")]
+            
+            return [Token(val1 | val0)]
+        
         or_transition = Transition(
             name=f"or_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(tokens[1].value | tokens[0].value)],  # tokens[1] | tokens[0] (stack order)
+            operation=or_operation,
             emit_function=emit_or
         )
         
@@ -1028,9 +1102,18 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the bitwise NOT
+        def not_operation(tokens):
+            val = tokens[0].value
+            
+            # If value is symbolic, return symbolic result
+            if isinstance(val, str):
+                return [Token(f"not({val})")]
+            
+            return [Token(~val)]
+        
         not_transition = Transition(
             name=f"not_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(~tokens[0].value)],  # Bitwise NOT of the single token
+            operation=not_operation,
             emit_function=emit_not
         )
         
@@ -1104,12 +1187,8 @@ class PetriEmitter:
         
         # Create transition that pushes the local value
         def push_local_operation(tokens):
-            # Read the value from shared memory simulation
-            if 'local' in self.memory_simulation and index in self.memory_simulation['local']:
-                value = self.memory_simulation['local'][index]
-            else:
-                value = 0  # Default value if not set
-            return [Token(value), Token(value)]  # Data token, then flow token
+            # Token value represents memory read - actual value comes from assembly execution
+            return [Token(f"local[{index}]")]
         
         push_local_transition = Transition(
             name=f"push_local_{index}_{len(self.net.transitions)}",
@@ -1147,14 +1226,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the argument value
-        # Create transition that pushes the argument value
         def push_arg_operation(tokens):
-            # Read the value from shared memory simulation
-            if 'argument' in self.memory_simulation and index in self.memory_simulation['argument']:
-                value = self.memory_simulation['argument'][index]
-            else:
-                value = 0  # Default value if not set
-            return [Token(value), Token(value)]  # Data token, then flow token
+            # Token value represents memory read - actual value comes from assembly execution
+            return [Token(f"argument[{index}]")]
         
         push_arg_transition = Transition(
             name=f"push_arg_{index}_{len(self.net.transitions)}",
@@ -1192,14 +1266,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the this value
-        # Create transition that pushes the this value
         def push_this_operation(tokens):
-            # Read the value from shared memory simulation
-            if 'this' in self.memory_simulation and index in self.memory_simulation['this']:
-                value = self.memory_simulation['this'][index]
-            else:
-                value = 0  # Default value if not set
-            return [Token(value), Token(value)]  # Data token, then flow token
+            # Token value represents memory read - actual value comes from assembly execution
+            return [Token(f"this[{index}]")]
         
         push_this_transition = Transition(
             name=f"push_this_{index}_{len(self.net.transitions)}",
@@ -1237,14 +1306,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the that value
-        # Create transition that pushes the that value
         def push_that_operation(tokens):
-            # Read the value from shared memory simulation
-            if 'that' in self.memory_simulation and index in self.memory_simulation['that']:
-                value = self.memory_simulation['that'][index]
-            else:
-                value = 0  # Default value if not set
-            return [Token(value), Token(value)]  # Data token, then flow token
+            # Token value represents memory read - actual value comes from assembly execution
+            return [Token(f"that[{index}]")]
         
         push_that_transition = Transition(
             name=f"push_that_{index}_{len(self.net.transitions)}",
@@ -1320,14 +1384,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pushes the temp value
-        # Create transition that pushes the temp value
         def push_temp_operation(tokens):
-            # Read the value from shared memory simulation
-            if 'temp' in self.memory_simulation and index in self.memory_simulation['temp']:
-                value = self.memory_simulation['temp'][index]
-            else:
-                value = 0  # Default value if not set
-            return [Token(value), Token(value)]  # Data token, then flow token
+            # Token value represents memory read - actual value comes from assembly execution
+            return [Token(f"temp[{index}]")]
         
         push_temp_transition = Transition(
             name=f"push_temp_{index}_{len(self.net.transitions)}",
@@ -1418,11 +1477,8 @@ class PetriEmitter:
         
         # Create transition that pops to local
         def pop_local_operation(tokens):
-            # Store the value in shared memory simulation
-            if 'local' not in self.memory_simulation:
-                self.memory_simulation['local'] = {}
-            self.memory_simulation['local'][index] = tokens[0].value
-            return [tokens[0]]  # Pass through the input token value
+            # Pass through the token - actual memory write happens via assembly
+            return [tokens[0]]
         
         pop_local_transition = Transition(
             name=f"pop_local_{index}_{len(self.net.transitions)}",
@@ -1478,13 +1534,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to argument
-        # Create transition that pops to argument
         def pop_arg_operation(tokens):
-            # Store the value in shared memory simulation
-            if 'argument' not in self.memory_simulation:
-                self.memory_simulation['argument'] = {}
-            self.memory_simulation['argument'][index] = tokens[0].value
-            return [tokens[0]]  # Pass through the input token value
+            # Pass through the token - actual memory write happens via assembly
+            return [tokens[0]]
         
         pop_arg_transition = Transition(
             name=f"pop_arg_{index}_{len(self.net.transitions)}",
@@ -1540,13 +1592,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to this
-        # Create transition that pops to this
         def pop_this_operation(tokens):
-            # Store the value in shared memory simulation
-            if 'this' not in self.memory_simulation:
-                self.memory_simulation['this'] = {}
-            self.memory_simulation['this'][index] = tokens[0].value
-            return [tokens[0]]  # Pass through the input token value
+            # Pass through the token - actual memory write happens via assembly
+            return [tokens[0]]
         
         pop_this_transition = Transition(
             name=f"pop_this_{index}_{len(self.net.transitions)}",
@@ -1604,11 +1652,8 @@ class PetriEmitter:
         # Create transition that pops to that
         # Create transition that pops to that
         def pop_that_operation(tokens):
-            # Store the value in shared memory simulation
-            if 'that' not in self.memory_simulation:
-                self.memory_simulation['that'] = {}
-            self.memory_simulation['that'][index] = tokens[0].value
-            return [tokens[0]]  # Pass through the input token value
+            # Pass through the token - actual memory write happens via assembly
+            return [tokens[0]]
         
         pop_that_transition = Transition(
             name=f"pop_that_{index}_{len(self.net.transitions)}",
@@ -1700,13 +1745,9 @@ class PetriEmitter:
             return assembly
         
         # Create transition that pops to temp
-        # Create transition that pops to temp
         def pop_temp_operation(tokens):
-            # Store the value in shared memory simulation
-            if 'temp' not in self.memory_simulation:
-                self.memory_simulation['temp'] = {}
-            self.memory_simulation['temp'][index] = tokens[0].value
-            return [tokens[0]]  # Pass through the input token value
+            # Pass through the token - actual memory write happens via assembly
+            return [tokens[0]]
         
         pop_temp_transition = Transition(
             name=f"pop_temp_{index}_{len(self.net.transitions)}",

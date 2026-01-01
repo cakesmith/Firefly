@@ -15,9 +15,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from VMParser import VMParser
 from PetriEmitter import PetriEmitter
 from CPU import CPU
-from StackAssemblyEmitter import StackAssemblyEmitter
 from Petri.Token import Token
 import json
+
+# Optional import - StackAssemblyEmitter may not exist
+try:
+    from StackAssemblyEmitter import StackAssemblyEmitter
+    HAS_STACK_EMITTER = True
+except ImportError:
+    HAS_STACK_EMITTER = False
 
 class TECSTestCase:
     """Represents a single TECS test case with expected results"""

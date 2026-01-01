@@ -165,7 +165,7 @@ def demo_program(name, description, commands, expected=None):
     print(f"Total Cycles: {seq_cycles}")
     print(f"Result: {seq_result}", end="")
     if expected is not None:
-        print(f" {'✓' if seq_result == expected else '✗'}")
+        print(f" {'[OK]' if seq_result == expected else '[FAIL]'}")
     else:
         print()
     
@@ -203,10 +203,10 @@ def demo_program(name, description, commands, expected=None):
 
 
 def main():
-    print("╔══════════════════════════════════════════════════════════════════════╗")
-    print("║        TECS VM Multi-Core Parallelization Demonstration              ║")
-    print("║        Petri Net-Based Scheduling with Shared ROM                    ║")
-    print("╚══════════════════════════════════════════════════════════════════════╝")
+    print("=" * 72)
+    print("        TECS VM Multi-Core Parallelization Demonstration")
+    print("        Petri Net-Based Scheduling with Shared ROM")
+    print("=" * 72)
     
     all_results = []
     
