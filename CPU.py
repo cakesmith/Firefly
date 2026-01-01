@@ -1,5 +1,7 @@
 class CPU:
-    def __init__(self, program=None, RAM=None):
+    def __init__(self, cpu_id=0, RAM=None):
+        
+        self.cpu_id = cpu_id  # Unique identifier for this CPU core
         
         # Initialize RAM - use provided RAM or create new one
         if RAM is not None:
@@ -7,14 +9,14 @@ class CPU:
         else:
             self.RAM = []
         
-        # Load the passed program into the ROM and reset the CPU
-        self.reset()
+        # Each CPU has its own PC register for shared ROM execution
+        self.PC = 0
         
-        if program:
-            self.ROM = program
+        # Reset the CPU state
+        self.reset()
 
     def __str__(self):
-        return ({"A": self.A, "D": self.D, "zr": self.zr, "ng": self.ng})
+        return str({"CPU": self.cpu_id, "PC": self.PC, "A": self.A, "D": self.D, "zr": self.zr, "ng": self.ng})
 
     def reset(self):
         # Initialize memory and registers
@@ -24,6 +26,7 @@ class CPU:
         self.A = 0
         self.D = 0
         self.KBD = 0
+        self.PC = 0  # Reset program counter
 
         # Initialize RAM if it's empty or ensure it has the right size
         if len(self.RAM) == 0:
@@ -32,18 +35,25 @@ class CPU:
             # Extend RAM to required size
             self.RAM.extend([0] * (24576 - len(self.RAM)))
 
-    def step(self, PC):
+    def step(self, instruction):
+        """
+        Execute one instruction.
+        
+        Args:
+            instruction: Single instruction dictionary to execute
+            
+        Returns:
+            New PC value after instruction execution
+        """
+        
+        if instruction["TYPE"] == "A_COMMAND":
+            self.A = instruction["VAL"]
 
-        command = self.ROM[PC]
+        elif instruction["TYPE"] == "C_COMMAND":
 
-        if command["TYPE"] == "A_COMMAND":
-            self.A = command["VAL"]
-
-        elif command["TYPE"] == "C_COMMAND":
-
-            dest = command["VAL"]["DEST"]
-            comp = command["VAL"]["COMP"]
-            jump = command["VAL"]["JUMP"]
+            dest = instruction["VAL"]["DEST"]
+            comp = instruction["VAL"]["COMP"]
+            jump = instruction["VAL"]["JUMP"]
 
             if 'M' in comp:
                 result = self.ALU[comp.replace("M", "A")](self.RAM[self.A], self.D)
@@ -66,30 +76,47 @@ class CPU:
                 self.D = result
 
             if jump == "":
-                return PC+1
+                self.PC += 1
+                return self.PC
             else:
                 if jump == "JGT":
                     if result > 0:
-                        return self.A
+                        self.PC = self.A
+                        return self.PC
                 elif jump == "JEQ":
                     if result == 0:
-                        return self.A
+                        self.PC = self.A
+                        return self.PC
                 elif jump == "JGE":
                     if result >= 0:
-                        return self.A
+                        self.PC = self.A
+                        return self.PC
                 elif jump == "JLT":
                     if result < 0:
-                        return self.A
+                        self.PC = self.A
+                        return self.PC
                 elif jump == "JNE":
                     if result != 0:
-                        return self.A
+                        self.PC = self.A
+                        return self.PC
                 elif jump == "JLE":
                     if result <= 0:
-                        return self.A
+                        self.PC = self.A
+                        return self.PC
                 elif jump == "JMP":
-                    return self.A
+                    self.PC = self.A
+                    return self.PC
 
-        return PC+1
+        self.PC += 1
+        return self.PC
+    
+    def set_pc(self, address):
+        """Set the program counter to a specific address"""
+        self.PC = address
+    
+    def get_pc(self):
+        """Get the current program counter value"""
+        return self.PC
 
     ALU = { "0"   : lambda a,d: 0,
             "1"   : lambda a,d: 1,

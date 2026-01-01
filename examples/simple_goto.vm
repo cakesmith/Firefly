@@ -1,0 +1,9 @@
+// Simple goto example
+// Unconditional jump to skip some code
+
+push constant 10
+goto SKIP
+push constant 99  // This should be skipped
+label SKIP
+push constant 20
+add

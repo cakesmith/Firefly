@@ -62,6 +62,22 @@ class PetriEmitter:
         
         return transition
 
+    def _generate_label_assembly(self):
+        """
+        Generate assembly labels for all label places that have incoming transitions.
+        This should be called after all operations are added to the net.
+        """
+        if not hasattr(self.net, 'labels'):
+            return []
+        
+        assembly_lines = []
+        for label_name, label_place in self.net.labels.items():
+            # Always generate labels that exist in the registry
+            # They will be referenced by goto/if-goto operations
+            assembly_lines.append(f"({label_name})")
+        
+        return assembly_lines
+
     def _create_dup_transition(self, input_place):
         """
         Create a dup transition that takes 1 input and produces 2 outputs.
@@ -175,19 +191,149 @@ class PetriEmitter:
 
 
     def label(self, vmc):
-        # """Handle label command"""
-        # Add your custom logic here
-        pass
+        """
+        Implement label operation by creating a label place that can be referenced by goto/if-goto.
+        Labels are places in the Petri net, not transitions, so multiple transitions can reference them.
+        With shared ROM, labels can be jumped to from any CPU core.
+        """
+        label_name = vmc.index  # The label name from the VM command
+        
+        # Create a place to represent this label - this is the jump target
+        label_place_name = f"label_{label_name}"
+        label_place = Place(label_place_name)
+        label_place.label_name = label_name  # Store the original label name for reference
+        label_place.is_label = True  # Mark this as a label place
+        self.net.add_place(label_place)
+        
+        # Store label in a registry for goto/if-goto to find
+        if not hasattr(self.net, 'labels'):
+            self.net.labels = {}
+        self.net.labels[label_name] = label_place
+        
+        # Labels don't need transitions - they're just places that can be jumped to
+        # The assembly label will be generated when a transition connects to this place
+        return label_place
         
     def goto(self, vmc):
-        # """Handle goto command"""
-        # Add your custom logic here
-        pass
+        """
+        Implement goto operation by creating an unconditional jump to a label place.
+        With shared ROM, any CPU can jump to any label in the shared instruction space.
+        """
+        target_label = vmc.index  # The target label name
+        
+        # Find the label place (it should have been created by a label command)
+        if not hasattr(self.net, 'labels'):
+            self.net.labels = {}
+        
+        if target_label not in self.net.labels:
+            # Create the label place if it doesn't exist yet (forward reference)
+            label_place = Place(f"label_{target_label}")
+            label_place.label_name = target_label
+            label_place.is_label = True
+            self.net.add_place(label_place)
+            self.net.labels[target_label] = label_place
+        
+        target_place = self.net.labels[target_label]
+        
+        # Create emit function for goto
+        def emit_goto(transition):
+            assembly = []
+            # Generate unconditional jump to target label in shared ROM
+            assembly.append(f"@{target_label}")
+            assembly.append("0;JMP")
+            return assembly
+        
+        # Create transition that performs the goto
+        goto_transition = Transition(
+            name=f"goto_{target_label}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(f"goto_{target_label}")],  # Control token
+            emit_function=emit_goto
+        )
+        
+        # Add the transition and connect it to the target label place
+        self.net.add_transition(goto_transition)
+        
+        # Goto connects from current control flow to the label place
+        if len(self.control_stack) == 0:
+            # Connect from init if no stack
+            self.net.add_arc(self.net.places["init"], goto_transition)
+        else:
+            # This is tricky - goto should consume control flow but not stack values
+            # For now, connect from init and handle branching
+            self._create_dup_branch(goto_transition)
+        
+        # Connect to the target label place
+        self.net.add_arc(goto_transition, target_place)
+        
+        return goto_transition
             
     def ifgoto(self, vmc):
-        # """Handle if-goto command"""
-        # Add your custom logic here
-        pass
+        """
+        Implement if-goto operation by creating a conditional jump to a label place.
+        Pops one value from stack and jumps to label if value is non-zero (true).
+        With shared ROM, any CPU can jump to any label in the shared instruction space.
+        """
+        target_label = vmc.index  # The target label name
+        
+        # Find the label place (it should have been created by a label command)
+        if not hasattr(self.net, 'labels'):
+            self.net.labels = {}
+        
+        if target_label not in self.net.labels:
+            # Create the label place if it doesn't exist yet (forward reference)
+            label_place = Place(f"label_{target_label}")
+            label_place.label_name = target_label
+            label_place.is_label = True
+            self.net.add_place(label_place)
+            self.net.labels[target_label] = label_place
+        
+        target_place = self.net.labels[target_label]
+        
+        # Create emit function for if-goto
+        def emit_ifgoto(transition):
+            assembly = []
+            
+            # Get input place (should be 1) - the condition value
+            if len(transition.in_places) != 1:
+                return ["// if-goto - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            
+            # Load condition value into D register
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// if-goto - condition has no memory address")
+                return assembly
+            
+            # Jump to target label in shared ROM if D != 0 (non-zero means true)
+            assembly.append(f"@{target_label}")
+            assembly.append("D;JNE")
+            
+            return assembly
+        
+        # Create transition that performs the conditional jump
+        ifgoto_transition = Transition(
+            name=f"ifgoto_{target_label}_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(f"ifgoto_{target_label}")],  # Control token
+            emit_function=emit_ifgoto
+        )
+        
+        # Add the transition
+        self.net.add_transition(ifgoto_transition)
+        
+        # If-goto consumes 1 from stack (the condition)
+        if len(self.control_stack) > 0:
+            condition_place = self.control_stack.pop()
+            self.net.add_arc(condition_place, ifgoto_transition)
+        else:
+            raise RuntimeError("Stack underflow: if-goto needs a condition value")
+        
+        # Connect to the target label place
+        self.net.add_arc(ifgoto_transition, target_place)
+        
+        return ifgoto_transition
                 
     def function(self, vmc):
         # """Handle function command"""
@@ -652,14 +798,109 @@ class PetriEmitter:
         return self._insert_operation(and_transition, result_place, consumes_stack=2, produces_stack=1)
 
     def or_op(self, vmc):
-        # """Handle or operation"""
-        # Add your custom logic here
-        pass
+        """
+        Implement or (bitwise OR) operation by creating a transition that consumes two values
+        from the stack and produces their bitwise OR result.
+        Stack semantics: second_operand | first_operand
+        """
+        # Create a place to hold the result
+        result_place_name = f"or_result_{len(self.net.places)}"
+        result_place = Place(result_place_name)
+        self.net.add_place(result_place)
+        
+        # Create emit function for or operation
+        def emit_or(transition):
+            assembly = []
+            
+            # Get input places (should be 2) and output place
+            if len(transition.in_places) != 2:
+                return ["// or - invalid input configuration"]
+            
+            input_place1 = transition.in_places[0]  # Second operand (top of stack)
+            input_place2 = transition.in_places[1]  # First operand (second from top)
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load first operand (second from top) into D register
+            if input_place2.memory_address is not None:
+                assembly.append(f"@R{input_place2.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// or - first operand has no memory address")
+                return assembly
+            
+            # Perform bitwise OR with second operand (top of stack)
+            if input_place1.memory_address is not None:
+                assembly.append(f"@R{input_place1.memory_address}")
+                assembly.append("D=D|M")
+            else:
+                assembly.append("// or - second operand has no memory address")
+                return assembly
+            
+            # Store result in output place
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that performs the bitwise OR
+        or_transition = Transition(
+            name=f"or_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(tokens[1].value | tokens[0].value)],  # tokens[1] | tokens[0] (stack order)
+            emit_function=emit_or
+        )
+        
+        # Use the general method to add this operation (consumes 2, produces 1)
+        return self._insert_operation(or_transition, result_place, consumes_stack=2, produces_stack=1)
 
     def not_op(self, vmc):
-        # """Handle not operation"""
-        # Add your custom logic here
-        pass
+        """
+        Implement not (bitwise NOT) operation by creating a transition that consumes one value
+        from the stack and produces its bitwise NOT result (~value).
+        """
+        # Create a place to hold the result
+        result_place_name = f"not_result_{len(self.net.places)}"
+        result_place = Place(result_place_name)
+        self.net.add_place(result_place)
+        
+        # Create emit function for not operation
+        def emit_not(transition):
+            assembly = []
+            
+            # Get input place (should be 1) and output place
+            if len(transition.in_places) != 1:
+                return ["// not - invalid input configuration"]
+            
+            input_place = transition.in_places[0]
+            output_place = transition.out_places[0] if transition.out_places else None
+            
+            # Load operand into D register
+            if input_place.memory_address is not None:
+                assembly.append(f"@R{input_place.memory_address}")
+                assembly.append("D=M")
+            else:
+                assembly.append("// not - operand has no memory address")
+                return assembly
+            
+            # Perform bitwise NOT (D = !D)
+            assembly.append("D=!D")
+            
+            # Store result in output place
+            if output_place and output_place.memory_address is not None:
+                assembly.append(f"@R{output_place.memory_address}")
+                assembly.append("M=D")
+            
+            return assembly
+        
+        # Create transition that performs the bitwise NOT
+        not_transition = Transition(
+            name=f"not_{len(self.net.transitions)}",
+            operation=lambda tokens: [Token(~tokens[0].value)],  # Bitwise NOT of the single token
+            emit_function=emit_not
+        )
+        
+        # Use the general method to add this operation (consumes 1, produces 1)
+        return self._insert_operation(not_transition, result_place, consumes_stack=1, produces_stack=1)
 
     def push_constant(self, vmc):
         """

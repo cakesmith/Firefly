@@ -1,0 +1,15 @@
+// Test or (bitwise OR) operation
+// Push 12, then 10, then OR: 12 | 10 = 14 (1100 | 1010 = 1110)
+push constant 12
+push constant 10
+or
+
+// Push 8, then 4, then OR: 8 | 4 = 12 (1000 | 0100 = 1100)
+push constant 8
+push constant 4
+or
+
+// Push 7, then 0, then OR: 7 | 0 = 7 (0111 | 0000 = 0111)
+push constant 7
+push constant 0
+or

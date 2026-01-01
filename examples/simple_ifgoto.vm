@@ -1,0 +1,12 @@
+// Simple if-goto example
+// Conditional jump based on stack value
+
+push constant 5
+push constant 3
+gt                // 5 > 3 = true (-1)
+if-goto TRUE_CASE
+push constant 0   // False case
+goto END
+label TRUE_CASE
+push constant 1   // True case
+label END

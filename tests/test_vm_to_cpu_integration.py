@@ -140,29 +140,28 @@ add
     
     # Step 4: Execute on CPU
     if cpu_instructions:
-        cpu = CPU(cpu_instructions)
-        cpu.PC = 0
+        cpu = CPU(cpu_id=0)  # Use new CPU interface
+        cpu.set_pc(0)
         
         print(f"\nExecuting on CPU:")
         step_count = 0
         max_steps = 50
         
-        while step_count < max_steps and cpu.PC < len(cpu_instructions):
-            instruction = cpu_instructions[cpu.PC]
-            print(f"  Step {step_count}: PC={cpu.PC}, A={cpu.A}, D={cpu.D}")
+        while step_count < max_steps and cpu.get_pc() < len(cpu_instructions):
+            instruction = cpu_instructions[cpu.get_pc()]
+            print(f"  Step {step_count}: PC={cpu.get_pc()}, A={cpu.A}, D={cpu.D}")
             
-            next_pc = cpu.step(cpu.PC)
-            cpu.PC = next_pc
+            cpu.step(instruction)  # Pass individual instruction to step method
             step_count += 1
             
             # Check for halt
-            if cpu.PC == next_pc and instruction.get("TYPE") == "C_COMMAND":
+            if instruction.get("TYPE") == "C_COMMAND":
                 jump = instruction.get("VAL", {}).get("JUMP", "")
                 if jump == "JMP":
                     print(f"  -> CPU halted after {step_count} steps")
                     break
         
-        print(f"  -> CPU finished after {step_count} steps, final PC={cpu.PC}")
+        print(f"  -> CPU finished after {step_count} steps, final PC={cpu.get_pc()}")
         
         # Verify result
         if expected_result is not None and result_memory_addr is not None:
@@ -213,19 +212,18 @@ add
     
     # Execute on CPU
     if cpu_instructions:
-        cpu = CPU(cpu_instructions)
-        cpu.PC = 0
+        cpu = CPU(cpu_id=0)  # Use new CPU interface
+        cpu.set_pc(0)
         
         step_count = 0
         max_steps = 100
         
-        while step_count < max_steps and cpu.PC < len(cpu_instructions):
-            instruction = cpu_instructions[cpu.PC]
-            next_pc = cpu.step(cpu.PC)
-            cpu.PC = next_pc
+        while step_count < max_steps and cpu.get_pc() < len(cpu_instructions):
+            instruction = cpu_instructions[cpu.get_pc()]
+            cpu.step(instruction)  # Pass individual instruction to step method
             step_count += 1
             
-            if cpu.PC == next_pc and instruction.get("TYPE") == "C_COMMAND":
+            if instruction.get("TYPE") == "C_COMMAND":
                 jump = instruction.get("VAL", {}).get("JUMP", "")
                 if jump == "JMP":
                     break
@@ -270,17 +268,16 @@ add
     
     # Execute on CPU
     if cpu_instructions and expected_result is not None:
-        cpu = CPU(cpu_instructions)
-        cpu.PC = 0
+        cpu = CPU(cpu_id=0)  # Use new CPU interface
+        cpu.set_pc(0)
         
         step_count = 0
-        while step_count < 50 and cpu.PC < len(cpu_instructions):
-            instruction = cpu_instructions[cpu.PC]
-            next_pc = cpu.step(cpu.PC)
-            cpu.PC = next_pc
+        while step_count < 50 and cpu.get_pc() < len(cpu_instructions):
+            instruction = cpu_instructions[cpu.get_pc()]
+            cpu.step(instruction)  # Pass individual instruction to step method
             step_count += 1
             
-            if cpu.PC == next_pc and instruction.get("TYPE") == "C_COMMAND":
+            if instruction.get("TYPE") == "C_COMMAND":
                 jump = instruction.get("VAL", {}).get("JUMP", "")
                 if jump == "JMP":
                     break

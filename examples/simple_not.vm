@@ -1,0 +1,12 @@
+// Test not (bitwise NOT) operation
+// Push 5, then NOT: ~5 (bitwise inversion)
+push constant 5
+not
+
+// Push 0, then NOT: ~0 = -1 (all bits set)
+push constant 0
+not
+
+// Push 8, then NOT: ~8 (invert 1000 pattern)
+push constant 8
+not

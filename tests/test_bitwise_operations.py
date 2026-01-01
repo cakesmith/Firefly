@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test cases for bitwise operations (and) combined with arithmetic and comparison operations
+Test cases for bitwise operations (and, or, not) combined with arithmetic and comparison operations
 Tests complex expressions involving bitwise logic
 """
 
@@ -215,6 +215,146 @@ and
     finally:
         shutil.rmtree(temp_dir)
 
+def test_and_or_combined():
+    """Test: push 12, push 10, and, push 3, or ((12 & 10) | 3)"""
+    print("\n=== Test: AND and OR combined ((12 & 10) | 3) ===")
+    
+    vm_code = """push constant 12
+push constant 10
+and
+push constant 3
+or
+"""
+    temp_dir, vm_file = create_test_vm_file(vm_code)
+    
+    try:
+        # Parse VM code
+        parser = VMParser(temp_dir)
+        emitter = parser.emitter
+        net = emitter.net
+        
+        # Examine the net structure
+        print(f"Places in net: {list(net.places.keys())}")
+        print(f"Transitions in net: {list(net.transitions.keys())}")
+        
+        # Should have push, and, or transitions
+        push_transitions = [name for name in net.transitions.keys() if name.startswith("push_const")]
+        and_transitions = [name for name in net.transitions.keys() if name.startswith("and_")]
+        or_transitions = [name for name in net.transitions.keys() if name.startswith("or_")]
+        
+        print(f"Push transitions: {len(push_transitions)}")
+        print(f"AND transitions: {len(and_transitions)}")
+        print(f"OR transitions: {len(or_transitions)}")
+        
+        assert len(push_transitions) == 3, f"Expected 3 push transitions, got {len(push_transitions)}"
+        assert len(and_transitions) == 1, f"Expected 1 and transition, got {len(and_transitions)}"
+        assert len(or_transitions) == 1, f"Expected 1 or transition, got {len(or_transitions)}"
+        
+        # Allocate memory and execute
+        net.allocate_memory()
+        
+        step = 1
+        while True:
+            fired = net.execute_step()
+            if not fired:
+                break
+            print(f"Step {step}: Fired {fired}")
+            step += 1
+            if step > 30:  # Safety break
+                break
+        
+        # Check final result 
+        # (12 & 10) = 8 (1100 & 1010 = 1000), 8 | 3 = 11 (1000 | 0011 = 1011)
+        result_place = emitter.control_stack[0]
+        if result_place.has:
+            print(f"Final result: {result_place.token.value}")
+            assert result_place.token.value == 11, f"Expected 11, got {result_place.token.value}"
+        
+        print("✓ AND and OR combined test passed")
+        
+    finally:
+        shutil.rmtree(temp_dir)
+
+def test_or_with_arithmetic():
+    """Test: push 5, push 3, add, push 2, or ((5+3) | 2)"""
+    print("\n=== Test: OR with arithmetic ((5+3) | 2) ===")
+    
+    vm_code = """push constant 5
+push constant 3
+add
+push constant 2
+or
+"""
+    temp_dir, vm_file = create_test_vm_file(vm_code)
+    
+    try:
+        # Parse VM code
+        parser = VMParser(temp_dir)
+        emitter = parser.emitter
+        net = emitter.net
+        
+        # Allocate memory and execute
+        net.allocate_memory()
+        
+        step = 1
+        while True:
+            fired = net.execute_step()
+            if not fired:
+                break
+            step += 1
+            if step > 30:
+                break
+        
+        # Check result (5+3 = 8, 8 | 2 = 10: 1000 | 0010 = 1010)
+        result_place = emitter.control_stack[0]
+        if result_place.has:
+            print(f"Final result: {result_place.token.value}")
+            assert result_place.token.value == 10, f"Expected 10, got {result_place.token.value}"
+        
+        print("✓ OR with arithmetic test passed")
+        
+    finally:
+        shutil.rmtree(temp_dir)
+
+def test_or_flag_setting():
+    """Test: push 8, push 1, or (8 | 1 = 9) - common flag setting operation"""
+    print("\n=== Test: OR flag setting (8 | 1 = 9) ===")
+    
+    vm_code = """push constant 8
+push constant 1
+or
+"""
+    temp_dir, vm_file = create_test_vm_file(vm_code)
+    
+    try:
+        # Parse VM code
+        parser = VMParser(temp_dir)
+        emitter = parser.emitter
+        net = emitter.net
+        
+        # Allocate memory and execute
+        net.allocate_memory()
+        
+        step = 1
+        while True:
+            fired = net.execute_step()
+            if not fired:
+                break
+            step += 1
+            if step > 20:
+                break
+        
+        # Check result (8 | 1 = 9, common flag setting: 1000 | 0001 = 1001)
+        result_place = emitter.control_stack[0]
+        if result_place.has:
+            print(f"Final result: {result_place.token.value}")
+            assert result_place.token.value == 9, f"Expected 9, got {result_place.token.value}"
+        
+        print("✓ OR flag setting test passed")
+        
+    finally:
+        shutil.rmtree(temp_dir)
+
 def test_and_mask_operation():
     """Test: push 255, push 15, and (255 & 15 = 15) - common masking operation"""
     print("\n=== Test: AND mask operation (255 & 15 = 15) ===")
@@ -254,6 +394,172 @@ and
     finally:
         shutil.rmtree(temp_dir)
 
+def test_not_with_arithmetic():
+    """Test: push 5, push 3, add, not (~(5+3))"""
+    print("\n=== Test: NOT with arithmetic (~(5+3)) ===")
+    
+    vm_code = """push constant 5
+push constant 3
+add
+not
+"""
+    temp_dir, vm_file = create_test_vm_file(vm_code)
+    
+    try:
+        # Parse VM code
+        parser = VMParser(temp_dir)
+        emitter = parser.emitter
+        net = emitter.net
+        
+        # Allocate memory and execute
+        net.allocate_memory()
+        
+        step = 1
+        while True:
+            fired = net.execute_step()
+            if not fired:
+                break
+            step += 1
+            if step > 30:
+                break
+        
+        # Check result (~(5+3) = ~8 = -9)
+        result_place = emitter.control_stack[0]
+        if result_place.has:
+            expected_result = ~8
+            print(f"Final result: {result_place.token.value}")
+            assert result_place.token.value == expected_result, f"Expected {expected_result}, got {result_place.token.value}"
+        
+        print("✓ NOT with arithmetic test passed")
+        
+    finally:
+        shutil.rmtree(temp_dir)
+
+def test_all_bitwise_combined():
+    """Test: push 12, push 10, and, not, push 3, or ((~(12 & 10)) | 3)"""
+    print("\n=== Test: All bitwise combined ((~(12 & 10)) | 3) ===")
+    
+    vm_code = """push constant 12
+push constant 10
+and
+not
+push constant 3
+or
+"""
+    temp_dir, vm_file = create_test_vm_file(vm_code)
+    
+    try:
+        # Parse VM code
+        parser = VMParser(temp_dir)
+        emitter = parser.emitter
+        net = emitter.net
+        
+        # Examine the net structure
+        print(f"Places in net: {list(net.places.keys())}")
+        print(f"Transitions in net: {list(net.transitions.keys())}")
+        
+        # Should have push, and, not, or transitions
+        push_transitions = [name for name in net.transitions.keys() if name.startswith("push_const")]
+        and_transitions = [name for name in net.transitions.keys() if name.startswith("and_")]
+        not_transitions = [name for name in net.transitions.keys() if name.startswith("not_")]
+        or_transitions = [name for name in net.transitions.keys() if name.startswith("or_")]
+        
+        print(f"Push transitions: {len(push_transitions)}")
+        print(f"AND transitions: {len(and_transitions)}")
+        print(f"NOT transitions: {len(not_transitions)}")
+        print(f"OR transitions: {len(or_transitions)}")
+        
+        assert len(push_transitions) == 3, f"Expected 3 push transitions, got {len(push_transitions)}"
+        assert len(and_transitions) == 1, f"Expected 1 and transition, got {len(and_transitions)}"
+        assert len(not_transitions) == 1, f"Expected 1 not transition, got {len(not_transitions)}"
+        assert len(or_transitions) == 1, f"Expected 1 or transition, got {len(or_transitions)}"
+        
+        # Allocate memory and execute
+        net.allocate_memory()
+        
+        step = 1
+        while True:
+            fired = net.execute_step()
+            if not fired:
+                break
+            print(f"Step {step}: Fired {fired}")
+            step += 1
+            if step > 40:  # Safety break
+                break
+        
+        # Check final result 
+        # (12 & 10) = 8, ~8 = -9, (-9) | 3 = -9 (since -9 has all high bits set)
+        result_place = emitter.control_stack[0]
+        if result_place.has:
+            expected_result = (~(12 & 10)) | 3
+            print(f"Final result: {result_place.token.value}")
+            assert result_place.token.value == expected_result, f"Expected {expected_result}, got {result_place.token.value}"
+        
+        print("✓ All bitwise combined test passed")
+        
+    finally:
+        shutil.rmtree(temp_dir)
+
+def test_and_or_combined():
+    """Test: push 12, push 10, and, push 3, or ((12 & 10) | 3)"""
+    print("\n=== Test: AND and OR combined ((12 & 10) | 3) ===")
+    
+    vm_code = """push constant 12
+push constant 10
+and
+push constant 3
+or
+"""
+    temp_dir, vm_file = create_test_vm_file(vm_code)
+    
+    try:
+        # Parse VM code
+        parser = VMParser(temp_dir)
+        emitter = parser.emitter
+        net = emitter.net
+        
+        # Examine the net structure
+        print(f"Places in net: {list(net.places.keys())}")
+        print(f"Transitions in net: {list(net.transitions.keys())}")
+        
+        # Should have push, and, or transitions
+        push_transitions = [name for name in net.transitions.keys() if name.startswith("push_const")]
+        and_transitions = [name for name in net.transitions.keys() if name.startswith("and_")]
+        or_transitions = [name for name in net.transitions.keys() if name.startswith("or_")]
+        
+        print(f"Push transitions: {len(push_transitions)}")
+        print(f"AND transitions: {len(and_transitions)}")
+        print(f"OR transitions: {len(or_transitions)}")
+        
+        assert len(push_transitions) == 3, f"Expected 3 push transitions, got {len(push_transitions)}"
+        assert len(and_transitions) == 1, f"Expected 1 and transition, got {len(and_transitions)}"
+        assert len(or_transitions) == 1, f"Expected 1 or transition, got {len(or_transitions)}"
+        
+        # Allocate memory and execute
+        net.allocate_memory()
+        
+        step = 1
+        while True:
+            fired = net.execute_step()
+            if not fired:
+                break
+            print(f"Step {step}: Fired {fired}")
+            step += 1
+            if step > 30:  # Safety break
+                break
+        
+        # Check final result 
+        # (12 & 10) = 8 (1100 & 1010 = 1000), 8 | 3 = 11 (1000 | 0011 = 1011)
+        result_place = emitter.control_stack[0]
+        if result_place.has:
+            print(f"Final result: {result_place.token.value}")
+            assert result_place.token.value == 11, f"Expected 11, got {result_place.token.value}"
+        
+        print("✓ AND and OR combined test passed")
+        
+    finally:
+        shutil.rmtree(temp_dir)
+
 if __name__ == "__main__":
     print("Testing Bitwise Operations Combined with Other Operations")
     print("=" * 60)
@@ -262,8 +568,13 @@ if __name__ == "__main__":
     test_and_with_comparisons()
     test_multiple_and_operations()
     test_and_with_negation()
+    test_and_or_combined()
+    test_or_with_arithmetic()
     test_and_mask_operation()
+    test_not_with_arithmetic()
+    test_all_bitwise_combined()
+    test_or_flag_setting()
     
     print("\n" + "=" * 60)
     print("All bitwise operation tests passed! ✓")
-    print("AND operation works correctly with arithmetic and comparison operations.")
+    print("AND, OR, and NOT operations work correctly with arithmetic and comparison operations.")

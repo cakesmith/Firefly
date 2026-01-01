@@ -72,8 +72,17 @@ def main():
         cpus = []
         
         for core_id in range(num_cores):
-            cpu = CPU(RAM=shared_ram)
+            cpu = CPU(cpu_id=core_id, RAM=shared_ram)
             cpus.append(cpu)
+        
+        print(f"Created {len(cpus)} CPUs sharing {len(shared_ram)} words of RAM")
+        
+        # Get shared ROM
+        shared_rom = emitter.net.generate_shared_rom()
+        print(f"Generated shared ROM with {len(shared_rom)} instructions")
+        
+        # Convert assembly to CPU instruction format (if needed)
+        # For now, we'll simulate with the assembly directly
         
         print(f"Created {len(cpus)} CPUs sharing {len(shared_ram)} words of RAM")
         

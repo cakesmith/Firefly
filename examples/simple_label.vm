@@ -1,0 +1,7 @@
+// Simple label example
+// Creates a label and jumps to it
+
+push constant 42
+label MY_LABEL
+push constant 1
+add

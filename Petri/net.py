@@ -363,6 +363,7 @@ class PetriNet:
         Use graph coloring to assign CPU cores to transitions.
         Conflicting transitions get different cores (colors).
         Also distribute non-conflicting transitions across cores for load balancing.
+        With shared ROM, control flow operations can be on any core.
         """
         assignments = {}
         
@@ -415,32 +416,109 @@ class PetriNet:
         
         return assignments
     
-    def generate_roms(self):
+    def generate_shared_rom(self):
         """
-        Generate ROM programs for each CPU core.
-        Each ROM contains the firing sequence for transitions assigned to that core.
+        Generate a single shared ROM that all CPU cores can access.
+        Each CPU maintains its own PC (Program Counter) to track execution position.
+        
+        The ROM contains:
+        1. All transition assembly code with labels
+        2. Synchronization checks for Petri net semantics
+        3. Jump targets that any CPU can reach
+        
+        Returns:
+            List of assembly instructions forming the shared ROM
         """
         if not self.cpu_assignments:
             raise RuntimeError("CPU cores not assigned. Call assign_cpu_cores() first.")
         
-        # Group transitions by CPU core
-        core_transitions = {}
-        for trans_name, core in self.cpu_assignments.items():
-            if core not in core_transitions:
-                core_transitions[core] = []
-            core_transitions[core].append(trans_name)
+        shared_rom = []
         
-        # Sort transitions within each core by level
-        for core in core_transitions:
-            core_transitions[core].sort(key=lambda t: self.transition_levels.get(t, 0))
+        # Add initialization code
+        shared_rom.append("// Shared ROM for multi-CPU Petri net execution")
+        shared_rom.append("// Each CPU has its own PC register")
+        shared_rom.append("")
         
-        # Generate ROM for each core
+        # Generate ROM sections for each CPU core's transitions
+        # But place them all in the shared ROM space
+        for core in range(self.cpu_cores):
+            core_transitions = [
+                trans_name for trans_name, assigned_core in self.cpu_assignments.items()
+                if assigned_core == core
+            ]
+            
+            if not core_transitions:
+                continue
+            
+            # Sort transitions by level within each core
+            core_transitions.sort(key=lambda t: self.transition_levels.get(t, 0))
+            
+            shared_rom.append(f"// === CPU Core {core} Transitions ===")
+            shared_rom.append(f"(CORE_{core}_START)")
+            
+            for trans_name in core_transitions:
+                transition = self.transitions[trans_name]
+                
+                # Add transition label
+                shared_rom.append(f"({trans_name})")
+                
+                # Add synchronization check
+                sync_check = self._generate_sync_check(transition)
+                shared_rom.extend(sync_check)
+                
+                # Add the transition's assembly code
+                assembly = transition.emit_assembly()
+                if isinstance(assembly, list):
+                    shared_rom.extend(assembly)
+                else:
+                    shared_rom.append(assembly)
+                
+                # Add synchronization signal
+                sync_signal = self._generate_sync_signal(transition)
+                shared_rom.extend(sync_signal)
+                
+                shared_rom.append("")  # Blank line for readability
+        
+        # Add all labels from the label registry
+        if hasattr(self, 'labels'):
+            shared_rom.append("// === Program Labels ===")
+            for label_name, label_place in self.labels.items():
+                shared_rom.append(f"({label_name})")
+        
+        # Add CPU-specific entry points
+        shared_rom.append("// === CPU Entry Points ===")
+        for core in range(self.cpu_cores):
+            shared_rom.append(f"(CPU_{core}_ENTRY)")
+            shared_rom.append(f"@CORE_{core}_START")
+            shared_rom.append("0;JMP")
+        
+        return shared_rom
+    
+    def generate_roms(self):
+        """
+        Generate ROM programs for each CPU core.
+        
+        With shared ROM architecture:
+        - Returns a single shared ROM that all cores can access
+        - Each core gets an entry point in the shared ROM
+        - Cores use individual PC registers to track their position
+        """
+        if not self.cpu_assignments:
+            raise RuntimeError("CPU cores not assigned. Call assign_cpu_cores() first.")
+        
+        # Generate the shared ROM
+        shared_rom = self.generate_shared_rom()
+        
+        # Return the shared ROM for all cores
+        # Each core will start at its own entry point: CPU_0_ENTRY, CPU_1_ENTRY, etc.
         roms = {}
         for core in range(self.cpu_cores):
-            if core in core_transitions:
-                roms[core] = self._generate_core_rom(core_transitions[core])
-            else:
-                roms[core] = []  # Empty ROM for unused cores
+            # Each core gets the same shared ROM but starts at different entry point
+            roms[core] = [
+                f"// CPU {core} - Shared ROM with individual PC",
+                f"@CPU_{core}_ENTRY",
+                "0;JMP"
+            ] + shared_rom
         
         return roms
     

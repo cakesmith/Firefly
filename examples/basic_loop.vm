@@ -1,0 +1,13 @@
+// Basic loop example
+// Count down from 3 to 0
+
+push constant 0   // sum = 0
+push constant 3   // counter = 3
+label LOOP_START
+add               // sum = sum + counter
+push constant 1
+sub               // counter = counter - 1
+push constant 0
+gt                // counter > 0?
+if-goto LOOP_START
+// Result: sum should be 3 + 2 + 1 = 6
