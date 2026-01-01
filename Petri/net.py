@@ -37,7 +37,7 @@ class PetriNet:
             fired.append(transition.name)
         return fired
 
-    def allocate_memory(self, next_slot=0):
+    def allocate_memory(self, next_slot=0, verbose=False):
         """
         Proper memory allocation with liveness analysis and interference detection.
         Uses graph coloring to assign memory slots safely.
@@ -47,10 +47,19 @@ class PetriNet:
             place.memory_address = None
         
         # Step 1: Perform liveness analysis to find interference
-        interference_graph = self._build_interference_graph()
+        if verbose:
+            print(f"  Building interference graph for {len(self.places)} places...")
+        interference_graph = self._build_interference_graph(verbose=verbose)
+        if verbose:
+            total_edges = sum(len(v) for v in interference_graph.values()) // 2
+            print(f"  Interference graph has {total_edges} edges")
         
         # Step 2: Use graph coloring to assign memory slots
-        slot_assignment = self._color_interference_graph(interference_graph)
+        if verbose:
+            print(f"  Coloring interference graph...")
+        slot_assignment = self._color_interference_graph(interference_graph, verbose=verbose)
+        if verbose:
+            print(f"  Assigned {len(slot_assignment)} places to slots")
         
         # Step 3: Assign memory addresses based on coloring
         max_slot = 0
@@ -58,17 +67,26 @@ class PetriNet:
             self.places[place_name].memory_address = slot
             max_slot = max(max_slot, slot)
         
+        if verbose:
+            print(f"  Max slot used: {max_slot}")
+        
         return max_slot + 1
     
-    def _build_interference_graph(self):
+    def _build_interference_graph(self, verbose=False):
         """
         Build interference graph: places that can be alive simultaneously
         must have different memory slots (connected by edges)
         """
         interference = {name: set() for name in self.places.keys()}
         
+        if verbose:
+            print(f"    Analyzing {len(self.transitions)} transitions for interference...")
+        
         # For each transition, analyze which places can be alive together
-        for transition in self.transitions.values():
+        for idx, transition in enumerate(self.transitions.values()):
+            if verbose and idx % 1000 == 0 and idx > 0:
+                print(f"    Processed {idx}/{len(self.transitions)} transitions...")
+            
             # All input places of a transition can be alive together
             # (they must all have tokens for the transition to fire)
             input_names = [p.name for p in transition.in_places]
@@ -83,17 +101,25 @@ class PetriNet:
             # based on its operation logic
         
         # Additional analysis: places in parallel paths and pipeline overlaps
-        self._analyze_parallel_paths(interference)
+        if verbose:
+            print(f"    Analyzing parallel paths...")
+        self._analyze_parallel_paths(interference, verbose=verbose)
         
         return interference
     
-    def _analyze_parallel_paths(self, interference):
+    def _analyze_parallel_paths(self, interference, verbose=False):
         """
         Analyze parallel execution paths and pipeline overlaps to find additional interferences.
         """
         # 1. Fork analysis: Places in different branches of a fork can be alive simultaneously
-        for transition in self.transitions.values():
+        fork_count = 0
+        total_branch_pairs = 0
+        for idx, transition in enumerate(self.transitions.values()):
+            if verbose and idx % 500 == 0 and idx > 0:
+                print(f"    Fork analysis: processed {idx}/{len(self.transitions)} transitions...")
+            
             if len(transition.out_places) > 1:
+                fork_count += 1
                 branches = []
                 for output_place in transition.out_places:
                     branch_places = self._get_reachable_places(output_place.name, max_depth=3)
@@ -102,22 +128,32 @@ class PetriNet:
                 # Places in different branches can be alive simultaneously
                 for i, branch1 in enumerate(branches):
                     for j, branch2 in enumerate(branches):
-                        if i != j:
+                        if i < j:
+                            total_branch_pairs += len(branch1) * len(branch2)
                             for place1 in branch1:
                                 for place2 in branch2:
                                     interference[place1].add(place2)
                                     interference[place2].add(place1)
         
+        if verbose:
+            print(f"    Analyzed {fork_count} fork transitions, {total_branch_pairs} branch place pairs")
+        
         # 2. Pipeline analysis: Adjacent stages in a pipeline can overlap during execution
-        self._analyze_pipeline_overlaps(interference)
+        if verbose:
+            print(f"    Analyzing pipeline overlaps...")
+        self._analyze_pipeline_overlaps(interference, verbose=verbose)
     
-    def _analyze_pipeline_overlaps(self, interference):
+    def _analyze_pipeline_overlaps(self, interference, verbose=False):
         """
         In pipelined execution, adjacent stages can be active simultaneously.
         For example: A->T1->B->T2->C, when T2 fires, both B and C can be active.
         """
         # Find all linear chains (pipelines)
+        if verbose:
+            print(f"    Finding linear chains...")
         chains = self._find_linear_chains()
+        if verbose:
+            print(f"    Found {len(chains)} chains")
         
         for chain in chains:
             # In a pipeline, adjacent places can be alive simultaneously
@@ -209,7 +245,7 @@ class PetriNet:
         
         return reachable
     
-    def _color_interference_graph(self, interference):
+    def _color_interference_graph(self, interference, verbose=False):
         """
         Use graph coloring to assign memory slots.
         Places connected by edges get different colors (slots).
@@ -218,11 +254,19 @@ class PetriNet:
         coloring = {}
         
         # Sort places by degree (most constrained first)
+        if verbose:
+            print(f"    Sorting {len(place_names)} places by degree...")
         sorted_places = sorted(place_names, 
                              key=lambda p: len(interference[p]), 
                              reverse=True)
         
-        for place in sorted_places:
+        if verbose:
+            print(f"    Assigning colors...")
+        
+        for idx, place in enumerate(sorted_places):
+            if verbose and idx % 1000 == 0 and idx > 0:
+                print(f"    Colored {idx}/{len(sorted_places)} places...")
+            
             # Find the lowest color not used by neighbors
             used_colors = set()
             for neighbor in interference[place]:
@@ -236,7 +280,7 @@ class PetriNet:
             coloring[place] = color
         
         return coloring
-    def assign_cpu_cores(self, num_cores):
+    def assign_cpu_cores(self, num_cores, verbose=False):
         """
         Assign CPU cores to transitions using graph coloring based on level system.
         Transitions at the same level that can execute in parallel get different cores.
@@ -244,17 +288,30 @@ class PetriNet:
         self.cpu_cores = num_cores
         
         # Step 1: Compute levels for all transitions
-        self._compute_transition_levels()
+        if verbose:
+            print(f"  Computing transition levels for {len(self.transitions)} transitions...")
+        self._compute_transition_levels(verbose=verbose)
+        if verbose:
+            print(f"  Computed {len(self.transition_levels)} levels")
         
         # Step 2: Build conflict graph for transitions at each level
-        conflict_graph = self._build_transition_conflict_graph()
+        if verbose:
+            print(f"  Building conflict graph...")
+        conflict_graph = self._build_transition_conflict_graph(verbose=verbose)
+        if verbose:
+            total_conflicts = sum(len(v) for v in conflict_graph.values()) // 2
+            print(f"  Found {total_conflicts} conflict pairs")
         
         # Step 3: Use graph coloring to assign CPU cores
-        self.cpu_assignments = self._color_transition_graph(conflict_graph, num_cores)
+        if verbose:
+            print(f"  Coloring graph with {num_cores} cores...")
+        self.cpu_assignments = self._color_transition_graph(conflict_graph, num_cores, verbose=verbose)
+        if verbose:
+            print(f"  Assigned {len(self.cpu_assignments)} transitions to cores")
         
         return self.cpu_assignments
     
-    def _compute_transition_levels(self):
+    def _compute_transition_levels(self, verbose=False):
         """
         Compute the level of each transition based on longest path from start.
         Transitions at the same level can potentially execute in parallel.
@@ -268,29 +325,36 @@ class PetriNet:
                 (len(transition.in_places) == 1 and transition.in_places[0].name == "init")):
                 start_transitions.append(transition)
         
-        # BFS to assign levels
+        if verbose:
+            print(f"    Found {len(start_transitions)} starting transitions")
+        
+        # Use a simpler approach: assign levels based on topological order
+        # For cycles (from goto/label), just use the first visit level
         visited = set()
-        queue = [(t, 0) for t in start_transitions]  # (transition, level)
+        queue = [(t, 0) for t in start_transitions]
         
         while queue:
             transition, level = queue.pop(0)
             
             if transition.name in visited:
-                # Update level if we found a longer path
-                if level > self.transition_levels.get(transition.name, -1):
-                    self.transition_levels[transition.name] = level
-                    # Re-queue successors with updated level
-                    for successor in self._get_successor_transitions(transition):
-                        if successor.name not in visited or level + 1 > self.transition_levels.get(successor.name, -1):
-                            queue.append((successor, level + 1))
-                continue
+                continue  # Skip already visited (handles cycles)
             
             visited.add(transition.name)
             self.transition_levels[transition.name] = level
             
             # Add successor transitions to queue
             for successor in self._get_successor_transitions(transition):
-                queue.append((successor, level + 1))
+                if successor.name not in visited:
+                    queue.append((successor, level + 1))
+        
+        # Assign level 0 to any unvisited transitions (disconnected or only reachable via back-edges)
+        for trans_name in self.transitions.keys():
+            if trans_name not in self.transition_levels:
+                self.transition_levels[trans_name] = 0
+        
+        if verbose:
+            max_level = max(self.transition_levels.values()) if self.transition_levels else 0
+            print(f"    Assigned levels 0-{max_level} to {len(self.transition_levels)} transitions")
     
     def _get_successor_transitions(self, transition):
         """Get transitions that can execute after the given transition"""
@@ -304,7 +368,7 @@ class PetriNet:
         
         return successors
     
-    def _build_transition_conflict_graph(self):
+    def _build_transition_conflict_graph(self, verbose=False):
         """
         Build conflict graph for transitions.
         Transitions conflict if they:
@@ -320,11 +384,22 @@ class PetriNet:
                 levels[level] = []
             levels[level].append(trans_name)
         
+        if verbose:
+            print(f"    Grouped into {len(levels)} levels")
+            max_level_size = max(len(v) for v in levels.values()) if levels else 0
+            print(f"    Largest level has {max_level_size} transitions")
+        
         # For each level, find conflicts between transitions
+        comparisons = 0
         for level, trans_names in levels.items():
+            level_size = len(trans_names)
+            if verbose and level_size > 100:
+                print(f"    Processing level {level} with {level_size} transitions...")
+            
             for i, trans1_name in enumerate(trans_names):
                 for j, trans2_name in enumerate(trans_names):
-                    if i != j:
+                    if i < j:  # Only check each pair once
+                        comparisons += 1
                         trans1 = self.transitions[trans1_name]
                         trans2 = self.transitions[trans2_name]
                         
@@ -332,6 +407,9 @@ class PetriNet:
                         if self._transitions_conflict(trans1, trans2):
                             conflict_graph[trans1_name].add(trans2_name)
                             conflict_graph[trans2_name].add(trans1_name)
+        
+        if verbose:
+            print(f"    Made {comparisons} pairwise comparisons")
         
         return conflict_graph
     
@@ -358,7 +436,7 @@ class PetriNet:
         
         return False
     
-    def _color_transition_graph(self, conflict_graph, num_cores):
+    def _color_transition_graph(self, conflict_graph, num_cores, verbose=False):
         """
         Use graph coloring to assign CPU cores to transitions.
         Conflicting transitions get different cores (colors).
@@ -368,11 +446,19 @@ class PetriNet:
         assignments = {}
         
         # Sort transitions by conflict degree (most constrained first), then by level
+        if verbose:
+            print(f"    Sorting {len(self.transitions)} transitions...")
         sorted_transitions = sorted(self.transitions.keys(),
                                   key=lambda t: (len(conflict_graph[t]), self.transition_levels.get(t, 0)),
                                   reverse=True)
         
-        for trans_name in sorted_transitions:
+        if verbose:
+            print(f"    Assigning cores...")
+        
+        for idx, trans_name in enumerate(sorted_transitions):
+            if verbose and idx % 1000 == 0 and idx > 0:
+                print(f"    Assigned {idx}/{len(sorted_transitions)} transitions...")
+            
             # Find cores used by conflicting transitions
             used_cores = set()
             for conflicting_trans in conflict_graph[trans_name]:

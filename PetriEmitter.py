@@ -8,6 +8,10 @@ class PetriEmitter:
     def __init__(self):
         self.net = PetriNet()
         self.control_stack = []
+        
+        # Control flow tracking
+        self.pending_control_place = None  # Set by label, consumed by next operation
+        self.net.labels = {}  # label_name -> place
 
         self.net.add_place(Place("init"))
         self.net.add_place(Place("end"))
@@ -39,6 +43,11 @@ class PetriEmitter:
         
         # Add the transition to the network
         self.net.add_transition(transition)
+        
+        # If there's a pending control place (from a label), connect it as input
+        if self.pending_control_place is not None:
+            self.net.add_arc(self.pending_control_place, transition)
+            self.pending_control_place = None  # Consumed
         
         # Handle input connections
         if consumes_stack > 0:
@@ -247,39 +256,47 @@ class PetriEmitter:
 
     def label(self, vmc):
         """
-        Implement label operation by creating a label place that can be referenced by goto/if-goto.
-        Labels are places in the Petri net, not transitions, so multiple transitions can reference them.
-        With shared ROM, labels can be jumped to from any CPU core.
+        Implement label operation by creating a control flow place.
+        
+        The label place serves as a merge point - control can arrive here from:
+        1. Normal sequential flow (previous operation)
+        2. goto/if-goto jumps
+        
+        The next operation after this label will take this place as a control input.
         """
-        label_name = vmc.index  # The label name from the VM command
+        label_name = vmc.segment  # The label name from the VM command
         
-        # Create a place to represent this label - this is the jump target
-        label_place_name = f"label_{label_name}"
-        label_place = Place(label_place_name)
-        label_place.label_name = label_name  # Store the original label name for reference
-        label_place.is_label = True  # Mark this as a label place
-        self.net.add_place(label_place)
+        # Check if label place already exists (from forward reference in goto/if-goto)
+        if label_name in self.net.labels:
+            # Reuse existing label place
+            label_place = self.net.labels[label_name]
+        else:
+            # Create a new place to represent this label
+            label_place_name = f"label_{label_name}"
+            label_place = Place(label_place_name)
+            label_place.label_name = label_name
+            label_place.is_label = True
+            self.net.add_place(label_place)
+            
+            # Store label in registry for goto/if-goto to find
+            self.net.labels[label_name] = label_place
         
-        # Store label in a registry for goto/if-goto to find
-        if not hasattr(self.net, 'labels'):
-            self.net.labels = {}
-        self.net.labels[label_name] = label_place
+        # Set as pending control place - the next operation will use this as input
+        self.pending_control_place = label_place
         
-        # Labels don't need transitions - they're just places that can be jumped to
-        # The assembly label will be generated when a transition connects to this place
+        # Return the place (no transition for labels)
         return label_place
         
     def goto(self, vmc):
         """
-        Implement goto operation by creating an unconditional jump to a label place.
-        With shared ROM, any CPU can jump to any label in the shared instruction space.
+        Implement goto operation by creating a transition that outputs to the target label place.
+        
+        Instead of generating assembly jump instructions, goto puts a token in the target
+        label's place, enabling whatever transition follows that label.
         """
-        target_label = vmc.index  # The target label name
+        target_label = vmc.segment  # The target label name
         
-        # Find the label place (it should have been created by a label command)
-        if not hasattr(self.net, 'labels'):
-            self.net.labels = {}
-        
+        # Find or create the label place
         if target_label not in self.net.labels:
             # Create the label place if it doesn't exist yet (forward reference)
             label_place = Place(f"label_{target_label}")
@@ -290,52 +307,48 @@ class PetriEmitter:
         
         target_place = self.net.labels[target_label]
         
-        # Create emit function for goto
+        # Create emit function for goto - sets the target label's valid flag
         def emit_goto(transition):
-            assembly = []
-            # Generate unconditional jump to target label in shared ROM
-            assembly.append(f"@{target_label}")
-            assembly.append("0;JMP")
-            return assembly
+            # No assembly needed - the ROM generator will handle valid flag setting
+            # based on the transition's output places
+            return ["// goto - control transfer via token"]
         
-        # Create transition that performs the goto
+        # Create transition that transfers control to the label
         goto_transition = Transition(
             name=f"goto_{target_label}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(f"goto_{target_label}")],  # Control token
+            operation=lambda tokens: [Token("control")],
             emit_function=emit_goto
         )
         
-        # Add the transition and connect it to the target label place
         self.net.add_transition(goto_transition)
         
-        # Goto connects from current control flow to the label place
-        if len(self.control_stack) == 0:
-            # Connect from init if no stack
-            self.net.add_arc(self.net.places["init"], goto_transition)
+        # Connect from current control flow
+        if self.pending_control_place is not None:
+            # If there's a pending control place, use it
+            self.net.add_arc(self.pending_control_place, goto_transition)
+            self.pending_control_place = None
         else:
-            # This is tricky - goto should consume control flow but not stack values
-            # For now, connect from init and handle branching
-            self._create_dup_branch(goto_transition)
+            # Otherwise use dup branching from init
+            self._connect_parallel_operation(goto_transition)
         
-        # Connect to the target label place
+        # Output to the target label place
         self.net.add_arc(goto_transition, target_place)
         
         return goto_transition
             
     def ifgoto(self, vmc):
         """
-        Implement if-goto operation by creating a conditional jump to a label place.
-        Pops one value from stack and jumps to label if value is non-zero (true).
-        With shared ROM, any CPU can jump to any label in the shared instruction space.
+        Implement if-goto operation by creating a conditional control transfer.
+        
+        Pops one value from stack. If non-zero (true), puts token in target label place.
+        If zero (false), control continues to the next instruction.
+        
+        This creates a branch in the Petri net with two possible outputs.
         """
-        target_label = vmc.index  # The target label name
+        target_label = vmc.segment  # The target label name
         
-        # Find the label place (it should have been created by a label command)
-        if not hasattr(self.net, 'labels'):
-            self.net.labels = {}
-        
+        # Find or create the label place
         if target_label not in self.net.labels:
-            # Create the label place if it doesn't exist yet (forward reference)
             label_place = Place(f"label_{target_label}")
             label_place.label_name = target_label
             label_place.is_label = True
@@ -344,39 +357,79 @@ class PetriEmitter:
         
         target_place = self.net.labels[target_label]
         
+        # Create a "fall-through" place for when condition is false
+        fallthrough_place = Place(f"ifgoto_fallthrough_{len(self.net.places)}")
+        self.net.add_place(fallthrough_place)
+        
         # Create emit function for if-goto
+        # This needs to conditionally set either the target label's valid flag
+        # or the fallthrough place's valid flag
         def emit_ifgoto(transition):
             assembly = []
             
-            # Get input place (should be 1) - the condition value
-            if len(transition.in_places) != 1:
-                return ["// if-goto - invalid input configuration"]
+            # Find the condition input place
+            condition_place = None
+            for p in transition.in_places:
+                if not getattr(p, 'is_label', False) and p.name != 'init':
+                    condition_place = p
+                    break
             
-            input_place = transition.in_places[0]
+            if condition_place is None or condition_place.memory_address is None:
+                return ["// if-goto - no condition input"]
             
-            # Load condition value into D register
-            if input_place.memory_address is not None:
-                assembly.append(f"@R{input_place.memory_address}")
-                assembly.append("D=M")
-            else:
-                assembly.append("// if-goto - condition has no memory address")
-                return assembly
+            # Find output places
+            target_out = None
+            fallthrough_out = None
+            for p in transition.out_places:
+                if getattr(p, 'is_label', False):
+                    target_out = p
+                else:
+                    fallthrough_out = p
             
-            # Jump to target label in shared ROM if D != 0 (non-zero means true)
-            assembly.append(f"@{target_label}")
-            assembly.append("D;JNE")
+            # Load condition value
+            assembly.append(f"@R{condition_place.memory_address}")
+            assembly.append("D=M")
+            
+            # The ROM generator will handle setting valid flags based on outputs
+            # We just need to indicate which path was taken
+            # For now, store the condition result for the ROM generator to use
+            assembly.append("// if-goto condition in D")
             
             return assembly
         
-        # Create transition that performs the conditional jump
+        # Create operation that conditionally outputs to label OR fallthrough
+        # The operation receives the condition value and decides which output gets a token
+        def ifgoto_operation(tokens):
+            # tokens[0] is the condition value from the stack
+            condition = tokens[0].value
+            
+            # If condition is numeric and non-zero, go to label (first output)
+            # If condition is zero, fall through (second output)
+            # Output order: [label_token, fallthrough_token] - one will be None
+            if isinstance(condition, int):
+                if condition != 0:
+                    # True: token goes to label place (index 0), None to fallthrough (index 1)
+                    return [Token("control"), None]
+                else:
+                    # False: None to label place (index 0), token to fallthrough (index 1)
+                    return [None, Token("control")]
+            else:
+                # Symbolic - can't evaluate, default to fallthrough for simulation
+                return [None, Token("control")]
+        
+        # Create transition
         ifgoto_transition = Transition(
             name=f"ifgoto_{target_label}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(f"ifgoto_{target_label}")],  # Control token
+            operation=ifgoto_operation,
             emit_function=emit_ifgoto
         )
         
-        # Add the transition
         self.net.add_transition(ifgoto_transition)
+        
+        # Connect pending control place if any
+        if self.pending_control_place is not None:
+            self.net.add_arc(self.pending_control_place, ifgoto_transition)
+            self.pending_control_place = None
         
         # If-goto consumes 1 from stack (the condition)
         if len(self.control_stack) > 0:
@@ -385,8 +438,12 @@ class PetriEmitter:
         else:
             raise RuntimeError("Stack underflow: if-goto needs a condition value")
         
-        # Connect to the target label place
+        # Output to both target label and fallthrough
         self.net.add_arc(ifgoto_transition, target_place)
+        self.net.add_arc(ifgoto_transition, fallthrough_place)
+        
+        # Set fallthrough as pending control for next instruction
+        self.pending_control_place = fallthrough_place
         
         return ifgoto_transition
                 
@@ -921,9 +978,19 @@ class PetriEmitter:
             return assembly
         
         # Create transition that performs the greater than comparison
+        def gt_operation(tokens):
+            val0 = tokens[0].value
+            val1 = tokens[1].value
+            
+            # If either value is symbolic, return symbolic result
+            if isinstance(val0, str) or isinstance(val1, str):
+                return [Token(f"gt({val1},{val0})")]
+            
+            return [Token(-1 if val1 > val0 else 0)]
+        
         gt_transition = Transition(
             name=f"gt_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(-1 if tokens[1].value > tokens[0].value else 0)],  # tokens[1] > tokens[0] (stack order)
+            operation=gt_operation,
             emit_function=emit_gt
         )
         
