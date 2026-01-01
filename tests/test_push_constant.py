@@ -43,6 +43,7 @@ def test_single_push_constant():
         print(f"Control stack size: {len(emitter.control_stack)}")
         
         # Verify net structure
+        # Places: init, end, const_42_* (no flow place with parallel approach)
         assert len(net.places) == 3, f"Expected 3 places (init, end, const_42_*), got {len(net.places)}"
         assert len(net.transitions) == 1, f"Expected 1 transition, got {len(net.transitions)}"
         assert len(emitter.control_stack) == 1, f"Expected 1 item on stack, got {len(emitter.control_stack)}"

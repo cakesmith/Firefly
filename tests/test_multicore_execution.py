@@ -36,11 +36,12 @@ def test_multicore_simple_add():
     # Step 2: Assign CPU cores and generate ROMs
     num_cores = 2
     assignments = emitter.net.assign_cpu_cores(num_cores)
-    roms = emitter.net.generate_roms()
+    roms_result = emitter.net.generate_roms()
+    core_roms = roms_result['cores']
     
     print(f"CPU assignments: {assignments}")
-    print(f"Generated {len(roms)} ROMs:")
-    for core_id, rom in roms.items():
+    print(f"Generated {len(core_roms)} ROMs:")
+    for core_id, rom in core_roms.items():
         print(f"  Core {core_id}: {len(rom)} instructions")
         if len(rom) > 0:
             print(f"    Sample: {rom[:3]}")
@@ -183,11 +184,12 @@ def test_multicore_complex_calculation():
         print(f"\n--- Testing with {num_cores} cores ---")
         
         assignments = emitter.net.assign_cpu_cores(num_cores)
-        roms = emitter.net.generate_roms()
+        roms_result = emitter.net.generate_roms()
+        core_roms = roms_result['cores']
         
         # Show work distribution
         print("Work distribution:")
-        for core_id, rom in roms.items():
+        for core_id, rom in core_roms.items():
             if len(rom) > 0:
                 core_transitions = [t for t, c in assignments.items() if c == core_id]
                 print(f"  Core {core_id}: {len(core_transitions)} transitions, {len(rom)} instructions")
@@ -275,10 +277,11 @@ def test_load_balancing():
     
     # Test load balancing with 3 cores
     assignments = emitter.net.assign_cpu_cores(3)
-    roms = emitter.net.generate_roms()
+    roms_result = emitter.net.generate_roms()
+    core_roms = roms_result['cores']
     
     # Calculate load distribution
-    loads = [len(rom) for rom in roms.values()]
+    loads = [len(rom) for rom in core_roms.values()]
     max_load = max(loads)
     min_load = min(loads)
     avg_load = sum(loads) / len(loads)

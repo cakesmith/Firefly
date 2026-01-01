@@ -62,10 +62,11 @@ def test_multi_cpu_parallel_execution():
         print(f"Transition levels: {emitter.net.transition_levels}")
         
         # Generate ROMs for each core
-        roms = emitter.net.generate_roms()
-        print(f"Generated ROMs for {len(roms)} cores:")
+        roms_result = emitter.net.generate_roms()
+        core_roms = roms_result['cores']
+        print(f"Generated ROMs for {len(core_roms)} cores:")
         
-        for core_id, rom in roms.items():
+        for core_id, rom in core_roms.items():
             print(f"  Core {core_id}: {len(rom)} instructions")
             if rom:
                 print(f"    Sample: {rom[:2]}")
@@ -173,11 +174,12 @@ def test_rom_generation_and_synchronization():
     emitter.net.assign_cpu_cores(2)
     
     # Generate ROMs
-    roms = emitter.net.generate_roms()
+    roms_result = emitter.net.generate_roms()
+    core_roms = roms_result['cores']
     
-    print(f"Generated {len(roms)} ROMs")
+    print(f"Generated {len(core_roms)} core ROMs")
     
-    for core_id, rom in roms.items():
+    for core_id, rom in core_roms.items():
         print(f"\nCore {core_id} ROM ({len(rom)} instructions):")
         for i, instruction in enumerate(rom[:10]):  # Show first 10 instructions
             print(f"  {i:2d}: {instruction}")
@@ -185,12 +187,12 @@ def test_rom_generation_and_synchronization():
             print(f"  ... ({len(rom) - 10} more instructions)")
     
     # Verify ROM structure
-    total_instructions = sum(len(rom) for rom in roms.values())
+    total_instructions = sum(len(rom) for rom in core_roms.values())
     print(f"Total instructions across all ROMs: {total_instructions}")
     
     # Check that at least one ROM has synchronization code
     has_sync = False
-    for rom in roms.values():
+    for rom in core_roms.values():
         for instruction in rom:
             if "Wait for" in instruction or "Signal" in instruction:
                 has_sync = True
@@ -232,11 +234,12 @@ def test_scalability():
     
     for num_cores in [1, 2, 4, 8]:
         assignments = emitter.net.assign_cpu_cores(num_cores)
-        roms = emitter.net.generate_roms()
+        roms_result = emitter.net.generate_roms()
+        core_roms = roms_result['cores']
         
         # Calculate load distribution
         core_loads = {}
-        for core_id, rom in roms.items():
+        for core_id, rom in core_roms.items():
             core_loads[core_id] = len(rom)
         
         max_load = max(core_loads.values()) if core_loads.values() else 0

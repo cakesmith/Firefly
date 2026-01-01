@@ -114,8 +114,14 @@ def test_cpu_utilization_statistics():
         stats = calculate_utilization_stats(assignments, roms, emitter.net.transition_levels)
         print_utilization_stats(stats, num_cores)
 
-def calculate_utilization_stats(assignments, roms, levels):
+def calculate_utilization_stats(assignments, roms_result, levels):
     """Calculate CPU utilization statistics"""
+    # Handle both old format (dict of lists) and new format (dict with 'cores' key)
+    if isinstance(roms_result, dict) and 'cores' in roms_result:
+        roms = roms_result['cores']
+    else:
+        roms = roms_result
+    
     stats = {
         'total_transitions': len(assignments),
         'total_instructions': sum(len(rom) for rom in roms.values()),
@@ -221,8 +227,9 @@ def test_parallel_execution_simulation():
     print(f"Correctness: {'✓' if final_result == expected_result else '✗'}")
     
     # Check that both CPUs have work
-    core0_work = len(roms[0])
-    core1_work = len(roms[1])
+    core_roms = roms['cores']
+    core0_work = len(core_roms.get(0, []))
+    core1_work = len(core_roms.get(1, []))
     
     print(f"Core 0 work: {core0_work} instructions")
     print(f"Core 1 work: {core1_work} instructions")

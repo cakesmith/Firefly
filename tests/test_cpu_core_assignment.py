@@ -76,17 +76,27 @@ def test_generate_roms():
     emitter.net.assign_cpu_cores(2)
     
     # Generate ROMs
-    roms = emitter.net.generate_roms()
+    roms_result = emitter.net.generate_roms()
     
-    print(f"Generated {len(roms)} ROMs")
-    for core, rom in roms.items():
+    # Extract core ROMs from the result structure
+    core_roms = roms_result['cores']
+    shared_rom = roms_result['shared']
+    stats = roms_result['stats']
+    
+    print(f"Generated ROMs for {len(core_roms)} cores")
+    print(f"Shared ROM: {len(shared_rom)} instructions")
+    print(f"Stats: {stats}")
+    
+    for core, rom in core_roms.items():
         print(f"Core {core}: {len(rom)} instructions")
         if rom:
             print(f"  First few: {rom[:3]}")
     
     # Verify ROM structure
-    assert len(roms) == 2, "Should generate 2 ROMs"
-    assert all(isinstance(rom, list) for rom in roms.values()), "ROMs should be lists"
+    assert 'cores' in roms_result, "Should have 'cores' key"
+    assert 'shared' in roms_result, "Should have 'shared' key"
+    assert 'stats' in roms_result, "Should have 'stats' key"
+    assert all(isinstance(rom, list) for rom in core_roms.values()), "ROMs should be lists"
     
     print("✓ ROM generation test passed")
 

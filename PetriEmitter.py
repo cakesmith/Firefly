@@ -18,7 +18,9 @@ class PetriEmitter:
     def _insert_operation(self, transition, output_place, consumes_stack=0, produces_stack=1):
         """
         Insert an operation into the Petri net with proper stack-based connections.
-        Handles branching with dup transitions when multiple operations need the same input.
+        
+        For operations that consume 0 from stack (like push), we use a dup-based
+        branching strategy to allow parallel execution while maintaining stack order.
         
         Args:
             transition: The transition to add
@@ -46,31 +48,75 @@ class PetriEmitter:
                 input_place = self.control_stack.pop()
                 self.net.add_arc(input_place, transition)
         else:
-            # Operation consumes 0 from stack - connect to program flow
-            if not hasattr(self, '_program_flow_place'):
-                # First operation connects to init
-                self._program_flow_place = self.net.places["init"]
-            
-            self.net.add_arc(self._program_flow_place, transition)
+            # Operation consumes 0 from stack (e.g., push constant)
+            # These can run in parallel - connect directly to init via dup branching
+            self._connect_parallel_operation(transition)
         
         # Connect output place (data)
         self.net.add_arc(transition, output_place)
-        
-        # Handle program flow for operations that consume 0 from stack
-        if consumes_stack == 0:
-            # Create next program flow place for sequential execution
-            next_flow_place = Place(f"flow_{len(self.net.places)}")
-            self.net.add_place(next_flow_place)
-            self.net.add_arc(transition, next_flow_place)
-            
-            # Update program flow for next operation
-            self._program_flow_place = next_flow_place
         
         # Push output place to stack if operation produces a value
         if produces_stack == 1:
             self.control_stack.append(output_place)
         
         return transition
+
+    def _connect_parallel_operation(self, transition):
+        """
+        Connect a parallel operation (consumes 0 from stack) using dup branching.
+        This allows multiple push operations to execute in parallel.
+        """
+        init_place = self.net.places["init"]
+        
+        # Find existing transitions connected to init
+        init_consumers = [t for t in self.net.transitions.values() 
+                        if init_place in t.in_places]
+        
+        if len(init_consumers) == 0:
+            # First parallel operation - connect directly to init
+            self.net.add_arc(init_place, transition)
+        else:
+            # Need to create/extend dup chain for parallel execution
+            # Find the dup transition that feeds from init, or create one
+            dup_trans = None
+            for t in self.net.transitions.values():
+                if t.name.startswith("dup_") and init_place in t.in_places:
+                    dup_trans = t
+                    break
+            
+            if dup_trans is None:
+                # Create first dup: init -> dup -> {existing_consumer, new_transition}
+                existing_consumer = init_consumers[0]
+                
+                # Remove arc from init to existing consumer
+                self.net.arcs = [(src, tgt) for src, tgt in self.net.arcs 
+                               if not (src == init_place.name and tgt == existing_consumer.name)]
+                existing_consumer.in_places.remove(init_place)
+                
+                # Create dup outputs
+                dup_out1, dup_out2 = self._create_dup_transition(init_place)
+                
+                # Connect existing consumer to first dup output
+                self.net.add_arc(dup_out1, existing_consumer)
+                
+                # Connect new transition to second dup output
+                self.net.add_arc(dup_out2, transition)
+            else:
+                # Extend existing dup chain - add another output
+                # Create a new dup output place and connect the new transition
+                new_dup_out = Place(f"dup_out_{len(self.net.places)}")
+                self.net.add_place(new_dup_out)
+                
+                # Modify dup to have additional output
+                dup_trans.out_places.append(new_dup_out)
+                self.net.arcs.append((dup_trans.name, new_dup_out.name))
+                
+                # Update dup operation to produce more tokens
+                num_outputs = len(dup_trans.out_places)
+                dup_trans.operation = lambda tokens, n=num_outputs: [tokens[0]] * n
+                
+                # Connect new transition to new dup output
+                self.net.add_arc(new_dup_out, transition)
 
     def _generate_label_assembly(self):
         """

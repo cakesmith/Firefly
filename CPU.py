@@ -16,12 +16,13 @@ class CPU:
         return str({"CPU": self.cpu_id, "A": self.A, "D": self.D, "zr": self.zr, "ng": self.ng})
 
     def reset(self):
-        # Initialize registers - no PC since it's managed externally
+        # Initialize registers
         self.zr = 0
         self.ng = 0
         self.A = 0
         self.D = 0
         self.KBD = 0
+        self.PC = 0  # Program counter
 
         # Initialize RAM if it's empty or ensure it has the right size
         if len(self.RAM) == 0:
@@ -29,6 +30,34 @@ class CPU:
         elif len(self.RAM) < 24576:
             # Extend RAM to required size
             self.RAM.extend([0] * (24576 - len(self.RAM)))
+
+    def get_pc(self):
+        """Get the current program counter value."""
+        return self.PC
+    
+    def set_pc(self, value):
+        """Set the program counter to a specific value."""
+        self.PC = value
+
+    def step(self, instruction):
+        """
+        Execute one instruction and update PC.
+        
+        Args:
+            instruction: Single instruction dictionary to execute
+            
+        Returns:
+            Dictionary with execution result
+        """
+        result = self.execute_instruction(instruction)
+        
+        # Update PC based on result
+        if result['should_jump']:
+            self.PC = result['jump_target']
+        else:
+            self.PC += 1
+        
+        return result
 
     def execute_instruction(self, instruction):
         """
