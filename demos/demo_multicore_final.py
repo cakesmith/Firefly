@@ -5,7 +5,10 @@ Multi-Core TECS VM - Final Demonstration
 Shows the parallelization capabilities of the Petri net-based VM compiler.
 """
 
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PetriEmitter import PetriEmitter
 from Petri.Token import Token
 from VMParser import vmcommand

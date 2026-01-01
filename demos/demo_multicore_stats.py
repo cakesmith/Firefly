@@ -8,6 +8,8 @@ multi-core CPU scheduling with detailed statistics.
 
 import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PetriEmitter import PetriEmitter
 from Petri.Token import Token
 from VMParser import vmcommand
@@ -236,17 +238,17 @@ def run_demo(vm_file, description):
     
     print(f"\nCore Workload Distribution:")
     for core, work in best_multicore['core_work'].items():
-        bar = '█' * (work * 2) if work > 0 else '░'
+        bar = '#' * (work * 2) if work > 0 else '-'
         print(f"  Core {core}: {bar} ({work} transitions)")
     
     return results
 
 
 def main():
-    print("╔══════════════════════════════════════════════════════════════════════╗")
-    print("║       TECS VM Multi-Core Execution Demonstration                     ║")
-    print("║       Petri Net-Based Parallel Scheduling                            ║")
-    print("╚══════════════════════════════════════════════════════════════════════╝")
+    print("=" * 72)
+    print("  TECS VM Multi-Core Execution Demonstration")
+    print("  Petri Net-Based Parallel Scheduling")
+    print("=" * 72)
     
     # Find all example VM files
     examples_dir = "examples"

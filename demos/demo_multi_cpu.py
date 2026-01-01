@@ -5,6 +5,10 @@ Demonstration of multi-CPU Petri net execution with shared RAM.
 Shows graph coloring for CPU core assignment and ROM generation.
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PetriEmitter import PetriEmitter
 from CPU import CPU
 from VMParser import vmcommand
@@ -95,7 +99,7 @@ def main():
         
         # Verify all CPUs see the same value
         all_see_value = all(cpu.RAM[test_addr] == test_value for cpu in cpus)
-        print(f"Shared RAM test: {'✓ PASS' if all_see_value else '✗ FAIL'}")
+        print(f"Shared RAM test: {'PASS' if all_see_value else 'FAIL'}")
     
     # Show conflict analysis
     print(f"\n--- Conflict Analysis ---")
@@ -117,11 +121,11 @@ def main():
         print("  No conflicts detected - all transitions can potentially run in parallel")
     
     print(f"\n--- Summary ---")
-    print(f"✓ Graph coloring successfully assigns CPU cores")
-    print(f"✓ Shared RAM enables multi-CPU coordination")
-    print(f"✓ ROM generation creates per-core instruction sequences")
-    print(f"✓ Level system identifies parallelization opportunities")
-    print(f"✓ Conflict detection prevents resource conflicts")
+    print(f"[OK] Graph coloring successfully assigns CPU cores")
+    print(f"[OK] Shared RAM enables multi-CPU coordination")
+    print(f"[OK] ROM generation creates per-core instruction sequences")
+    print(f"[OK] Level system identifies parallelization opportunities")
+    print(f"[OK] Conflict detection prevents resource conflicts")
 
 if __name__ == "__main__":
     main()

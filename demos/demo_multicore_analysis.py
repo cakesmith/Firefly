@@ -6,7 +6,10 @@ Detailed analysis of parallelization in the Petri net-based VM.
 Shows actual data dependencies and potential parallelism.
 """
 
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PetriEmitter import PetriEmitter
 from Petri.Token import Token
 from VMParser import vmcommand
@@ -41,8 +44,8 @@ def build_petri_net(commands):
     return emitter
 
 
-def execute_single_core(emitter):
-    """Execute on single core, return cycles and trace."""
+def execute_sequential(emitter):
+    """Execute strictly sequentially - one transition per cycle."""
     net = emitter.net
     
     # Reset
@@ -56,11 +59,17 @@ def execute_single_core(emitter):
     max_cycles = 100
     
     while cycles < max_cycles:
-        fired = net.execute_step()
-        if not fired:
+        # Find first enabled transition only
+        enabled = [t for t in net.transitions.values() if t.can_fire()]
+        
+        if not enabled:
             break
+        
+        # Fire only ONE transition (sequential)
+        t = enabled[0]
+        t.fire()
         cycles += 1
-        trace.append(fired)
+        trace.append([t.name])
     
     # Get result
     result = None
@@ -72,7 +81,7 @@ def execute_single_core(emitter):
     return cycles, result, trace
 
 
-def execute_multi_core(emitter, num_cores):
+def execute_parallel(emitter, num_cores):
     """
     Simulate multi-core execution using the Petri net firing semantics.
     Multiple enabled transitions can fire in the same step.
@@ -90,7 +99,7 @@ def execute_multi_core(emitter, num_cores):
     max_cycles = 100
     
     while cycles < max_cycles:
-        # Find ALL enabled transitions (not just one)
+        # Find ALL enabled transitions
         enabled = [t for t in net.transitions.values() if t.can_fire()]
         
         if not enabled:
@@ -146,17 +155,15 @@ def analyze_program(name, description, commands, expected=None):
         else:
             print(f"  {i+1}. {cmd.command}")
     
-    # Single core execution
+    # Sequential execution (baseline)
     emitter = build_petri_net(commands)
-    single_cycles, single_result, single_trace = execute_single_core(emitter)
+    seq_cycles, seq_result, seq_trace = execute_sequential(emitter)
     
-    print(f"\n--- Single Core Execution ---")
-    print(f"Cycles: {single_cycles}")
-    for i, fired in enumerate(single_trace):
-        print(f"  Cycle {i+1}: {', '.join(fired)}")
-    print(f"Result: {single_result}", end="")
+    print(f"\n--- Sequential Execution (1 op/cycle) ---")
+    print(f"Cycles: {seq_cycles}")
+    print(f"Result: {seq_result}", end="")
     if expected is not None:
-        print(f" {'✓' if single_result == expected else '✗'}")
+        print(f" {'[OK]' if seq_result == expected else '[FAIL]'}")
     else:
         print()
     
@@ -167,9 +174,9 @@ def analyze_program(name, description, commands, expected=None):
     
     for num_cores in [1, 2, 4, 8]:
         emitter = build_petri_net(commands)
-        mc_cycles, mc_result, mc_trace = execute_multi_core(emitter, num_cores)
+        mc_cycles, mc_result, mc_trace = execute_parallel(emitter, num_cores)
         
-        speedup = single_cycles / mc_cycles if mc_cycles > 0 else 1.0
+        speedup = seq_cycles / mc_cycles if mc_cycles > 0 else 1.0
         avg_parallel = sum(len(f) for f in mc_trace) / len(mc_trace) if mc_trace else 0
         
         print(f"{num_cores:<8} {mc_cycles:<10} {speedup:<12.2f}x {avg_parallel:<20.1f}")
@@ -177,19 +184,19 @@ def analyze_program(name, description, commands, expected=None):
     # Detailed trace for 4 cores
     print(f"\n--- Detailed 4-Core Execution Trace ---")
     emitter = build_petri_net(commands)
-    mc_cycles, mc_result, mc_trace = execute_multi_core(emitter, 4)
+    mc_cycles, mc_result, mc_trace = execute_parallel(emitter, 4)
     
     for i, fired in enumerate(mc_trace):
         parallel_indicator = " [PARALLEL]" if len(fired) > 1 else ""
         print(f"  Cycle {i+1}: {', '.join(fired)}{parallel_indicator}")
     
-    return single_cycles, mc_cycles
+    return seq_cycles, mc_cycles
 
 
 def main():
-    print("╔══════════════════════════════════════════════════════════════════════╗")
-    print("║     Multi-Core TECS VM - Parallelization Analysis                    ║")
-    print("╚══════════════════════════════════════════════════════════════════════╝")
+    print("=" * 72)
+    print("  Multi-Core TECS VM - Parallelization Analysis")
+    print("=" * 72)
     
     results = []
     
@@ -302,15 +309,15 @@ def main():
     
     # Summary
     print("\n" + "="*70)
-    print("  SUMMARY: Speedup Results")
+    print("  SUMMARY: Speedup Results (Sequential vs 4-Core)")
     print("="*70)
-    print(f"\n{'Test':<20} {'1-Core':<10} {'4-Core':<10} {'Speedup':<10} {'Savings':<10}")
-    print("-" * 60)
+    print(f"\n{'Test':<20} {'Sequential':<12} {'4-Core':<10} {'Speedup':<10} {'Savings':<10}")
+    print("-" * 62)
     
     for name, single, multi in results:
         speedup = single / multi if multi > 0 else 1.0
         savings = ((single - multi) / single) * 100 if single > 0 else 0
-        print(f"{name:<20} {single:<10} {multi:<10} {speedup:<10.2f}x {savings:<10.1f}%")
+        print(f"{name:<20} {single:<12} {multi:<10} {speedup:<10.2f}x {savings:<10.1f}%")
     
     # ROM generation stats
     print("\n" + "="*70)
@@ -343,6 +350,27 @@ def main():
     print(f"\nPer-Core ROM sizes:")
     for core_id, rom in roms['cores'].items():
         print(f"  Core {core_id}: {len(rom)} lines")
+    
+    # Key insights
+    print("\n" + "="*70)
+    print("  KEY INSIGHTS")
+    print("="*70)
+    print("""
+  PARALLELIZATION BENEFITS:
+  
+  1. Push operations are independent - can all run in parallel
+  2. Binary operations (add, sub) depend on their operands
+  3. Best speedup when many independent operations exist
+  
+  SPEEDUP PATTERNS:
+  
+  • Simple Add: Limited speedup (sequential dependency)
+  • Parallel Pairs: Good speedup (independent sub-expressions)
+  • Wide Parallel: Best speedup (many independent pushes)
+  
+  The Petri net naturally exposes parallelism by tracking
+  data dependencies through places and transitions.
+""")
 
 
 if __name__ == "__main__":

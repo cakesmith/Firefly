@@ -6,7 +6,10 @@ Shows parallel execution benefits with programs designed to highlight
 parallelization opportunities.
 """
 
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PetriEmitter import PetriEmitter
 from Petri.Token import Token
 from VMParser import vmcommand
@@ -141,7 +144,7 @@ def demo_program(name, description, commands, expected_result=None):
     print(f"  Cycles: {seq_cycles}")
     print(f"  Result: {result}")
     if expected_result is not None:
-        status = "✓" if result == expected_result else "✗"
+        status = "[OK]" if result == expected_result else "[FAIL]"
         print(f"  Expected: {expected_result} {status}")
     
     # Multi-core analysis
@@ -179,9 +182,9 @@ def demo_program(name, description, commands, expected_result=None):
 
 
 def main():
-    print("╔══════════════════════════════════════════════════════════════════════╗")
-    print("║     Multi-Core TECS VM - Comprehensive Parallelization Demo          ║")
-    print("╚══════════════════════════════════════════════════════════════════════╝")
+    print("=" * 72)
+    print("  Multi-Core TECS VM - Comprehensive Parallelization Demo")
+    print("=" * 72)
     
     results = []
     
