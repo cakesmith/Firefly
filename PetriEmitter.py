@@ -48,6 +48,14 @@ class PetriEmitter:
         self.call_sites = {}  # Maps call_id -> return_place
         self.call_counter = 0
         
+        # Track current function for label scoping
+        self.current_function = None
+        
+        # Track static variable addresses per class
+        # Maps "ClassName.index" -> RAM address (starting at 16)
+        self.static_vars = {}
+        self.next_static_addr = 16
+        
         # Create I/O places and transitions if callbacks provided
         self._setup_io_places()
     
@@ -60,34 +68,50 @@ class PetriEmitter:
             return
         
         # Create a dispatch transition for each call site
-        for call_id, return_place in self.call_sites.items():
+        for call_id, places in self.call_sites.items():
+            return_ctrl_place, return_data_place = places
             cid = call_id
+            
+            def make_dispatch_guard(target_cid):
+                """Guard that checks if this dispatch should handle the return."""
+                def guard(tokens):
+                    if not tokens:
+                        return False
+                    token = tokens[0]
+                    if hasattr(token, 'value') and isinstance(token.value, tuple) and len(token.value) == 3:
+                        ret_val, return_addr, remaining_stack = token.value
+                        return return_addr == target_cid
+                    return False
+                return guard
             
             def make_dispatch_op(target_cid):
                 def dispatch_op(tokens):
                     if not tokens:
-                        return [None]
+                        return [None, None]
                     
                     token = tokens[0]
                     if hasattr(token, 'value') and isinstance(token.value, tuple) and len(token.value) == 3:
                         ret_val, return_addr, remaining_stack = token.value
-                        if return_addr == target_cid:
-                            # This dispatch handles this return
-                            # Pass the return value and remaining call stack
-                            if remaining_stack:
-                                return [Token(remaining_stack)]  # Continue with remaining stack
-                            else:
-                                return [Token(ret_val)]  # Final return, just the value
-                    return [None]  # Not for this call site
+                        # Return two tokens: control (call stack in tuple format) and data (return value)
+                        # Use tuple format ("callstack", [...]) so seq_operation recognizes it
+                        if remaining_stack:
+                            ctrl_token = Token(("callstack", remaining_stack))
+                        else:
+                            ctrl_token = Token([])  # Empty control token
+                        return [ctrl_token, Token(ret_val)]
+                    return [None, None]
                 return dispatch_op
             
             dispatch_trans = Transition(
                 name=f"dispatch_to_{call_id}",
-                operation=make_dispatch_op(cid)
+                operation=make_dispatch_op(cid),
+                guard=make_dispatch_guard(cid)
             )
             self.net.add_transition(dispatch_trans)
             self.net.add_arc(self.return_dispatch, dispatch_trans)
-            self.net.add_arc(dispatch_trans, return_place)
+            # Output to both control and data places
+            self.net.add_arc(dispatch_trans, return_ctrl_place)
+            self.net.add_arc(dispatch_trans, return_data_place)
     
     def _setup_io_places(self):
         """Create I/O places for screen output and keyboard input if callbacks exist."""
@@ -138,6 +162,21 @@ class PetriEmitter:
         if self.memory_read:
             return self.memory_read(24576)  # KBD_ADDR
         return 0
+    
+    def _get_static_address(self, index):
+        """Get RAM address for static variable, scoped by current class."""
+        # Extract class name from current function (e.g., "Screen.init" -> "Screen")
+        if self.current_function and '.' in self.current_function:
+            class_name = self.current_function.split('.')[0]
+        else:
+            class_name = "Global"
+        
+        key = f"{class_name}.{index}"
+        if key not in self.static_vars:
+            self.static_vars[key] = self.next_static_addr
+            self.next_static_addr += 1
+        
+        return self.static_vars[key]
     
     def read_memory(self, addr):
         """Read from memory, using callback if provided."""
@@ -253,17 +292,22 @@ class PetriEmitter:
         self.control_place = control_out
         
         # Update transition to produce both data and control tokens
-        # Control token carries the call stack (a list)
+        # Control token carries the call stack as a tuple: ("callstack", [addresses...])
         original_op = transition.operation
         def seq_operation(tokens, orig=original_op):
             # Separate data tokens from control tokens
-            # Control tokens have list values (the call stack)
+            # Control tokens are either empty lists [] or callstack tuples
             data_tokens = []
             call_stack = []
             for t in tokens:
                 if hasattr(t, 'value'):
-                    if isinstance(t.value, list):
-                        call_stack = t.value  # This is the control token
+                    val = t.value
+                    if isinstance(val, list):
+                        # Empty list is a control token (no call stack)
+                        pass
+                    elif isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                        # This is a call stack token
+                        call_stack = list(val[1])
                     else:
                         data_tokens.append(t)  # This is a data token
                 else:
@@ -272,8 +316,11 @@ class PetriEmitter:
             # Pass only data tokens to the original operation
             result = orig(data_tokens)
             
-            # Create control token with call stack
-            ctrl_token = Token(call_stack)
+            # Create control token with call stack (as tuple to distinguish from empty list)
+            if call_stack:
+                ctrl_token = Token(("callstack", call_stack))
+            else:
+                ctrl_token = Token([])  # Empty control token
             
             if isinstance(result, list):
                 result.append(ctrl_token)
@@ -485,28 +532,44 @@ class PetriEmitter:
         """
         label_name = vmc.segment  # The label name from the VM command
         
+        # Scope label to current function to avoid collisions
+        scoped_label = f"{self.current_function}${label_name}" if self.current_function else label_name
+        
         # Check if label place already exists (from forward reference in goto/if-goto)
-        if label_name in self.net.labels:
+        if scoped_label in self.net.labels:
             # Reuse existing label place
-            label_place = self.net.labels[label_name]
+            label_place = self.net.labels[scoped_label]
         else:
             # Create a new place to represent this label
-            label_place_name = f"label_{label_name}"
+            label_place_name = f"label_{scoped_label}"
             label_place = Place(label_place_name)
-            label_place.label_name = label_name
+            label_place.label_name = scoped_label
             label_place.is_label = True
             self.net.add_place(label_place)
             
             # Store label in registry for goto/if-goto to find
-            self.net.labels[label_name] = label_place
+            self.net.labels[scoped_label] = label_place
         
         # Connect current control flow to the label place
         # This allows sequential flow into the label
         if self.control_place is not None:
             # Create a pass-through transition to merge control flow
+            # Must preserve call stack from input token
+            def merge_operation(tokens):
+                call_stack = []
+                for t in tokens:
+                    if hasattr(t, 'value'):
+                        val = t.value
+                        if isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                            call_stack = list(val[1])
+                if call_stack:
+                    return [Token(("callstack", call_stack))]
+                else:
+                    return [Token([])]
+            
             merge_transition = Transition(
-                name=f"merge_to_{label_name}_{len(self.net.transitions)}",
-                operation=lambda tokens: [Token("control")]
+                name=f"merge_to_{scoped_label}_{len(self.net.transitions)}",
+                operation=merge_operation
             )
             self.net.add_transition(merge_transition)
             self.net.add_arc(self.control_place, merge_transition)
@@ -527,25 +590,44 @@ class PetriEmitter:
         """
         target_label = vmc.segment  # The target label name
         
+        # Scope label to current function
+        scoped_label = f"{self.current_function}${target_label}" if self.current_function else target_label
+        
         # Find or create the label place
-        if target_label not in self.net.labels:
+        if scoped_label not in self.net.labels:
             # Create the label place if it doesn't exist yet (forward reference)
-            label_place = Place(f"label_{target_label}")
-            label_place.label_name = target_label
+            label_place = Place(f"label_{scoped_label}")
+            label_place.label_name = scoped_label
             label_place.is_label = True
             self.net.add_place(label_place)
-            self.net.labels[target_label] = label_place
+            self.net.labels[scoped_label] = label_place
         
-        target_place = self.net.labels[target_label]
+        target_place = self.net.labels[scoped_label]
         
         # Create emit function for goto
         def emit_goto(transition):
             return ["// goto - control transfer via token"]
         
+        # Create operation that preserves call stack
+        def goto_operation(tokens):
+            # Find call stack from tokens
+            call_stack = []
+            for t in tokens:
+                if hasattr(t, 'value'):
+                    val = t.value
+                    if isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                        call_stack = list(val[1])
+            
+            # Create control token with call stack
+            if call_stack:
+                return [Token(("callstack", call_stack))]
+            else:
+                return [Token([])]
+        
         # Create transition that transfers control to the label
         goto_transition = Transition(
-            name=f"goto_{target_label}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token("control")],
+            name=f"goto_{scoped_label}_{len(self.net.transitions)}",
+            operation=goto_operation,
             emit_function=emit_goto
         )
         
@@ -579,15 +661,18 @@ class PetriEmitter:
         """
         target_label = vmc.segment  # The target label name
         
+        # Scope label to current function
+        scoped_label = f"{self.current_function}${target_label}" if self.current_function else target_label
+        
         # Find or create the label place
-        if target_label not in self.net.labels:
-            label_place = Place(f"label_{target_label}")
-            label_place.label_name = target_label
+        if scoped_label not in self.net.labels:
+            label_place = Place(f"label_{scoped_label}")
+            label_place.label_name = scoped_label
             label_place.is_label = True
             self.net.add_place(label_place)
-            self.net.labels[target_label] = label_place
+            self.net.labels[scoped_label] = label_place
         
-        target_place = self.net.labels[target_label]
+        target_place = self.net.labels[scoped_label]
         
         # Create a "fall-through" place for when condition is false
         fallthrough_place = Place(f"ifgoto_fallthrough_{len(self.net.places)}")
@@ -601,22 +686,35 @@ class PetriEmitter:
         
         # Create operation that conditionally outputs to label OR fallthrough
         def ifgoto_operation(tokens):
-            # Find the condition value (not the control token)
+            # Find the condition value and call stack from tokens
             condition = 0
+            call_stack = []
             for t in tokens:
-                if hasattr(t, 'value') and isinstance(t.value, int):
-                    condition = t.value
-                    break
+                if hasattr(t, 'value'):
+                    val = t.value
+                    if isinstance(val, int):
+                        condition = val
+                    elif isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                        call_stack = list(val[1])
+                    elif isinstance(val, list):
+                        # Empty control token
+                        pass
+            
+            # Create control token with call stack
+            if call_stack:
+                ctrl_token = Token(("callstack", call_stack))
+            else:
+                ctrl_token = Token([])
             
             # If condition is non-zero, go to label; else fall through
             if condition != 0:
-                return [Token("control"), None]  # [target, fallthrough]
+                return [ctrl_token, None]  # [target, fallthrough]
             else:
-                return [None, Token("control")]  # [target, fallthrough]
+                return [None, ctrl_token]  # [target, fallthrough]
         
         # Create transition
         ifgoto_transition = Transition(
-            name=f"ifgoto_{target_label}_{len(self.net.transitions)}",
+            name=f"ifgoto_{scoped_label}_{len(self.net.transitions)}",
             operation=ifgoto_operation,
             emit_function=emit_ifgoto
         )
@@ -654,6 +752,10 @@ class PetriEmitter:
         function_name = vmc.segment  # Function name
         n_locals = vmc.index        # Number of local variables
         
+        # Capture for closure
+        emitter = self
+        num_locals = n_locals
+        
         # Special case: Sys.init uses the init place (bootstrap entry point)
         if function_name == "Sys.init":
             function_place = self.net.places["init"]
@@ -680,8 +782,50 @@ class PetriEmitter:
             self.net.functions = {}
         self.net.functions[function_name] = function_place
         
-        # Function starts a new control flow - set function_place as current control
-        self.control_place = function_place
+        # Track current function for label scoping
+        self.current_function = function_name
+        
+        # If function has locals, create a transition to allocate them
+        if n_locals > 0:
+            # Create transition that initializes local variables to 0
+            def init_locals_operation(tokens):
+                # Allocate space for locals by advancing SP
+                if emitter.memory_write:
+                    sp = emitter.read_memory(0)
+                    # Initialize locals to 0
+                    for i in range(num_locals):
+                        emitter.write_memory(sp + i, 0)
+                    # Advance SP
+                    emitter.write_memory(0, sp + num_locals)
+                
+                # Pass through the control token
+                for t in tokens:
+                    if hasattr(t, 'value'):
+                        val = t.value
+                        if isinstance(val, tuple) and val[0] == "callstack":
+                            return [Token(val)]
+                        if isinstance(val, list):
+                            return [Token(val)]
+                return [Token([])]
+            
+            init_locals_trans = Transition(
+                name=f"init_locals_{function_name}",
+                operation=init_locals_operation
+            )
+            self.net.add_transition(init_locals_trans)
+            
+            # Create output place for after locals init
+            locals_done_place = Place(f"locals_done_{function_name}")
+            self.net.add_place(locals_done_place)
+            
+            self.net.add_arc(function_place, init_locals_trans)
+            self.net.add_arc(init_locals_trans, locals_done_place)
+            
+            # Control continues from locals_done_place
+            self.control_place = locals_done_place
+        else:
+            # No locals, control continues from function_place
+            self.control_place = function_place
         
         # Clear the data stack for this function (functions start with empty stack)
         self.control_stack = []
@@ -702,13 +846,9 @@ class PetriEmitter:
         function_name = vmc.segment
         n_args = vmc.index
         
-        # Create return place for this call site
+        # Create call site ID
         call_id = self.call_counter
         self.call_counter += 1
-        
-        return_place = Place(f"return_to_{call_id}")
-        self.net.add_place(return_place)
-        self.call_sites[call_id] = return_place
         
         # Find or create the function entry place
         if not hasattr(self.net, 'functions'):
@@ -724,18 +864,70 @@ class PetriEmitter:
         
         target_func_place = self.net.places[func_place_name]
         
-        # Create call transition that pushes return address onto call stack
+        # Capture emitter and call info for frame setup
+        emitter = self
+        num_args = n_args
+        
+        # Create call transition that sets up new frame and pushes return address
         cid = call_id
+        fname = function_name  # Capture for debugging
         def call_operation(tokens, return_id=cid):
             # Get current call stack from input token (or start fresh)
             current_stack = []
+            arg_values = []
+            
             for t in tokens:
-                if hasattr(t, 'value') and isinstance(t.value, list):
-                    current_stack = t.value.copy()
-                    break
-            # Push return address
+                if hasattr(t, 'value'):
+                    val = t.value
+                    # Call stack is a tuple: ("callstack", [addresses...])
+                    if isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                        current_stack = list(val[1])
+                    elif isinstance(val, list):
+                        # This is a control token (empty list), ignore it
+                        pass
+                    elif isinstance(val, int):
+                        arg_values.append(val)
+                    elif isinstance(val, str):
+                        # Symbolic value - treat as 0
+                        arg_values.append(0)
+                    else:
+                        # Unknown type - treat as 0
+                        arg_values.append(0)
+            
+            # If callbacks present, set up a new frame using SP
+            if emitter.memory_write:
+                # Standard Hack VM call sequence:
+                # Arguments are passed via tokens, we write them to stack
+                # Then push saved frame, set ARG and LCL
+                sp = emitter.read_memory(0)  # Current stack pointer
+                
+                # Arguments come in reverse order (last pushed = first in tokens)
+                # Reverse to get correct order for ARG segment
+                arg_values = arg_values[::-1]
+                
+                # Write arguments to stack at current SP
+                arg_base = sp
+                for i, arg_val in enumerate(arg_values):
+                    emitter.write_memory(sp + i, arg_val)
+                sp += len(arg_values)
+                
+                # Push saved frame (5 words)
+                emitter.write_memory(sp, return_id)                    # return address
+                emitter.write_memory(sp + 1, emitter.read_memory(1))   # saved LCL
+                emitter.write_memory(sp + 2, emitter.read_memory(2))   # saved ARG
+                emitter.write_memory(sp + 3, emitter.read_memory(3))   # saved THIS
+                emitter.write_memory(sp + 4, emitter.read_memory(4))   # saved THAT
+                sp += 5
+                
+                # Set new frame pointers
+                emitter.write_memory(2, arg_base)    # ARG = base of arguments
+                emitter.write_memory(1, sp)          # LCL = current SP (start of locals)
+                emitter.write_memory(0, sp)          # SP = LCL (function will add locals)
+            
+            # Push return address onto call stack token
             current_stack.insert(0, return_id)
-            return [Token(current_stack)]
+            # Use tuple format to distinguish from control tokens
+            return [Token(("callstack", current_stack))]
         
         call_transition = Transition(
             name=f"call_{function_name}_{call_id}",
@@ -757,11 +949,20 @@ class PetriEmitter:
         # Output to function entry place
         self.net.add_arc(call_transition, target_func_place)
         
-        # Control continues from return_place (when function returns)
-        self.control_place = return_place
+        # Create separate places for control flow and return value
+        return_ctrl_place = Place(f"return_ctrl_{call_id}")
+        return_data_place = Place(f"return_data_{call_id}")
+        self.net.add_place(return_ctrl_place)
+        self.net.add_place(return_data_place)
         
-        # Push return_place to stack (it will receive the return value)
-        self.control_stack.append(return_place)
+        # Store both places for dispatch to use
+        self.call_sites[call_id] = (return_ctrl_place, return_data_place)
+        
+        # Control continues from return_ctrl_place
+        self.control_place = return_ctrl_place
+        
+        # Return value comes from return_data_place
+        self.control_stack.append(return_data_place)
         
         return call_transition
             
@@ -773,6 +974,9 @@ class PetriEmitter:
         the return value + remaining call stack to the dispatch.
         The dispatch routes to the correct return place.
         """
+        # Capture emitter for frame restoration
+        emitter = self
+        
         # Create transition that sends to dispatch
         def return_operation(tokens):
             # Find the call stack and return value from tokens
@@ -782,10 +986,42 @@ class PetriEmitter:
             for t in tokens:
                 if hasattr(t, 'value'):
                     val = t.value
-                    if isinstance(val, list):
-                        call_stack = val
+                    # Call stack is a tuple: ("callstack", [addresses...])
+                    if isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                        call_stack = list(val[1])
+                    elif isinstance(val, list):
+                        # Empty control token, ignore
+                        pass
                     elif isinstance(val, int):
                         ret_val = val
+            
+            # If callbacks present, restore the caller's frame
+            if emitter.memory_write:
+                # Standard Hack VM return sequence:
+                # FRAME = LCL, RET = *(FRAME-5), *ARG = pop(), SP = ARG+1
+                # Restore THAT, THIS, ARG, LCL from saved frame
+                
+                lcl = emitter.read_memory(1)   # FRAME
+                arg = emitter.read_memory(2)   # ARG (where return value goes)
+                
+                # Saved frame is at FRAME - 5
+                frame = lcl
+                saved_lcl = emitter.read_memory(frame - 4)
+                saved_arg = emitter.read_memory(frame - 3)
+                saved_this = emitter.read_memory(frame - 2)
+                saved_that = emitter.read_memory(frame - 1)
+                
+                # Put return value at ARG[0]
+                emitter.write_memory(arg, ret_val)
+                
+                # Restore SP to ARG + 1
+                emitter.write_memory(0, arg + 1)
+                
+                # Restore frame pointers
+                emitter.write_memory(4, saved_that)
+                emitter.write_memory(3, saved_this)
+                emitter.write_memory(2, saved_arg)
+                emitter.write_memory(1, saved_lcl)
             
             # Pop return address from call stack
             if call_stack:
@@ -1551,10 +1787,13 @@ class PetriEmitter:
         
         # Create transition that pushes the local value - reads from RAM[LCL + index]
         def push_local_operation(tokens):
-            lcl_ptr = emitter.read_memory(1)  # LCL is at RAM[1]
-            addr = lcl_ptr + local_index
-            value = emitter.read_memory(addr)
-            return [Token(value)]
+            if emitter.memory_read:
+                lcl_ptr = emitter.read_memory(1)  # LCL is at RAM[1]
+                addr = lcl_ptr + local_index
+                value = emitter.read_memory(addr)
+                return [Token(value)]
+            else:
+                return [Token(f"local[{local_index}]")]
         
         push_local_transition = Transition(
             name=f"push_local_{index}_{len(self.net.transitions)}",
@@ -1591,10 +1830,19 @@ class PetriEmitter:
                 
             return assembly
         
+        # Capture emitter and index for memory access
+        emitter = self
+        arg_index = index
+        
         # Create transition that pushes the argument value
         def push_arg_operation(tokens):
-            # Token value represents memory read - actual value comes from assembly execution
-            return [Token(f"argument[{index}]")]
+            # If callbacks present, read actual memory; otherwise symbolic
+            if emitter.memory_read:
+                arg_ptr = emitter.read_memory(2)  # ARG is at RAM[2]
+                value = emitter.read_memory(arg_ptr + arg_index)
+                return [Token(value)]
+            else:
+                return [Token(f"argument[{arg_index}]")]
         
         push_arg_transition = Transition(
             name=f"push_arg_{index}_{len(self.net.transitions)}",
@@ -1631,10 +1879,18 @@ class PetriEmitter:
                 
             return assembly
         
+        # Capture emitter and index for memory access
+        emitter = self
+        this_index = index
+        
         # Create transition that pushes the this value
         def push_this_operation(tokens):
-            # Token value represents memory read - actual value comes from assembly execution
-            return [Token(f"this[{index}]")]
+            if emitter.memory_read:
+                this_ptr = emitter.read_memory(3)  # THIS is at RAM[3]
+                value = emitter.read_memory(this_ptr + this_index)
+                return [Token(value)]
+            else:
+                return [Token(f"this[{this_index}]")]
         
         push_this_transition = Transition(
             name=f"push_this_{index}_{len(self.net.transitions)}",
@@ -1671,19 +1927,22 @@ class PetriEmitter:
                 
             return assembly
         
-        # Capture emitter reference for memory access
+        # Capture emitter and index for memory access
         emitter = self
+        that_index = index
         
         # Create transition that pushes the that value - actually reads from memory
         def push_that_operation(tokens):
-            # Calculate source address: THAT + index
-            that_ptr = emitter.read_memory(4)  # THAT is at RAM[4]
-            addr = that_ptr + index
-            
-            # Read from memory (this triggers callback for keyboard reads)
-            value = emitter.read_memory(addr)
-            
-            return [Token(value)]
+            if emitter.memory_read:
+                # Calculate source address: THAT + index
+                that_ptr = emitter.read_memory(4)  # THAT is at RAM[4]
+                addr = that_ptr + that_index
+                
+                # Read from memory (this triggers callback for keyboard reads)
+                value = emitter.read_memory(addr)
+                return [Token(value)]
+            else:
+                return [Token(f"that[{that_index}]")]
         
         push_that_transition = Transition(
             name=f"push_that_{index}_{len(self.net.transitions)}",
@@ -1730,9 +1989,12 @@ class PetriEmitter:
         
         # Create transition that pushes the pointer value - reads from RAM[3] or RAM[4]
         def push_pointer_operation(tokens):
-            addr = 3 if ptr_index == 0 else 4  # THIS=3, THAT=4
-            value = emitter.read_memory(addr)
-            return [Token(value)]
+            if emitter.memory_read:
+                addr = 3 if ptr_index == 0 else 4  # THIS=3, THAT=4
+                value = emitter.read_memory(addr)
+                return [Token(value)]
+            else:
+                return [Token(f"pointer[{ptr_index}]")]
         
         push_pointer_transition = Transition(
             name=f"push_pointer_{index}_{len(self.net.transitions)}",
@@ -1773,9 +2035,12 @@ class PetriEmitter:
         
         # Create transition that pushes the temp value - actually reads from RAM[5+index]
         def push_temp_operation(tokens):
-            addr = 5 + temp_index
-            value = emitter.read_memory(addr)
-            return [Token(value)]
+            if emitter.memory_read:
+                addr = 5 + temp_index
+                value = emitter.read_memory(addr)
+                return [Token(value)]
+            else:
+                return [Token(f"temp[{temp_index}]")]
         
         push_temp_transition = Transition(
             name=f"push_temp_{index}_{len(self.net.transitions)}",
@@ -1788,6 +2053,9 @@ class PetriEmitter:
     def push_static(self, vmc):
         """Handle push static command - pushes static variable"""
         index = vmc.index
+        
+        # Get the scoped static address for this class
+        static_addr = self._get_static_address(index)
         
         # Create a place to hold the static value
         static_place = Place(f"static_{index}_{len(self.net.places)}")
@@ -1810,15 +2078,17 @@ class PetriEmitter:
                 
             return assembly
         
-        # Capture emitter and index for memory access
+        # Capture emitter and address for memory access
         emitter = self
-        static_index = index
+        addr = static_addr
         
-        # Create transition that pushes the static value - reads from RAM[16 + index]
+        # Create transition that pushes the static value - reads from scoped address
         def push_static_operation(tokens):
-            addr = 16 + static_index
-            value = emitter.read_memory(addr)
-            return [Token(value)]
+            if emitter.memory_read:
+                value = emitter.read_memory(addr)
+                return [Token(value)]
+            else:
+                return [Token(f"static[{index}]")]
         
         push_static_transition = Transition(
             name=f"push_static_{index}_{len(self.net.transitions)}",
@@ -1888,7 +2158,7 @@ class PetriEmitter:
             addr = lcl_ptr + local_index
             emitter.write_memory(addr, value)
             
-            return [tokens[0]]
+            return [None]  # Pop doesn't produce a data value
         
         pop_local_transition = Transition(
             name=f"pop_local_{index}_{len(self.net.transitions)}",
@@ -1944,10 +2214,25 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to argument
+        # Capture emitter and index for memory access
+        emitter = self
+        arg_index = index
+        
+        # Create transition that pops to argument - actually writes to memory
         def pop_arg_operation(tokens):
-            # Pass through the token - actual memory write happens via assembly
-            return [tokens[0]]
+            # Get the value from input token
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            if isinstance(value, str) or isinstance(value, tuple):
+                value = 0
+            
+            # Calculate target address: ARG + index
+            arg_ptr = emitter.read_memory(2)  # ARG is at RAM[2]
+            addr = arg_ptr + arg_index
+            
+            # Write to memory
+            emitter.write_memory(addr, value)
+            
+            return [None]  # Pop doesn't produce a data value
         
         pop_arg_transition = Transition(
             name=f"pop_arg_{index}_{len(self.net.transitions)}",
@@ -2003,10 +2288,25 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to this
+        # Capture emitter and index for memory access
+        emitter = self
+        this_index = index
+        
+        # Create transition that pops to this - actually writes to memory
         def pop_this_operation(tokens):
-            # Pass through the token - actual memory write happens via assembly
-            return [tokens[0]]
+            # Get the value from input token
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            if isinstance(value, str) or isinstance(value, tuple):
+                value = 0
+            
+            # Calculate target address: THIS + index
+            this_ptr = emitter.read_memory(3)  # THIS is at RAM[3]
+            addr = this_ptr + this_index
+            
+            # Write to memory
+            emitter.write_memory(addr, value)
+            
+            return [None]  # Pop doesn't produce a data value
         
         pop_this_transition = Transition(
             name=f"pop_this_{index}_{len(self.net.transitions)}",
@@ -2062,8 +2362,9 @@ class PetriEmitter:
             
             return assembly
         
-        # Capture emitter reference for memory access
+        # Capture emitter reference and index for memory access
         emitter = self
+        that_index = index
         
         # Create transition that pops to that - actually writes to memory
         def pop_that_operation(tokens):
@@ -2074,12 +2375,12 @@ class PetriEmitter:
             
             # Calculate target address: THAT + index
             that_ptr = emitter.read_memory(4)  # THAT is at RAM[4]
-            addr = that_ptr + index
+            addr = that_ptr + that_index
             
             # Write to memory (this triggers the callback for screen writes)
             emitter.write_memory(addr, value)
             
-            return [tokens[0]]
+            return [None]  # Pop doesn't produce a data value
         
         pop_that_transition = Transition(
             name=f"pop_that_{index}_{len(self.net.transitions)}",
@@ -2143,7 +2444,7 @@ class PetriEmitter:
             addr = 3 if ptr_index == 0 else 4
             emitter.write_memory(addr, value)
             
-            return [tokens[0]]
+            return [None]  # Pop doesn't produce a data value
         
         pop_pointer_transition = Transition(
             name=f"pop_pointer_{index}_{len(self.net.transitions)}",
@@ -2201,7 +2502,7 @@ class PetriEmitter:
             addr = 5 + temp_index
             emitter.write_memory(addr, value)
             
-            return [tokens[0]]
+            return [None]  # Pop doesn't produce a data value
         
         pop_temp_transition = Transition(
             name=f"pop_temp_{index}_{len(self.net.transitions)}",
@@ -2214,6 +2515,9 @@ class PetriEmitter:
     def pop_static(self, vmc):
         """Handle pop static command - pops stack top to static variable"""
         index = vmc.index
+        
+        # Get the scoped static address for this class
+        static_addr = self._get_static_address(index)
         
         # Create a place to represent the pop operation result
         pop_result_place = Place(f"pop_static_{index}_{len(self.net.places)}")
@@ -2245,22 +2549,20 @@ class PetriEmitter:
             
             return assembly
         
-        # Capture emitter and index for memory access
+        # Capture emitter and address for memory access
         emitter = self
-        static_index = index
+        addr = static_addr
         
-        # Create transition that pops to static - writes to RAM[16 + index]
+        # Create transition that pops to static - writes to scoped address
         def pop_static_operation(tokens):
             value = tokens[0].value if hasattr(tokens[0], 'value') else 0
             # Handle symbolic or tuple values
             if isinstance(value, str) or isinstance(value, tuple):
                 value = 0
             
-            # Static variables start at RAM[16]
-            addr = 16 + static_index
             emitter.write_memory(addr, value)
             
-            return [tokens[0]]
+            return [None]  # Pop doesn't produce a data value
         
         pop_static_transition = Transition(
             name=f"pop_static_{index}_{len(self.net.transitions)}",

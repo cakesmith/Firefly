@@ -1,16 +1,28 @@
 class Transition:
-    def __init__(self, name, operation=None, emit_function=None, assembly_template=None):
+    def __init__(self, name, operation=None, emit_function=None, assembly_template=None, guard=None):
         self.name = name
         self.operation = operation  # Function to execute when firing
         self.emit_function = emit_function  # Function to emit assembly code
+        self.guard = guard  # Optional guard function: (input_tokens) -> bool
         self.in_places = []
         self.out_places = []
 
         
     def can_fire(self):
-        """Check if all input places have tokens and no output places have tokens"""
-        return (all(place.has for place in self.in_places) and 
-                not any(place.has for place in self.out_places))
+        """Check if all input places have tokens, no output places have tokens, and guard passes"""
+        # Basic structural check
+        if not all(place.has for place in self.in_places):
+            return False
+        if any(place.has for place in self.out_places):
+            return False
+        
+        # If there's a guard, check it (peek at tokens without consuming)
+        if self.guard:
+            input_tokens = [place.token for place in self.in_places]
+            if not self.guard(input_tokens):
+                return False
+        
+        return True
         
     def fire(self):
         """Execute the transition if it can fire"""

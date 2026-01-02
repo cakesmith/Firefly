@@ -148,7 +148,7 @@ def compile_with_io(memory: SharedMemory):
 
 
 class PetriExecutor:
-    """Executes Petri net in background thread."""
+    """Executes Petri net in background thread using event-driven approach."""
     
     def __init__(self, net):
         self.net = net
@@ -156,14 +156,16 @@ class PetriExecutor:
         self.cycles = 0
         self.fired_total = 0
         self.thread = None
+        # Initialize the enabled set for event-driven execution
+        self.net.initialize_enabled_set()
     
     def execute_step(self):
-        enabled = [t for t in self.net.transitions.values() if t.can_fire()]
-        for t in enabled:
-            t.fire()
+        """Execute one step using optimized event-driven approach."""
+        fired = self.net.execute_step_single()
+        if fired:
             self.fired_total += 1
         self.cycles += 1
-        return len(enabled)
+        return len(fired)
     
     def run_loop(self):
         import time
@@ -219,6 +221,33 @@ def main():
     
     # Create executor
     executor = PetriExecutor(net)
+    
+    # Warm-up phase: run until we get screen writes (initial square drawing)
+    print()
+    print("  Warming up Petri net (this takes a while)...")
+    warmup_steps = 0
+    last_report = 0
+    while memory.screen_writes == 0 and warmup_steps < 2000000:
+        executor.execute_step()
+        warmup_steps += 1
+        if warmup_steps - last_report >= 100000:
+            print(f"    Step {warmup_steps}... (screen_writes={memory.screen_writes})")
+            last_report = warmup_steps
+    
+    # Continue until screen writes stabilize (square is fully drawn)
+    prev_writes = memory.screen_writes
+    stable_count = 0
+    while stable_count < 10000 and warmup_steps < 3000000:
+        executor.execute_step()
+        warmup_steps += 1
+        if memory.screen_writes == prev_writes:
+            stable_count += 1
+        else:
+            stable_count = 0
+            prev_writes = memory.screen_writes
+    
+    print(f"  Warm-up complete: {warmup_steps} steps, {memory.screen_writes} screen writes")
+    print()
     
     # Initialize pygame
     pygame.init()

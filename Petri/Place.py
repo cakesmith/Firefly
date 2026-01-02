@@ -10,14 +10,19 @@ class Place:
         self.has = False
         self.memory_address = None  # Will be assigned during allocation pass
         self.is_live = True  # For liveness analysis
+        self.consumers = []  # Transitions that consume from this place
 
     def put_token(self, token):
         self.has = True
         self.token = token
+        # Notify the net that this place now has a token
+        # Consumers will be checked for enablement
 
     def get_token(self):
         self.has = False
-        return self.token
+        token = self.token
+        self.token = None
+        return token
 
 if __name__ == "__main__":
     import doctest

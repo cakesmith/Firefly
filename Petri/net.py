@@ -6,6 +6,8 @@ class PetriNet:
         self.places = {}
         self.transitions = {}
         self.arcs = []
+        self._potentially_enabled = set()  # Transitions that might be enabled
+        self._initialized = False
         
     def add_place(self, place):
         self.places[place.name] = place
@@ -23,19 +25,87 @@ class PetriNet:
             source.out_places.append(target)
         else:
             target.in_places.append(source)
-        
+            # Register this transition as a consumer of the place
+            source.consumers.append(target)
+    
+    def initialize_enabled_set(self):
+        """Initialize the set of potentially enabled transitions based on current tokens."""
+        self._potentially_enabled = set()
+        for place in self.places.values():
+            if place.has:
+                for consumer in place.consumers:
+                    self._potentially_enabled.add(consumer.name)
+        self._initialized = True
+    
+    def notify_token_added(self, place):
+        """Called when a token is added to a place - mark consumers as potentially enabled."""
+        for consumer in place.consumers:
+            self._potentially_enabled.add(consumer.name)
+    
     def execute_step(self):
-        """Execute one step of the Petri net"""
-        # First, collect all transitions that can fire BEFORE any firing happens
-        # This prevents transitions enabled by firings within this step from also firing
-        enabled = [t for t in self.transitions.values() if t.can_fire()]
+        """Execute one step of the Petri net using event-driven approach."""
+        if not self._initialized:
+            self.initialize_enabled_set()
         
-        # Now fire all the enabled transitions
+        # Check only potentially enabled transitions
+        enabled = []
+        still_potentially_enabled = set()
+        
+        for trans_name in self._potentially_enabled:
+            transition = self.transitions[trans_name]
+            if transition.can_fire():
+                enabled.append(transition)
+            else:
+                # Check if it still has potential (at least one input has token)
+                if any(p.has for p in transition.in_places):
+                    still_potentially_enabled.add(trans_name)
+        
+        # Fire all enabled transitions
         fired = []
         for transition in enabled:
-            transition.fire()
-            fired.append(transition.name)
+            # Double-check before firing (another transition might have stolen token)
+            if transition.can_fire():
+                transition.fire()
+                fired.append(transition.name)
+                
+                # Add consumers of output places to potentially enabled set
+                for out_place in transition.out_places:
+                    if out_place.has:
+                        for consumer in out_place.consumers:
+                            still_potentially_enabled.add(consumer.name)
+        
+        self._potentially_enabled = still_potentially_enabled
         return fired
+    
+    def execute_step_single(self):
+        """Execute one transition (first enabled) - more deterministic."""
+        if not self._initialized:
+            self.initialize_enabled_set()
+        
+        # Find first enabled transition from potentially enabled set
+        for trans_name in list(self._potentially_enabled):
+            transition = self.transitions[trans_name]
+            if transition.can_fire():
+                transition.fire()
+                
+                # Update potentially enabled set
+                # Remove this transition if its inputs are now empty
+                if not all(p.has for p in transition.in_places):
+                    self._potentially_enabled.discard(trans_name)
+                
+                # Add consumers of output places
+                for out_place in transition.out_places:
+                    if out_place.has:
+                        for consumer in out_place.consumers:
+                            self._potentially_enabled.add(consumer.name)
+                
+                return [trans_name]
+            else:
+                # Check if still potentially enabled
+                if not any(p.has for p in transition.in_places):
+                    self._potentially_enabled.discard(trans_name)
+        
+        return []
 
     def allocate_memory(self, next_slot=0, verbose=False):
         """
