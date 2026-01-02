@@ -19,6 +19,9 @@ def test_single_push_no_dup():
     
     emitter = PetriEmitter()
     
+    # Set control_place to init for this test (simulating start of Sys.init)
+    emitter.control_place = emitter.net.places["init"]
+    
     # Create first push constant
     const_place = Place("const_42")
     emitter.net.add_place(const_place)
@@ -30,7 +33,7 @@ def test_single_push_no_dup():
     dup_transitions = [name for name in emitter.net.transitions.keys() if name.startswith("dup_")]
     assert len(dup_transitions) == 0, f"Expected no dup transitions, found: {dup_transitions}"
     
-    # Verify direct connection from init
+    # Verify direct connection from init (which was set as control_place)
     assert emitter.net.places["init"] in push_transition.in_places, "Should connect directly from init"
     
     print(f"✓ Transitions: {list(emitter.net.transitions.keys())}")
@@ -170,11 +173,12 @@ def test_mixed_operations():
     push_transitions = [name for name in emitter.net.transitions.keys() if name.startswith("push_")]
     assert len(push_transitions) == 2, f"Should have 2 push transitions, got {len(push_transitions)}"
     
-    # Add should consume from stack
-    assert len(add_trans.in_places) == 2, "Add should consume from 2 stack places"
+    # Add should consume from stack (2 data places + 1 control place)
+    data_places = PetriEmitter._get_data_places(add_trans.in_places)
+    assert len(data_places) == 2, f"Add should consume from 2 data places, got {len(data_places)}"
     
     print(f"✓ Transitions: {list(emitter.net.transitions.keys())}")
-    print(f"✓ Add consumes from: {[p.name for p in add_trans.in_places]}")
+    print(f"✓ Add consumes from data places: {[p.name for p in data_places]}")
     print("✓ Mixed operations test passed")
 
 def test_dup_assembly_generation():

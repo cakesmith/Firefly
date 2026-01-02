@@ -36,9 +36,10 @@ def test_label_creates_place():
     assert getattr(label_place, 'is_label', False), "Label place should have is_label=True"
     assert label_place.label_name == "LOOP_START", "Label place should have correct label_name"
     
-    # Verify pending control place is set
-    assert emitter.pending_control_place == label_place, \
-        "Label should set pending_control_place for next operation"
+    # Verify control place is set to the label place
+    # (The label becomes the current control place for the next operation)
+    assert emitter.control_place == label_place, \
+        "Label should set control_place for next operation"
     
     print("✓ Label creates place test passed")
 

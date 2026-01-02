@@ -5,9 +5,27 @@ from Petri.Transition import Transition
 
 class PetriEmitter:
 
-    def __init__(self):
+    def __init__(self, memory_read_callback=None, memory_write_callback=None):
+        """
+        Initialize PetriEmitter with optional memory I/O callbacks.
+        
+        Args:
+            memory_read_callback: Function(addr) -> value, called when reading memory
+            memory_write_callback: Function(addr, value), called when writing memory
+        
+        These callbacks enable memory-mapped I/O:
+        - Screen writes (16384-24575) can update a display
+        - Keyboard reads (24576) can return current key state
+        """
         self.net = PetriNet()
         self.control_stack = []
+        
+        # Memory I/O callbacks
+        self.memory_read = memory_read_callback
+        self.memory_write = memory_write_callback
+        
+        # Simulated RAM for when no callbacks provided
+        self._ram = [0] * 32768
         
         # Control flow tracking
         self.pending_control_place = None  # Set by label, consumed by next operation
@@ -16,54 +34,255 @@ class PetriEmitter:
         self.net.add_place(Place("init"))
         self.net.add_place(Place("end"))
 
+        # Put starting token in init - Sys.init will use this place
         self.net.places["init"].put_token(Token("control"))
+        
+        # Sequential control flow tracking
+        self.control_place = None  # Will be set by first function declaration
+        
+        # Central dispatch for function returns
+        self.return_dispatch = Place("return_dispatch")
+        self.net.add_place(self.return_dispatch)
+        
+        # Track call sites for return routing
+        self.call_sites = {}  # Maps call_id -> return_place
+        self.call_counter = 0
+        
+        # Create I/O places and transitions if callbacks provided
+        self._setup_io_places()
+    
+    def finalize(self):
+        """
+        Finalize the Petri net after all VM commands are parsed.
+        Creates dispatch transitions that route returns to the correct call sites.
+        """
+        if not self.call_sites:
+            return
+        
+        # Create a dispatch transition for each call site
+        for call_id, return_place in self.call_sites.items():
+            cid = call_id
+            
+            def make_dispatch_op(target_cid):
+                def dispatch_op(tokens):
+                    if not tokens:
+                        return [None]
+                    
+                    token = tokens[0]
+                    if hasattr(token, 'value') and isinstance(token.value, tuple) and len(token.value) == 3:
+                        ret_val, return_addr, remaining_stack = token.value
+                        if return_addr == target_cid:
+                            # This dispatch handles this return
+                            # Pass the return value and remaining call stack
+                            if remaining_stack:
+                                return [Token(remaining_stack)]  # Continue with remaining stack
+                            else:
+                                return [Token(ret_val)]  # Final return, just the value
+                    return [None]  # Not for this call site
+                return dispatch_op
+            
+            dispatch_trans = Transition(
+                name=f"dispatch_to_{call_id}",
+                operation=make_dispatch_op(cid)
+            )
+            self.net.add_transition(dispatch_trans)
+            self.net.add_arc(self.return_dispatch, dispatch_trans)
+            self.net.add_arc(dispatch_trans, return_place)
+    
+    def _setup_io_places(self):
+        """Create I/O places for screen output and keyboard input if callbacks exist."""
+        
+        # Screen output sink - receives (addr, value) tokens
+        if self.memory_write:
+            self.screen_output_place = Place("screen_output")
+            self.net.add_place(self.screen_output_place)
+            
+            # Create sink transition that calls the write callback
+            write_callback = self.memory_write
+            def screen_sink_operation(tokens):
+                # Token contains (addr, value) tuple
+                if tokens and hasattr(tokens[0], 'value'):
+                    data = tokens[0].value
+                    if isinstance(data, tuple) and len(data) == 2:
+                        addr, value = data
+                        write_callback(addr, value)
+                return []  # Sink consumes token, produces nothing
+            
+            screen_sink = Transition(
+                name="screen_sink",
+                operation=screen_sink_operation
+            )
+            self.net.add_transition(screen_sink)
+            self.net.add_arc(self.screen_output_place, screen_sink)
+        else:
+            self.screen_output_place = None
+        
+        # Keyboard input source - provides current key value
+        if self.memory_read:
+            self.keyboard_input_place = Place("keyboard_input")
+            self.net.add_place(self.keyboard_input_place)
+            # Keyboard place gets tokens put into it by keyboard_source transition
+            # which is triggered when something needs to read keyboard
+        else:
+            self.keyboard_input_place = None
+    
+    def write_to_screen(self, addr, value):
+        """Write to screen - calls callback directly."""
+        if self.memory_write:
+            self.memory_write(addr, value)
+        elif 0 <= addr < len(self._ram):
+            self._ram[addr] = value & 0xFFFF
+    
+    def read_from_keyboard(self):
+        """Read keyboard by calling the callback."""
+        if self.memory_read:
+            return self.memory_read(24576)  # KBD_ADDR
+        return 0
+    
+    def read_memory(self, addr):
+        """Read from memory, using callback if provided."""
+        if self.memory_read:
+            return self.memory_read(addr)
+        elif 0 <= addr < len(self._ram):
+            return self._ram[addr]
+        return 0
+    
+    def write_memory(self, addr, value):
+        """Write to memory, using callback if provided."""
+        # Check if this is a screen write (16384-24575)
+        if 16384 <= addr <= 24575:
+            self.write_to_screen(addr, value)
+        elif self.memory_write:
+            self.memory_write(addr, value)
+        elif 0 <= addr < len(self._ram):
+            self._ram[addr] = value & 0xFFFF
+    
+    def _get_data_value(self, tokens, index=0):
+        """Extract a data value from tokens, skipping control tokens."""
+        data_tokens = []
+        for t in tokens:
+            if hasattr(t, 'value'):
+                val = t.value
+                # Skip control tokens (tuples starting with "call")
+                if isinstance(val, tuple) and len(val) >= 1 and val[0] == "call":
+                    continue
+                # Skip "ctrl" string tokens
+                if val == "ctrl":
+                    continue
+                data_tokens.append(val)
+        
+        if index < len(data_tokens):
+            val = data_tokens[index]
+            # Convert non-numeric to 0
+            if isinstance(val, (str, tuple)):
+                return 0
+            return val
+        return 0
+
+    @staticmethod
+    def _get_data_places(in_places):
+        """
+        Filter input places to get only data places (not control places).
+        Control places are named 'ctrl_*', 'init', or are function entry places.
+        """
+        data_places = []
+        for p in in_places:
+            name = p.name
+            # Skip control places
+            if name.startswith('ctrl_') or name == 'init':
+                continue
+            # Skip function entry places
+            if name.startswith('function_'):
+                continue
+            # Skip label places
+            if name.startswith('label_'):
+                continue
+            # Skip return places
+            if name.startswith('return_to_'):
+                continue
+            # Skip ifgoto fallthrough places
+            if name.startswith('ifgoto_fallthrough_'):
+                continue
+            data_places.append(p)
+        return data_places
 
     def _insert_operation(self, transition, output_place, consumes_stack=0, produces_stack=1):
         """
-        Insert an operation into the Petri net with proper stack-based connections.
+        Insert an operation into the Petri net with proper data and control flow.
         
-        For operations that consume 0 from stack (like push), we use a dup-based
-        branching strategy to allow parallel execution while maintaining stack order.
+        Data flow: Operations consume from and produce to the data stack.
+        Control flow: All operations are sequenced through a control place chain.
+        The control token carries the call_id for return routing.
         
         Args:
             transition: The transition to add
             output_place: The output place of the transition
-            consumes_stack: Number of stack items this operation consumes
-            produces_stack: Number of stack items this operation produces (0 or 1)
+            consumes_stack: Number of data items to consume from stack
+            produces_stack: Number of data items to produce (0 or 1)
         
         Returns:
             The added transition
         """
-        # Validate inputs
-        if consumes_stack < 0 or produces_stack < 0 or produces_stack > 1:
-            raise ValueError("Invalid stack consumption/production values")
-        
         if consumes_stack > len(self.control_stack):
             raise RuntimeError(f"Stack underflow: need {consumes_stack} items, have {len(self.control_stack)}")
         
         # Add the transition to the network
         self.net.add_transition(transition)
         
-        # If there's a pending control place (from a label), connect it as input
+        # Connect control flow input (ensures sequential execution)
         if self.pending_control_place is not None:
             self.net.add_arc(self.pending_control_place, transition)
-            self.pending_control_place = None  # Consumed
+            self.pending_control_place = None
+        elif self.control_place is not None:
+            self.net.add_arc(self.control_place, transition)
+        # If control_place is None (after goto), this code is unreachable
+        # but we still build the net structure
         
-        # Handle input connections
-        if consumes_stack > 0:
-            # Connect input places from stack (pop in reverse order to maintain stack semantics)
-            for i in range(consumes_stack):
-                input_place = self.control_stack.pop()
-                self.net.add_arc(input_place, transition)
-        else:
-            # Operation consumes 0 from stack (e.g., push constant)
-            # These can run in parallel - connect directly to init via dup branching
-            self._connect_parallel_operation(transition)
+        # Connect data inputs from stack
+        for i in range(consumes_stack):
+            input_place = self.control_stack.pop()
+            self.net.add_arc(input_place, transition)
         
-        # Connect output place (data)
+        # Connect data output
         self.net.add_arc(transition, output_place)
         
-        # Push output place to stack if operation produces a value
+        # Create control output place for sequential flow
+        control_out = Place(f"ctrl_{len(self.net.places)}")
+        self.net.add_place(control_out)
+        self.net.add_arc(transition, control_out)
+        self.control_place = control_out
+        
+        # Update transition to produce both data and control tokens
+        # Control token carries the call stack (a list)
+        original_op = transition.operation
+        def seq_operation(tokens, orig=original_op):
+            # Separate data tokens from control tokens
+            # Control tokens have list values (the call stack)
+            data_tokens = []
+            call_stack = []
+            for t in tokens:
+                if hasattr(t, 'value'):
+                    if isinstance(t.value, list):
+                        call_stack = t.value  # This is the control token
+                    else:
+                        data_tokens.append(t)  # This is a data token
+                else:
+                    data_tokens.append(t)
+            
+            # Pass only data tokens to the original operation
+            result = orig(data_tokens)
+            
+            # Create control token with call stack
+            ctrl_token = Token(call_stack)
+            
+            if isinstance(result, list):
+                result.append(ctrl_token)
+            else:
+                result = [result, ctrl_token]
+            return result
+        transition.operation = seq_operation
+        
+        # Push data output to stack if operation produces data
         if produces_stack == 1:
             self.control_stack.append(output_place)
         
@@ -281,8 +500,20 @@ class PetriEmitter:
             # Store label in registry for goto/if-goto to find
             self.net.labels[label_name] = label_place
         
-        # Set as pending control place - the next operation will use this as input
-        self.pending_control_place = label_place
+        # Connect current control flow to the label place
+        # This allows sequential flow into the label
+        if self.control_place is not None:
+            # Create a pass-through transition to merge control flow
+            merge_transition = Transition(
+                name=f"merge_to_{label_name}_{len(self.net.transitions)}",
+                operation=lambda tokens: [Token("control")]
+            )
+            self.net.add_transition(merge_transition)
+            self.net.add_arc(self.control_place, merge_transition)
+            self.net.add_arc(merge_transition, label_place)
+        
+        # Set label as the current control place for next operation
+        self.control_place = label_place
         
         # Return the place (no transition for labels)
         return label_place
@@ -307,10 +538,8 @@ class PetriEmitter:
         
         target_place = self.net.labels[target_label]
         
-        # Create emit function for goto - sets the target label's valid flag
+        # Create emit function for goto
         def emit_goto(transition):
-            # No assembly needed - the ROM generator will handle valid flag setting
-            # based on the transition's output places
             return ["// goto - control transfer via token"]
         
         # Create transition that transfers control to the label
@@ -322,17 +551,20 @@ class PetriEmitter:
         
         self.net.add_transition(goto_transition)
         
-        # Connect from current control flow
-        if self.pending_control_place is not None:
-            # If there's a pending control place, use it
-            self.net.add_arc(self.pending_control_place, goto_transition)
-            self.pending_control_place = None
+        # Connect from current control flow (if available)
+        if self.control_place is not None:
+            self.net.add_arc(self.control_place, goto_transition)
         else:
-            # Otherwise use dup branching from init
-            self._connect_parallel_operation(goto_transition)
+            # If no control place, connect from init (for standalone tests)
+            self.net.add_arc(self.net.places["init"], goto_transition)
         
         # Output to the target label place
         self.net.add_arc(goto_transition, target_place)
+        
+        # After goto, create a dead control place for any unreachable code
+        dead_place = Place(f"dead_{len(self.net.places)}")
+        self.net.add_place(dead_place)
+        self.control_place = dead_place
         
         return goto_transition
             
@@ -362,60 +594,25 @@ class PetriEmitter:
         self.net.add_place(fallthrough_place)
         
         # Create emit function for if-goto
-        # This needs to conditionally set either the target label's valid flag
-        # or the fallthrough place's valid flag
         def emit_ifgoto(transition):
             assembly = []
-            
-            # Find the condition input place
-            condition_place = None
-            for p in transition.in_places:
-                if not getattr(p, 'is_label', False) and p.name != 'init':
-                    condition_place = p
-                    break
-            
-            if condition_place is None or condition_place.memory_address is None:
-                return ["// if-goto - no condition input"]
-            
-            # Find output places
-            target_out = None
-            fallthrough_out = None
-            for p in transition.out_places:
-                if getattr(p, 'is_label', False):
-                    target_out = p
-                else:
-                    fallthrough_out = p
-            
-            # Load condition value
-            assembly.append(f"@R{condition_place.memory_address}")
-            assembly.append("D=M")
-            
-            # The ROM generator will handle setting valid flags based on outputs
-            # We just need to indicate which path was taken
-            # For now, store the condition result for the ROM generator to use
-            assembly.append("// if-goto condition in D")
-            
+            assembly.append("// if-goto condition check")
             return assembly
         
         # Create operation that conditionally outputs to label OR fallthrough
-        # The operation receives the condition value and decides which output gets a token
         def ifgoto_operation(tokens):
-            # tokens[0] is the condition value from the stack
-            condition = tokens[0].value
+            # Find the condition value (not the control token)
+            condition = 0
+            for t in tokens:
+                if hasattr(t, 'value') and isinstance(t.value, int):
+                    condition = t.value
+                    break
             
-            # If condition is numeric and non-zero, go to label (first output)
-            # If condition is zero, fall through (second output)
-            # Output order: [label_token, fallthrough_token] - one will be None
-            if isinstance(condition, int):
-                if condition != 0:
-                    # True: token goes to label place (index 0), None to fallthrough (index 1)
-                    return [Token("control"), None]
-                else:
-                    # False: None to label place (index 0), token to fallthrough (index 1)
-                    return [None, Token("control")]
+            # If condition is non-zero, go to label; else fall through
+            if condition != 0:
+                return [Token("control"), None]  # [target, fallthrough]
             else:
-                # Symbolic - can't evaluate, default to fallthrough for simulation
-                return [None, Token("control")]
+                return [None, Token("control")]  # [target, fallthrough]
         
         # Create transition
         ifgoto_transition = Transition(
@@ -426,12 +623,10 @@ class PetriEmitter:
         
         self.net.add_transition(ifgoto_transition)
         
-        # Connect pending control place if any
-        if self.pending_control_place is not None:
-            self.net.add_arc(self.pending_control_place, ifgoto_transition)
-            self.pending_control_place = None
+        # Connect control flow input
+        self.net.add_arc(self.control_place, ifgoto_transition)
         
-        # If-goto consumes 1 from stack (the condition)
+        # If-goto consumes 1 from data stack (the condition)
         if len(self.control_stack) > 0:
             condition_place = self.control_stack.pop()
             self.net.add_arc(condition_place, ifgoto_transition)
@@ -442,104 +637,192 @@ class PetriEmitter:
         self.net.add_arc(ifgoto_transition, target_place)
         self.net.add_arc(ifgoto_transition, fallthrough_place)
         
-        # Set fallthrough as pending control for next instruction
-        self.pending_control_place = fallthrough_place
+        # Set fallthrough as the current control place for next instruction
+        self.control_place = fallthrough_place
         
         return ifgoto_transition
                 
     def function(self, vmc):
         """
         Implement function declaration by creating a function entry place.
-        The function place serves as a control flow target for calls.
+        
+        A function starts a NEW control flow - it's not connected to the previous
+        sequential flow. Functions are only reachable via 'call'.
+        
+        Special case: Sys.init uses the 'init' place which has the starting token.
         """
         function_name = vmc.segment  # Function name
         n_locals = vmc.index        # Number of local variables
         
-        # Create a place to represent this function entry point
-        function_place_name = f"function_{function_name}"
-        function_place = Place(function_place_name)
-        function_place.function_name = function_name
-        function_place.n_locals = n_locals
-        function_place.is_function = True
-        self.net.add_place(function_place)
+        # Special case: Sys.init uses the init place (bootstrap entry point)
+        if function_name == "Sys.init":
+            function_place = self.net.places["init"]
+            function_place.function_name = function_name
+            function_place.n_locals = n_locals
+            function_place.is_function = True
+        else:
+            # Check if place already exists (created by a forward call reference)
+            function_place_name = f"function_{function_name}"
+            if function_place_name in self.net.places:
+                # Reuse existing place (created by call before function definition)
+                function_place = self.net.places[function_place_name]
+            else:
+                # Create a new place to represent this function entry point
+                function_place = Place(function_place_name)
+                self.net.add_place(function_place)
+            
+            function_place.function_name = function_name
+            function_place.n_locals = n_locals
+            function_place.is_function = True
         
         # Store function in a registry for call to find
         if not hasattr(self.net, 'functions'):
             self.net.functions = {}
         self.net.functions[function_name] = function_place
         
-        # Create emit function for function declaration
-        def emit_function(transition):
-            assembly = []
-            # Generate function label - this is the main assembly output
-            assembly.append(f"({function_name})")
-            return assembly
+        # Function starts a new control flow - set function_place as current control
+        self.control_place = function_place
         
-        # Create transition for function entry
-        function_transition = Transition(
-            name=f"function_{function_name}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(f"function_{function_name}")],
-            emit_function=emit_function
-        )
+        # Clear the data stack for this function (functions start with empty stack)
+        self.control_stack = []
         
-        # Use the general method to add this operation
-        return self._insert_operation(function_transition, function_place, consumes_stack=0, produces_stack=1)
+        return function_place
             
     def call(self, vmc):
         """
-        Implement function call by creating a call transition.
-        This represents the control flow to the called function.
+        Implement function call using token-based call stack.
+        
+        The token flowing through a function carries the call stack as its value.
+        - call pushes the return address onto the token's stack
+        - return pops from the token's stack to route back
+        
+        Token value is a list: [return_addr_n, return_addr_n-1, ..., return_addr_0]
+        (most recent call at index 0)
         """
-        function_name = vmc.segment  # Function name to call
-        n_args = vmc.index          # Number of arguments
+        function_name = vmc.segment
+        n_args = vmc.index
         
-        # Create a place to hold the call result
-        call_result_place = Place(f"call_result_{function_name}_{len(self.net.places)}")
-        self.net.add_place(call_result_place)
+        # Create return place for this call site
+        call_id = self.call_counter
+        self.call_counter += 1
         
-        # Create emit function for call
-        def emit_call(transition):
-            assembly = []
-            # Generate call assembly - minimal for Petri net approach
-            assembly.append(f"@{function_name}")
-            assembly.append("0;JMP")
-            return assembly
+        return_place = Place(f"return_to_{call_id}")
+        self.net.add_place(return_place)
+        self.call_sites[call_id] = return_place
         
-        # Create transition for function call
+        # Find or create the function entry place
+        if not hasattr(self.net, 'functions'):
+            self.net.functions = {}
+        
+        func_place_name = f"function_{function_name}"
+        if func_place_name not in self.net.places:
+            func_place = Place(func_place_name)
+            func_place.function_name = function_name
+            func_place.is_function = True
+            self.net.add_place(func_place)
+            self.net.functions[function_name] = func_place
+        
+        target_func_place = self.net.places[func_place_name]
+        
+        # Create call transition that pushes return address onto call stack
+        cid = call_id
+        def call_operation(tokens, return_id=cid):
+            # Get current call stack from input token (or start fresh)
+            current_stack = []
+            for t in tokens:
+                if hasattr(t, 'value') and isinstance(t.value, list):
+                    current_stack = t.value.copy()
+                    break
+            # Push return address
+            current_stack.insert(0, return_id)
+            return [Token(current_stack)]
+        
         call_transition = Transition(
-            name=f"call_{function_name}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(f"call_{function_name}")],
-            emit_function=emit_call
+            name=f"call_{function_name}_{call_id}",
+            operation=call_operation
         )
         
-        # Call consumes n_args from stack and produces 1 result
-        return self._insert_operation(call_transition, call_result_place, consumes_stack=n_args, produces_stack=1)
+        self.net.add_transition(call_transition)
+        
+        # Connect control flow
+        if self.control_place is not None:
+            self.net.add_arc(self.control_place, call_transition)
+        
+        # Consume arguments from stack
+        for i in range(n_args):
+            if self.control_stack:
+                arg_place = self.control_stack.pop()
+                self.net.add_arc(arg_place, call_transition)
+        
+        # Output to function entry place
+        self.net.add_arc(call_transition, target_func_place)
+        
+        # Control continues from return_place (when function returns)
+        self.control_place = return_place
+        
+        # Push return_place to stack (it will receive the return value)
+        self.control_stack.append(return_place)
+        
+        return call_transition
             
     def ret(self, vmc):
         """
-        Implement return from function by creating a return transition.
-        This represents the control flow back to the caller.
+        Implement return from function.
+        
+        Pops the return address from the call stack (token value) and sends
+        the return value + remaining call stack to the dispatch.
+        The dispatch routes to the correct return place.
         """
-        # Create a place to represent the return point
-        return_place = Place(f"return_{len(self.net.places)}")
-        self.net.add_place(return_place)
+        # Create transition that sends to dispatch
+        def return_operation(tokens):
+            # Find the call stack and return value from tokens
+            call_stack = []
+            ret_val = 0
+            
+            for t in tokens:
+                if hasattr(t, 'value'):
+                    val = t.value
+                    if isinstance(val, list):
+                        call_stack = val
+                    elif isinstance(val, int):
+                        ret_val = val
+            
+            # Pop return address from call stack
+            if call_stack:
+                return_addr = call_stack[0]
+                remaining_stack = call_stack[1:]
+            else:
+                return_addr = -1  # No return address (shouldn't happen)
+                remaining_stack = []
+            
+            # Return tuple: (return_value, return_address, remaining_call_stack)
+            return [Token((ret_val, return_addr, remaining_stack))]
         
-        # Create emit function for return
-        def emit_return(transition):
-            assembly = []
-            # Simple return assembly for Petri net approach
-            assembly.append("// return")
-            return assembly
-        
-        # Create transition for return
         return_transition = Transition(
             name=f"return_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token("return")],
-            emit_function=emit_return
+            operation=return_operation
         )
         
-        # Return consumes 1 from stack (the return value) and produces 1 (control flow)
-        return self._insert_operation(return_transition, return_place, consumes_stack=1, produces_stack=1)
+        self.net.add_transition(return_transition)
+        
+        # Connect control flow
+        if self.control_place is not None:
+            self.net.add_arc(self.control_place, return_transition)
+        
+        # Consume return value from stack
+        if self.control_stack:
+            ret_val_place = self.control_stack.pop()
+            self.net.add_arc(ret_val_place, return_transition)
+        
+        # Output to dispatch
+        self.net.add_arc(return_transition, self.return_dispatch)
+        
+        # After return, create a dead control place for unreachable code
+        dead_place = Place(f"dead_{len(self.net.places)}")
+        self.net.add_place(dead_place)
+        self.control_place = dead_place
+        
+        return return_transition
 
 
     def add(self, vmc):
@@ -556,12 +839,13 @@ class PetriEmitter:
         def emit_add(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// add - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand into D register
@@ -621,12 +905,13 @@ class PetriEmitter:
         def emit_sub(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// sub - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand (second from top) into D register
@@ -686,11 +971,12 @@ class PetriEmitter:
         def emit_neg(transition):
             assembly = []
             
-            # Get input place (should be 1) and output place
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// neg - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load operand into D register
@@ -745,12 +1031,13 @@ class PetriEmitter:
         def emit_lt(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// lt - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand (second from top) into D register
@@ -835,12 +1122,13 @@ class PetriEmitter:
         def emit_eq(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// eq - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand (second from top) into D register
@@ -925,12 +1213,13 @@ class PetriEmitter:
         def emit_gt(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// gt - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand (second from top) into D register
@@ -1012,12 +1301,13 @@ class PetriEmitter:
         def emit_and(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// and - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand (second from top) into D register
@@ -1078,12 +1368,13 @@ class PetriEmitter:
         def emit_or(transition):
             assembly = []
             
-            # Get input places (should be 2) and output place
-            if len(transition.in_places) != 2:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 2:
                 return ["// or - invalid input configuration"]
             
-            input_place1 = transition.in_places[0]  # Second operand (top of stack)
-            input_place2 = transition.in_places[1]  # First operand (second from top)
+            input_place1 = data_places[0]  # Second operand (top of stack)
+            input_place2 = data_places[1]  # First operand (second from top)
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load first operand (second from top) into D register
@@ -1143,11 +1434,12 @@ class PetriEmitter:
         def emit_not(transition):
             assembly = []
             
-            # Get input place (should be 1) and output place
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// not - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             output_place = transition.out_places[0] if transition.out_places else None
             
             # Load operand into D register
@@ -1216,9 +1508,10 @@ class PetriEmitter:
             return assembly
         
         # Create transition that produces the constant
+        # Only produce the data token - _insert_operation adds the control token
         push_const_transition = Transition(
             name=f"push_const_{constant_value}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(constant_value), Token(constant_value)],  # Data token, then flow token
+            operation=lambda tokens, cv=constant_value: [Token(cv)],
             emit_function=emit_push_constant
         )
         
@@ -1252,10 +1545,16 @@ class PetriEmitter:
                 
             return assembly
         
-        # Create transition that pushes the local value
+        # Capture emitter and index for memory access
+        emitter = self
+        local_index = index
+        
+        # Create transition that pushes the local value - reads from RAM[LCL + index]
         def push_local_operation(tokens):
-            # Token value represents memory read - actual value comes from assembly execution
-            return [Token(f"local[{index}]")]
+            lcl_ptr = emitter.read_memory(1)  # LCL is at RAM[1]
+            addr = lcl_ptr + local_index
+            value = emitter.read_memory(addr)
+            return [Token(value)]
         
         push_local_transition = Transition(
             name=f"push_local_{index}_{len(self.net.transitions)}",
@@ -1372,10 +1671,19 @@ class PetriEmitter:
                 
             return assembly
         
-        # Create transition that pushes the that value
+        # Capture emitter reference for memory access
+        emitter = self
+        
+        # Create transition that pushes the that value - actually reads from memory
         def push_that_operation(tokens):
-            # Token value represents memory read - actual value comes from assembly execution
-            return [Token(f"that[{index}]")]
+            # Calculate source address: THAT + index
+            that_ptr = emitter.read_memory(4)  # THAT is at RAM[4]
+            addr = that_ptr + index
+            
+            # Read from memory (this triggers callback for keyboard reads)
+            value = emitter.read_memory(addr)
+            
+            return [Token(value)]
         
         push_that_transition = Transition(
             name=f"push_that_{index}_{len(self.net.transitions)}",
@@ -1416,10 +1724,19 @@ class PetriEmitter:
                 
             return assembly
         
-        # Create transition that pushes the pointer value
+        # Capture emitter and index for memory access
+        emitter = self
+        ptr_index = index
+        
+        # Create transition that pushes the pointer value - reads from RAM[3] or RAM[4]
+        def push_pointer_operation(tokens):
+            addr = 3 if ptr_index == 0 else 4  # THIS=3, THAT=4
+            value = emitter.read_memory(addr)
+            return [Token(value)]
+        
         push_pointer_transition = Transition(
             name=f"push_pointer_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0), Token(0)],  # Data token, then flow token
+            operation=push_pointer_operation,
             emit_function=emit_push_pointer
         )
         
@@ -1450,10 +1767,15 @@ class PetriEmitter:
                 
             return assembly
         
-        # Create transition that pushes the temp value
+        # Capture emitter and index for memory access
+        emitter = self
+        temp_index = index
+        
+        # Create transition that pushes the temp value - actually reads from RAM[5+index]
         def push_temp_operation(tokens):
-            # Token value represents memory read - actual value comes from assembly execution
-            return [Token(f"temp[{index}]")]
+            addr = 5 + temp_index
+            value = emitter.read_memory(addr)
+            return [Token(value)]
         
         push_temp_transition = Transition(
             name=f"push_temp_{index}_{len(self.net.transitions)}",
@@ -1488,10 +1810,19 @@ class PetriEmitter:
                 
             return assembly
         
-        # Create transition that pushes the static value
+        # Capture emitter and index for memory access
+        emitter = self
+        static_index = index
+        
+        # Create transition that pushes the static value - reads from RAM[16 + index]
+        def push_static_operation(tokens):
+            addr = 16 + static_index
+            value = emitter.read_memory(addr)
+            return [Token(value)]
+        
         push_static_transition = Transition(
             name=f"push_static_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [Token(0), Token(0)],  # Data token, then flow token
+            operation=push_static_operation,
             emit_function=emit_push_static
         )
         
@@ -1509,11 +1840,12 @@ class PetriEmitter:
         def emit_pop_local(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop local - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1542,9 +1874,20 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to local
+        # Capture emitter and index for memory access
+        emitter = self
+        local_index = index
+        
+        # Create transition that pops to local - writes to RAM[LCL + index]
         def pop_local_operation(tokens):
-            # Pass through the token - actual memory write happens via assembly
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            if isinstance(value, str):
+                value = 0
+            
+            lcl_ptr = emitter.read_memory(1)  # LCL is at RAM[1]
+            addr = lcl_ptr + local_index
+            emitter.write_memory(addr, value)
+            
             return [tokens[0]]
         
         pop_local_transition = Transition(
@@ -1567,11 +1910,12 @@ class PetriEmitter:
         def emit_pop_argument(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop argument - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1625,11 +1969,12 @@ class PetriEmitter:
         def emit_pop_this(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop this - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1683,11 +2028,12 @@ class PetriEmitter:
         def emit_pop_that(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop that - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1716,10 +2062,23 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to that
-        # Create transition that pops to that
+        # Capture emitter reference for memory access
+        emitter = self
+        
+        # Create transition that pops to that - actually writes to memory
         def pop_that_operation(tokens):
-            # Pass through the token - actual memory write happens via assembly
+            # Get the value from input token
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            if isinstance(value, str):
+                value = 0  # Symbolic values become 0
+            
+            # Calculate target address: THAT + index
+            that_ptr = emitter.read_memory(4)  # THAT is at RAM[4]
+            addr = that_ptr + index
+            
+            # Write to memory (this triggers the callback for screen writes)
+            emitter.write_memory(addr, value)
+            
             return [tokens[0]]
         
         pop_that_transition = Transition(
@@ -1742,11 +2101,12 @@ class PetriEmitter:
         def emit_pop_pointer(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop pointer - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1769,10 +2129,25 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to pointer
+        # Capture emitter and index for memory access
+        emitter = self
+        ptr_index = index
+        
+        # Create transition that pops to pointer - actually writes to RAM[3] or RAM[4]
+        def pop_pointer_operation(tokens):
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            if isinstance(value, str):
+                value = 0
+            
+            # THIS is RAM[3], THAT is RAM[4]
+            addr = 3 if ptr_index == 0 else 4
+            emitter.write_memory(addr, value)
+            
+            return [tokens[0]]
+        
         pop_pointer_transition = Transition(
             name=f"pop_pointer_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [tokens[0]],  # Pass through the input token value
+            operation=pop_pointer_operation,
             emit_function=emit_pop_pointer
         )
         
@@ -1790,11 +2165,12 @@ class PetriEmitter:
         def emit_pop_temp(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop temp - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1811,9 +2187,20 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to temp
+        # Capture emitter and index for memory access
+        emitter = self
+        temp_index = index
+        
+        # Create transition that pops to temp - actually writes to RAM[5+index]
         def pop_temp_operation(tokens):
-            # Pass through the token - actual memory write happens via assembly
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            if isinstance(value, str):
+                value = 0
+            
+            # temp[index] is at RAM[5+index]
+            addr = 5 + temp_index
+            emitter.write_memory(addr, value)
+            
             return [tokens[0]]
         
         pop_temp_transition = Transition(
@@ -1836,11 +2223,12 @@ class PetriEmitter:
         def emit_pop_static(transition):
             assembly = []
             
-            # Get input place (should be 1) - the value to pop
-            if len(transition.in_places) != 1:
+            # Get data input places (filter out control places)
+            data_places = PetriEmitter._get_data_places(transition.in_places)
+            if len(data_places) != 1:
                 return ["// pop static - invalid input configuration"]
             
-            input_place = transition.in_places[0]
+            input_place = data_places[0]
             
             # Load value from input place
             if input_place.memory_address is not None:
@@ -1857,10 +2245,26 @@ class PetriEmitter:
             
             return assembly
         
-        # Create transition that pops to static
+        # Capture emitter and index for memory access
+        emitter = self
+        static_index = index
+        
+        # Create transition that pops to static - writes to RAM[16 + index]
+        def pop_static_operation(tokens):
+            value = tokens[0].value if hasattr(tokens[0], 'value') else 0
+            # Handle symbolic or tuple values
+            if isinstance(value, str) or isinstance(value, tuple):
+                value = 0
+            
+            # Static variables start at RAM[16]
+            addr = 16 + static_index
+            emitter.write_memory(addr, value)
+            
+            return [tokens[0]]
+        
         pop_static_transition = Transition(
             name=f"pop_static_{index}_{len(self.net.transitions)}",
-            operation=lambda tokens: [tokens[0]],  # Pass through the input token value
+            operation=pop_static_operation,
             emit_function=emit_pop_static
         )
         

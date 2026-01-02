@@ -12,9 +12,21 @@ class vmcommand(namedtuple('vmcommand', ('command', 'segment', 'index', 'loc')))
         
 class VMParser:
 
-    def __init__(self, programdir, input_extension=".vm"):
-
-        self.emitter = PetriEmitter.PetriEmitter()
+    def __init__(self, programdir, input_extension=".vm", 
+                 memory_read_callback=None, memory_write_callback=None):
+        """
+        Parse VM files and build Petri net.
+        
+        Args:
+            programdir: Directory containing .vm files
+            input_extension: File extension to parse (default ".vm")
+            memory_read_callback: Function(addr) -> value for memory reads
+            memory_write_callback: Function(addr, value) for memory writes
+        """
+        self.emitter = PetriEmitter.PetriEmitter(
+            memory_read_callback=memory_read_callback,
+            memory_write_callback=memory_write_callback
+        )
         
         self.countlines = 0
 
@@ -43,6 +55,9 @@ class VMParser:
 
                 exc.args = flatten((arg0, args[1:]))
                 raise
+        
+        # Finalize the Petri net (create return dispatch transitions)
+        self.emitter.finalize()
                 
         print ("commands parsed: %d" % len(self.results))
         

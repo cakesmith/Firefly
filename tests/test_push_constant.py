@@ -43,8 +43,8 @@ def test_single_push_constant():
         print(f"Control stack size: {len(emitter.control_stack)}")
         
         # Verify net structure
-        # Places: init, end, const_42_* (no flow place with parallel approach)
-        assert len(net.places) == 3, f"Expected 3 places (init, end, const_42_*), got {len(net.places)}"
+        # Places: init, end, return_dispatch, const_42_*, ctrl_* (with control flow)
+        assert len(net.places) >= 3, f"Expected at least 3 places, got {len(net.places)}"
         assert len(net.transitions) == 1, f"Expected 1 transition, got {len(net.transitions)}"
         assert len(emitter.control_stack) == 1, f"Expected 1 item on stack, got {len(emitter.control_stack)}"
         
@@ -100,16 +100,14 @@ push constant 15
         print(f"Transitions in net: {list(net.transitions.keys())}")
         print(f"Control stack size: {len(emitter.control_stack)}")
         
-        # Verify net structure (now includes dup transitions and intermediate places)
-        expected_min_places = 5  # init, end, 3 constants (minimum)
+        # Verify net structure (includes control flow places)
+        expected_min_places = 5  # init, end, return_dispatch, 3 constants (minimum)
         assert len(net.places) >= expected_min_places, f"Expected at least {expected_min_places} places, got {len(net.places)}"
         
-        # Should have push transitions and dup transitions
+        # Should have push transitions (dup transitions are no longer used with sequential control flow)
         push_transitions = [name for name in net.transitions.keys() if name.startswith("push_const")]
-        dup_transitions = [name for name in net.transitions.keys() if name.startswith("dup_")]
         
         assert len(push_transitions) == 3, f"Expected 3 push transitions, got {len(push_transitions)}"
-        assert len(dup_transitions) >= 1, f"Expected at least 1 dup transition, got {len(dup_transitions)}"
         assert len(emitter.control_stack) == 3, f"Expected 3 items on stack, got {len(emitter.control_stack)}"
         
         # Check stack order (should be [const_5, const_10, const_15] with 15 on top)
