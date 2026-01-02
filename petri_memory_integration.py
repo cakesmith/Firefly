@@ -232,14 +232,18 @@ class PetriMemoryIntegrator:
         # Perform analysis
         return analyze_and_place(mem_transitions, mem_places, mesh_cores, concurrency_info)
     
+    # High memory base for place storage (below screen at 16384)
+    PLACE_MEMORY_BASE = 15000
+    
     def apply_memory_addresses(self, memory_placement: MemoryPlacement):
         """
         Apply memory addresses to places in the PetriEmitter based on placement decisions.
         
         This assigns actual memory addresses to places based on their sharing kind
-        and core assignments.
+        and core assignments. Addresses start at PLACE_MEMORY_BASE to avoid conflicts
+        with stack/heap.
         """
-        address_counter = 0
+        address_counter = self.PLACE_MEMORY_BASE
         
         for place_id, place in self.net.places.items():
             if place_id in memory_placement.place_to_cores:
@@ -251,6 +255,10 @@ class PetriMemoryIntegrator:
                 # Store placement information
                 place.memory_kind = memory_placement.memory_kinds[place_id]
                 place.assigned_cores = memory_placement.place_to_cores[place_id]
+        
+        # Warn if we're getting close to screen memory
+        if address_counter >= 16384:
+            print(f"WARNING: Place memory ({address_counter}) overlaps with screen memory!")
     
     def generate_placement_report(self, transition_placement: TransitionPlacement, 
                                 memory_placement: MemoryPlacement) -> str:

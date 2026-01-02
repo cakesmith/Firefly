@@ -107,11 +107,32 @@ class PetriNet:
         
         return []
 
-    def allocate_memory(self, next_slot=0, verbose=False):
+    # High memory base for place storage (below screen at 16384)
+    # This leaves room for stack (256-2047) and heap (2048-~16000)
+    PLACE_MEMORY_BASE = 15000
+    
+    def allocate_memory(self, start_address=None, verbose=False):
         """
         Proper memory allocation with liveness analysis and interference detection.
         Uses graph coloring to assign memory slots safely.
+        
+        Places are allocated in high memory (starting at PLACE_MEMORY_BASE by default)
+        to avoid conflicts with:
+        - Special registers (0-15)
+        - Static variables (16-255) 
+        - Stack (256-2047)
+        - Heap (2048+)
+        
+        Args:
+            start_address: Starting address for place memory (default: PLACE_MEMORY_BASE)
+            verbose: Print debug info
+            
+        Returns:
+            Number of slots used
         """
+        if start_address is None:
+            start_address = self.PLACE_MEMORY_BASE
+            
         # Reset all memory addresses
         for place in self.places.values():
             place.memory_address = None
@@ -131,14 +152,16 @@ class PetriNet:
         if verbose:
             print(f"  Assigned {len(slot_assignment)} places to slots")
         
-        # Step 3: Assign memory addresses based on coloring
+        # Step 3: Assign memory addresses based on coloring (offset by start_address)
         max_slot = 0
         for place_name, slot in slot_assignment.items():
-            self.places[place_name].memory_address = slot
+            self.places[place_name].memory_address = start_address + slot
             max_slot = max(max_slot, slot)
         
         if verbose:
-            print(f"  Max slot used: {max_slot}")
+            print(f"  Memory range: {start_address} - {start_address + max_slot}")
+            if start_address + max_slot >= 16384:
+                print(f"  WARNING: Place memory overlaps with screen memory!")
         
         return max_slot + 1
     

@@ -274,8 +274,10 @@ class PetriEmitter:
             self.pending_control_place = None
         elif self.control_place is not None:
             self.net.add_arc(self.control_place, transition)
-        # If control_place is None (after goto), this code is unreachable
-        # but we still build the net structure
+        else:
+            # No control place set yet - connect to init place
+            # This handles standalone VM code without function declarations
+            self.net.add_arc(self.net.places["init"], transition)
         
         # Connect data inputs from stack
         for i in range(consumes_stack):
