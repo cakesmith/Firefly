@@ -169,53 +169,68 @@ class PetriNet:
         """
         Build interference graph: places that can be alive simultaneously
         must have different memory slots (connected by edges)
+        
+        Optimized version with pre-built lookup tables for large networks.
         """
         interference = {name: set() for name in self.places.keys()}
         
+        num_places = len(self.places)
+        num_transitions = len(self.transitions)
+        
         if verbose:
-            print(f"    Analyzing {len(self.transitions)} transitions for interference...")
+            print(f"    Analyzing {num_transitions} transitions for interference...")
+        
+        # Pre-build lookup tables for O(1) access (optimization for large networks)
+        place_to_consumers = {name: [] for name in self.places.keys()}  # place -> transitions that consume it
+        place_to_producers = {name: [] for name in self.places.keys()}  # place -> transitions that produce it
+        
+        for transition in self.transitions.values():
+            for p in transition.in_places:
+                place_to_consumers[p.name].append(transition)
+            for p in transition.out_places:
+                place_to_producers[p.name].append(transition)
         
         # For each transition, analyze which places can be alive together
         for idx, transition in enumerate(self.transitions.values()):
             if verbose and idx % 1000 == 0 and idx > 0:
-                print(f"    Processed {idx}/{len(self.transitions)} transitions...")
+                print(f"    Processed {idx}/{num_transitions} transitions...")
             
             # All input places of a transition can be alive together
-            # (they must all have tokens for the transition to fire)
             input_names = [p.name for p in transition.in_places]
             for i, place1 in enumerate(input_names):
                 for j, place2 in enumerate(input_names):
                     if i != j:
                         interference[place1].add(place2)
                         interference[place2].add(place1)
-            
-            # NOTE: We do NOT assume all output places interfere with each other
-            # because a transition might produce tokens to only some outputs
-            # based on its operation logic
         
         # Additional analysis: places in parallel paths and pipeline overlaps
         if verbose:
             print(f"    Analyzing parallel paths...")
-        self._analyze_parallel_paths(interference, verbose=verbose)
+        self._analyze_parallel_paths_optimized(interference, place_to_consumers, place_to_producers, verbose=verbose)
         
         return interference
     
-    def _analyze_parallel_paths(self, interference, verbose=False):
+    def _analyze_parallel_paths_optimized(self, interference, place_to_consumers, place_to_producers, verbose=False):
         """
-        Analyze parallel execution paths and pipeline overlaps to find additional interferences.
+        Optimized parallel path analysis using pre-built lookup tables.
         """
+        num_transitions = len(self.transitions)
+        
         # 1. Fork analysis: Places in different branches of a fork can be alive simultaneously
         fork_count = 0
         total_branch_pairs = 0
+        
         for idx, transition in enumerate(self.transitions.values()):
-            if verbose and idx % 500 == 0 and idx > 0:
-                print(f"    Fork analysis: processed {idx}/{len(self.transitions)} transitions...")
+            if verbose and idx % 1000 == 0 and idx > 0:
+                print(f"    Fork analysis: processed {idx}/{num_transitions} transitions...")
             
             if len(transition.out_places) > 1:
                 fork_count += 1
                 branches = []
                 for output_place in transition.out_places:
-                    branch_places = self._get_reachable_places(output_place.name, max_depth=3)
+                    # Use optimized reachable places with lookup table
+                    branch_places = self._get_reachable_places_optimized(
+                        output_place.name, place_to_consumers, max_depth=2)
                     branches.append(branch_places)
                 
                 # Places in different branches can be alive simultaneously
@@ -231,10 +246,96 @@ class PetriNet:
         if verbose:
             print(f"    Analyzed {fork_count} fork transitions, {total_branch_pairs} branch place pairs")
         
-        # 2. Pipeline analysis: Adjacent stages in a pipeline can overlap during execution
+        # 2. Pipeline analysis: Adjacent stages in a pipeline can overlap
         if verbose:
             print(f"    Analyzing pipeline overlaps...")
-        self._analyze_pipeline_overlaps(interference, verbose=verbose)
+        self._analyze_pipeline_overlaps_optimized(interference, place_to_consumers, place_to_producers, verbose=verbose)
+    
+    def _analyze_pipeline_overlaps_optimized(self, interference, place_to_consumers, place_to_producers, verbose=False):
+        """
+        Optimized pipeline overlap analysis.
+        """
+        # Find linear chains using lookup tables
+        if verbose:
+            print(f"    Finding linear chains...")
+        chains = self._find_linear_chains_optimized(place_to_consumers, place_to_producers)
+        if verbose:
+            print(f"    Found {len(chains)} chains")
+        
+        for chain in chains:
+            # In a pipeline, adjacent places can be alive simultaneously
+            for i in range(len(chain) - 1):
+                place1 = chain[i]
+                place2 = chain[i + 1]
+                interference[place1].add(place2)
+                interference[place2].add(place1)
+    
+    def _get_reachable_places_optimized(self, start_place, place_to_consumers, max_depth=2):
+        """Get places reachable from start_place using pre-built lookup table."""
+        if max_depth <= 0:
+            return {start_place}
+        
+        reachable = {start_place}
+        current_level = {start_place}
+        
+        for depth in range(max_depth):
+            next_level = set()
+            for place_name in current_level:
+                # Use lookup table instead of scanning all transitions
+                for transition in place_to_consumers.get(place_name, []):
+                    for output_place in transition.out_places:
+                        if output_place.name not in reachable:
+                            next_level.add(output_place.name)
+                            reachable.add(output_place.name)
+            
+            if not next_level:
+                break
+            current_level = next_level
+        
+        return reachable
+    
+    def _find_linear_chains_optimized(self, place_to_consumers, place_to_producers):
+        """Find linear chains using pre-built lookup tables."""
+        chains = []
+        visited = set()
+        
+        # Start from places with no predecessors (using lookup table)
+        start_places = [name for name, producers in place_to_producers.items() if not producers]
+        
+        # Trace each chain from start places
+        for start_place in start_places:
+            if start_place not in visited:
+                chain = self._trace_linear_chain_optimized(start_place, visited, place_to_consumers)
+                if len(chain) > 1:
+                    chains.append(chain)
+        
+        return chains
+    
+    def _trace_linear_chain_optimized(self, start_place, visited, place_to_consumers):
+        """Trace a linear chain using pre-built lookup table."""
+        chain = [start_place]
+        visited.add(start_place)
+        current_place = start_place
+        
+        while True:
+            next_places = []
+            
+            # Use lookup table
+            for transition in place_to_consumers.get(current_place, []):
+                if (len(transition.in_places) == 1 and len(transition.out_places) == 1):
+                    next_place = transition.out_places[0].name
+                    if next_place not in visited:
+                        next_places.append(next_place)
+            
+            if len(next_places) == 1:
+                next_place = next_places[0]
+                chain.append(next_place)
+                visited.add(next_place)
+                current_place = next_place
+            else:
+                break
+        
+        return chain
     
     def _analyze_pipeline_overlaps(self, interference, verbose=False):
         """
