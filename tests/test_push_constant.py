@@ -190,11 +190,11 @@ if __name__ == "__main__":
     print("Testing Push Constant VM Operation")
     print("=" * 60)
     
-    print("\n🔹 PUSH CONSTANT TESTS")
+    print("\n--- PUSH CONSTANT TESTS ---")
     test_single_push_constant()
     test_multiple_push_constants()
     test_push_constant_zero()
     
     print("\n" + "=" * 60)
-    print("All push constant tests passed! ✓")
+    print("All push constant tests passed!")
     print("VM push_constant operation is working correctly.")

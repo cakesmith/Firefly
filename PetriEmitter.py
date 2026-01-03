@@ -4,6 +4,22 @@ from Petri.Place import Place
 from Petri.Transition import Transition
 
 class PetriEmitter:
+    """
+    PetriEmitter builds a Petri net from VM commands.
+    
+    ARCHITECTURE: Per-Token Stack Frames (Multicore-Ready)
+    ======================================================
+    Each execution token owns its complete call stack state:
+    - token.stack_frames: LIFO structure of StackFrame objects
+    - token.sp: stack pointer within token's context
+    
+    This enables true multicore execution where multiple tokens can
+    execute function calls concurrently without serialization.
+    
+    Key invariant: Return order is defined per-token, not globally.
+    A return resumes only the caller of that same token.
+    There is no ordering constraint between returns of different tokens.
+    """
 
     def __init__(self, memory_read_callback=None, memory_write_callback=None):
         """
@@ -24,7 +40,7 @@ class PetriEmitter:
         self.memory_read = memory_read_callback
         self.memory_write = memory_write_callback
         
-        # Simulated RAM for when no callbacks provided
+        # Simulated RAM for when no callbacks provided (heap is shared)
         self._ram = [0] * 32768
         
         # Control flow tracking
@@ -40,12 +56,9 @@ class PetriEmitter:
         # Sequential control flow tracking
         self.control_place = None  # Will be set by first function declaration
         
-        # Central dispatch for function returns
-        self.return_dispatch = Place("return_dispatch")
-        self.net.add_place(self.return_dispatch)
-        
-        # Track call sites for return routing
-        self.call_sites = {}  # Maps call_id -> return_place
+        # Per-token return routing (replaces global return_dispatch)
+        # Maps call_id -> (return_ctrl_place, return_data_place, function_name)
+        self.call_sites = {}
         self.call_counter = 0
         
         # Track current function for label scoping
@@ -62,56 +75,20 @@ class PetriEmitter:
     def finalize(self):
         """
         Finalize the Petri net after all VM commands are parsed.
-        Creates dispatch transitions that route returns to the correct call sites.
-        """
-        if not self.call_sites:
-            return
         
-        # Create a dispatch transition for each call site
-        for call_id, places in self.call_sites.items():
-            return_ctrl_place, return_data_place = places
-            cid = call_id
-            
-            def make_dispatch_guard(target_cid):
-                """Guard that checks if this dispatch should handle the return."""
-                def guard(tokens):
-                    if not tokens:
-                        return False
-                    token = tokens[0]
-                    if hasattr(token, 'value') and isinstance(token.value, tuple) and len(token.value) == 3:
-                        ret_val, return_addr, remaining_stack = token.value
-                        return return_addr == target_cid
-                    return False
-                return guard
-            
-            def make_dispatch_op(target_cid):
-                def dispatch_op(tokens):
-                    if not tokens:
-                        return [None, None]
-                    
-                    token = tokens[0]
-                    if hasattr(token, 'value') and isinstance(token.value, tuple) and len(token.value) == 3:
-                        ret_val, return_addr, remaining_stack = token.value
-                        # Return two tokens: control (call stack in tuple format) and data (return value)
-                        # Use tuple format ("callstack", [...]) so seq_operation recognizes it
-                        if remaining_stack:
-                            ctrl_token = Token(("callstack", remaining_stack))
-                        else:
-                            ctrl_token = Token([])  # Empty control token
-                        return [ctrl_token, Token(ret_val)]
-                    return [None, None]
-                return dispatch_op
-            
-            dispatch_trans = Transition(
-                name=f"dispatch_to_{call_id}",
-                operation=make_dispatch_op(cid),
-                guard=make_dispatch_guard(cid)
-            )
-            self.net.add_transition(dispatch_trans)
-            self.net.add_arc(self.return_dispatch, dispatch_trans)
-            # Output to both control and data places
-            self.net.add_arc(dispatch_trans, return_ctrl_place)
-            self.net.add_arc(dispatch_trans, return_data_place)
+        With per-token stack frames, returns are routed directly by the token's
+        own stack state. No global dispatch is needed - each token knows where
+        to return based on its stack_frames.
+        
+        This method now only performs cleanup and validation.
+        """
+        # Validate that all call sites have corresponding return places
+        for call_id, site_info in self.call_sites.items():
+            return_ctrl_place, return_data_place, func_name = site_info
+            if return_ctrl_place.name not in self.net.places:
+                raise RuntimeError(f"Missing return control place for call {call_id} to {func_name}")
+            if return_data_place.name not in self.net.places:
+                raise RuntimeError(f"Missing return data place for call {call_id} to {func_name}")
     
     def _setup_io_places(self):
         """Create I/O places for screen output and keyboard input if callbacks exist."""
@@ -294,22 +271,26 @@ class PetriEmitter:
         self.control_place = control_out
         
         # Update transition to produce both data and control tokens
-        # Control token carries the call stack as a tuple: ("callstack", [addresses...])
+        # Control token carries per-token stack frames (new) or legacy callstack tuple
         original_op = transition.operation
         def seq_operation(tokens, orig=original_op):
             # Separate data tokens from control tokens
-            # Control tokens are either empty lists [] or callstack tuples
+            # Control tokens have stack_frames (new) or callstack tuple (legacy)
             data_tokens = []
-            call_stack = []
+            ctrl_token = None
+            
             for t in tokens:
                 if hasattr(t, 'value'):
                     val = t.value
-                    if isinstance(val, list):
+                    # Check for per-token stack frames (new model)
+                    if hasattr(t, 'stack_frames') and t.stack_frames:
+                        ctrl_token = t
+                    elif isinstance(val, list):
                         # Empty list is a control token (no call stack)
-                        pass
+                        ctrl_token = t
                     elif isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
-                        # This is a call stack token
-                        call_stack = list(val[1])
+                        # Legacy call stack token
+                        ctrl_token = t
                     else:
                         data_tokens.append(t)  # This is a data token
                 else:
@@ -318,11 +299,9 @@ class PetriEmitter:
             # Pass only data tokens to the original operation
             result = orig(data_tokens)
             
-            # Create control token with call stack (as tuple to distinguish from empty list)
-            if call_stack:
-                ctrl_token = Token(("callstack", call_stack))
-            else:
-                ctrl_token = Token([])  # Empty control token
+            # Preserve the control token with its per-token state
+            if ctrl_token is None:
+                ctrl_token = Token([])
             
             if isinstance(result, list):
                 result.append(ctrl_token)
@@ -842,13 +821,14 @@ class PetriEmitter:
         - call pushes the return address onto the token's stack
         - return pops from the token's stack to route back
         
-        Token value is a list: [return_addr_n, return_addr_n-1, ..., return_addr_0]
-        (most recent call at index 0)
+        PER-TOKEN STACK FRAMES:
+        Each token owns its stack_frames list. Call pushes a StackFrame,
+        return pops it. No global serialization - tokens execute independently.
         """
         function_name = vmc.segment
         n_args = vmc.index
         
-        # Create call site ID
+        # Create call site ID for this specific call
         call_id = self.call_counter
         self.call_counter += 1
         
@@ -869,67 +849,108 @@ class PetriEmitter:
         # Capture emitter and call info for frame setup
         emitter = self
         num_args = n_args
-        
-        # Create call transition that sets up new frame and pushes return address
         cid = call_id
-        fname = function_name  # Capture for debugging
-        def call_operation(tokens, return_id=cid):
-            # Get current call stack from input token (or start fresh)
-            current_stack = []
+        fname = function_name
+        
+        # Create return places BEFORE the call transition
+        # These are where the token will return to after the function completes
+        return_ctrl_place = Place(f"return_ctrl_{call_id}")
+        return_data_place = Place(f"return_data_{call_id}")
+        self.net.add_place(return_ctrl_place)
+        self.net.add_place(return_data_place)
+        
+        # Store call site info including function name for return routing
+        self.call_sites[call_id] = (return_ctrl_place, return_data_place, function_name)
+        
+        def call_operation(tokens, return_id=cid, func_name=fname, nargs=num_args):
+            """
+            CALL instruction on token T:
+            1. Allocate a new stack frame on T's stack
+            2. Save return address and caller context
+            3. Set T.pc = entry point of function
+            4. Continue execution of the same token
+            
+            NO other tokens are blocked by this operation.
+            """
+            # Find the control token (carries execution state)
+            ctrl_token = None
             arg_values = []
             
             for t in tokens:
                 if hasattr(t, 'value'):
                     val = t.value
-                    # Call stack is a tuple: ("callstack", [addresses...])
-                    if isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
-                        current_stack = list(val[1])
+                    # Check for per-token stack frames (new model)
+                    if hasattr(t, 'stack_frames'):
+                        ctrl_token = t
+                    # Legacy: call stack as tuple
+                    elif isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                        ctrl_token = t
                     elif isinstance(val, list):
-                        # This is a control token (empty list), ignore it
-                        pass
+                        ctrl_token = t  # Empty control token
                     elif isinstance(val, int):
                         arg_values.append(val)
                     elif isinstance(val, str):
-                        # Symbolic value - treat as 0
                         arg_values.append(0)
                     else:
-                        # Unknown type - treat as 0
                         arg_values.append(0)
             
-            # If callbacks present, set up a new frame using SP
+            # Create control token if none found
+            if ctrl_token is None:
+                ctrl_token = Token([])
+            
+            # Set up frame in shared memory if callbacks present
             if emitter.memory_write:
-                # Standard Hack VM call sequence:
-                # Arguments are passed via tokens, we write them to stack
-                # Then push saved frame, set ARG and LCL
-                sp = emitter.read_memory(0)  # Current stack pointer
+                sp = emitter.read_memory(0)
+                arg_values = arg_values[::-1]  # Reverse for correct order
                 
-                # Arguments come in reverse order (last pushed = first in tokens)
-                # Reverse to get correct order for ARG segment
-                arg_values = arg_values[::-1]
-                
-                # Write arguments to stack at current SP
                 arg_base = sp
                 for i, arg_val in enumerate(arg_values):
                     emitter.write_memory(sp + i, arg_val)
                 sp += len(arg_values)
                 
-                # Push saved frame (5 words)
-                emitter.write_memory(sp, return_id)                    # return address
-                emitter.write_memory(sp + 1, emitter.read_memory(1))   # saved LCL
-                emitter.write_memory(sp + 2, emitter.read_memory(2))   # saved ARG
-                emitter.write_memory(sp + 3, emitter.read_memory(3))   # saved THIS
-                emitter.write_memory(sp + 4, emitter.read_memory(4))   # saved THAT
+                # Save frame pointers
+                saved_lcl = emitter.read_memory(1)
+                saved_arg = emitter.read_memory(2)
+                saved_this = emitter.read_memory(3)
+                saved_that = emitter.read_memory(4)
+                
+                # Push saved frame to memory
+                emitter.write_memory(sp, return_id)
+                emitter.write_memory(sp + 1, saved_lcl)
+                emitter.write_memory(sp + 2, saved_arg)
+                emitter.write_memory(sp + 3, saved_this)
+                emitter.write_memory(sp + 4, saved_that)
                 sp += 5
                 
-                # Set new frame pointers
-                emitter.write_memory(2, arg_base)    # ARG = base of arguments
-                emitter.write_memory(1, sp)          # LCL = current SP (start of locals)
-                emitter.write_memory(0, sp)          # SP = LCL (function will add locals)
+                emitter.write_memory(2, arg_base)
+                emitter.write_memory(1, sp)
+                emitter.write_memory(0, sp)
+                
+                # Push frame to TOKEN's stack (per-token, not global)
+                ctrl_token.push_frame(
+                    return_pc=return_id,
+                    saved_lcl=saved_lcl,
+                    saved_arg=saved_arg,
+                    saved_this=saved_this,
+                    saved_that=saved_that,
+                    n_locals=0,  # Will be set by function
+                    n_args=nargs,
+                    function_name=func_name
+                )
+            else:
+                # No memory callbacks - just track in token
+                ctrl_token.push_frame(
+                    return_pc=return_id,
+                    n_args=nargs,
+                    function_name=func_name
+                )
             
-            # Push return address onto call stack token
-            current_stack.insert(0, return_id)
-            # Use tuple format to distinguish from control tokens
-            return [Token(("callstack", current_stack))]
+            # Also maintain legacy call stack for backward compatibility
+            legacy_stack = ctrl_token.get_call_stack_from_value()
+            legacy_stack.insert(0, return_id)
+            ctrl_token.set_call_stack_to_value(legacy_stack)
+            
+            return [ctrl_token]
         
         call_transition = Transition(
             name=f"call_{function_name}_{call_id}",
@@ -951,16 +972,7 @@ class PetriEmitter:
         # Output to function entry place
         self.net.add_arc(call_transition, target_func_place)
         
-        # Create separate places for control flow and return value
-        return_ctrl_place = Place(f"return_ctrl_{call_id}")
-        return_data_place = Place(f"return_data_{call_id}")
-        self.net.add_place(return_ctrl_place)
-        self.net.add_place(return_data_place)
-        
-        # Store both places for dispatch to use
-        self.call_sites[call_id] = (return_ctrl_place, return_data_place)
-        
-        # Control continues from return_ctrl_place
+        # Control continues from return_ctrl_place (after function returns)
         self.control_place = return_ctrl_place
         
         # Return value comes from return_data_place
@@ -970,71 +982,84 @@ class PetriEmitter:
             
     def ret(self, vmc):
         """
-        Implement return from function.
+        Implement return from function using per-token stack frames.
         
-        Pops the return address from the call stack (token value) and sends
-        the return value + remaining call stack to the dispatch.
-        The dispatch routes to the correct return place.
+        RETURN instruction on token T:
+        1. Pop the top frame from T's stack
+        2. Restore return address and caller context
+        3. Set T.pc = restored return address
+        4. Continue execution of the same token
+        
+        NO global coordination required - each token handles its own return.
         """
         # Capture emitter for frame restoration
         emitter = self
+        call_sites = self.call_sites  # Capture for closure
         
-        # Create transition that sends to dispatch
         def return_operation(tokens):
-            # Find the call stack and return value from tokens
-            call_stack = []
+            """
+            Per-token return: pop frame from THIS token's stack,
+            route to the correct return place based on return_pc.
+            """
+            ctrl_token = None
             ret_val = 0
             
             for t in tokens:
                 if hasattr(t, 'value'):
                     val = t.value
-                    # Call stack is a tuple: ("callstack", [addresses...])
+                    # Check for control tokens by their value type
                     if isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
-                        call_stack = list(val[1])
+                        # Legacy call stack token
+                        ctrl_token = t
                     elif isinstance(val, list):
-                        # Empty control token, ignore
-                        pass
+                        # Empty control token
+                        ctrl_token = t
+                    elif hasattr(t, 'stack_frames') and t.stack_frames:
+                        # Per-token stack frames (new model) - only if has frames
+                        ctrl_token = t
                     elif isinstance(val, int):
                         ret_val = val
+                    # String values are data (like symbolic expressions)
             
-            # If callbacks present, restore the caller's frame
+            if ctrl_token is None:
+                ctrl_token = Token([])
+            
+            # Get return address - try legacy call stack first (more reliable currently)
+            return_addr = -1
+            
+            # Check legacy call stack first
+            legacy_stack = ctrl_token.get_call_stack_from_value()
+            if legacy_stack:
+                return_addr = legacy_stack[0]
+                remaining_stack = legacy_stack[1:]
+                ctrl_token.set_call_stack_to_value(remaining_stack)
+            
+            # Also try per-token stack frames
+            if return_addr == -1 and hasattr(ctrl_token, 'stack_frames') and ctrl_token.stack_frames:
+                frame = ctrl_token.pop_frame()
+                return_addr = frame.return_pc if frame else -1
+            
+            # Restore caller's frame from shared memory if callbacks present
             if emitter.memory_write:
-                # Standard Hack VM return sequence:
-                # FRAME = LCL, RET = *(FRAME-5), *ARG = pop(), SP = ARG+1
-                # Restore THAT, THIS, ARG, LCL from saved frame
+                lcl = emitter.read_memory(1)
+                arg = emitter.read_memory(2)
                 
-                lcl = emitter.read_memory(1)   # FRAME
-                arg = emitter.read_memory(2)   # ARG (where return value goes)
+                frame_base = lcl
+                saved_lcl = emitter.read_memory(frame_base - 4)
+                saved_arg = emitter.read_memory(frame_base - 3)
+                saved_this = emitter.read_memory(frame_base - 2)
+                saved_that = emitter.read_memory(frame_base - 1)
                 
-                # Saved frame is at FRAME - 5
-                frame = lcl
-                saved_lcl = emitter.read_memory(frame - 4)
-                saved_arg = emitter.read_memory(frame - 3)
-                saved_this = emitter.read_memory(frame - 2)
-                saved_that = emitter.read_memory(frame - 1)
-                
-                # Put return value at ARG[0]
                 emitter.write_memory(arg, ret_val)
-                
-                # Restore SP to ARG + 1
                 emitter.write_memory(0, arg + 1)
-                
-                # Restore frame pointers
                 emitter.write_memory(4, saved_that)
                 emitter.write_memory(3, saved_this)
                 emitter.write_memory(2, saved_arg)
                 emitter.write_memory(1, saved_lcl)
             
-            # Pop return address from call stack
-            if call_stack:
-                return_addr = call_stack[0]
-                remaining_stack = call_stack[1:]
-            else:
-                return_addr = -1  # No return address (shouldn't happen)
-                remaining_stack = []
-            
-            # Return tuple: (return_value, return_address, remaining_call_stack)
-            return [Token((ret_val, return_addr, remaining_stack))]
+            # Return tuple: (return_value, return_address, ctrl_token)
+            # The return_address tells us which call site to return to
+            return [Token((ret_val, return_addr, ctrl_token))]
         
         return_transition = Transition(
             name=f"return_{len(self.net.transitions)}",
@@ -1052,8 +1077,62 @@ class PetriEmitter:
             ret_val_place = self.control_stack.pop()
             self.net.add_arc(ret_val_place, return_transition)
         
-        # Output to dispatch
-        self.net.add_arc(return_transition, self.return_dispatch)
+        # Create intermediate place for return dispatch
+        # This place receives the (ret_val, return_addr, ctrl_token) tuple
+        return_dispatch_place = Place(f"return_dispatch_{len(self.net.places)}")
+        self.net.add_place(return_dispatch_place)
+        self.net.add_arc(return_transition, return_dispatch_place)
+        
+        # Create per-call-site dispatch transitions
+        # Each dispatch checks if the return_addr matches its call_id
+        for call_id, site_info in call_sites.items():
+            return_ctrl_place, return_data_place, func_name = site_info
+            cid = call_id
+            
+            def make_dispatch_guard(target_cid):
+                def guard(tokens):
+                    if not tokens:
+                        return False
+                    token = tokens[0]
+                    if hasattr(token, 'value') and isinstance(token.value, tuple):
+                        if len(token.value) >= 2:
+                            ret_val, return_addr = token.value[0], token.value[1]
+                            return return_addr == target_cid
+                    return False
+                return guard
+            
+            def make_dispatch_op(target_cid):
+                def dispatch_op(tokens):
+                    if not tokens:
+                        return [None, None]
+                    
+                    token = tokens[0]
+                    if hasattr(token, 'value') and isinstance(token.value, tuple):
+                        if len(token.value) >= 3:
+                            ret_val, return_addr, ctrl_token = token.value
+                            # Return control token and data token
+                            if isinstance(ctrl_token, Token):
+                                return [ctrl_token, Token(ret_val)]
+                            else:
+                                # Legacy: ctrl_token is remaining_stack list
+                                if ctrl_token:
+                                    new_ctrl = Token(("callstack", ctrl_token))
+                                else:
+                                    new_ctrl = Token([])
+                                return [new_ctrl, Token(ret_val)]
+                    return [None, None]
+                return dispatch_op
+            
+            dispatch_trans = Transition(
+                name=f"dispatch_to_{call_id}",
+                operation=make_dispatch_op(cid),
+                guard=make_dispatch_guard(cid)
+            )
+            self.net.add_transition(dispatch_trans)
+            # Dispatch consumes from the return dispatch place
+            self.net.add_arc(return_dispatch_place, dispatch_trans)
+            self.net.add_arc(dispatch_trans, return_ctrl_place)
+            self.net.add_arc(dispatch_trans, return_data_place)
         
         # After return, create a dead control place for unreachable code
         dead_place = Place(f"dead_{len(self.net.places)}")
