@@ -76,12 +76,113 @@ class PetriEmitter:
         """
         Finalize the Petri net after all VM commands are parsed.
         
-        With per-token stack frames, returns are routed directly by the token's
-        own stack state. No global dispatch is needed - each token knows where
-        to return based on its stack_frames.
+        PARALLEL EXECUTION SETUP:
+        =========================
+        For each control place that has multiple parallel push operations,
+        create a fork transition that duplicates the control token so all
+        pushes can fire simultaneously.
         
-        This method now only performs cleanup and validation.
+        The fork creates N+1 outputs:
+        - N outputs for the parallel push operations
+        - 1 output that goes to a "continuation" place
+        
+        The continuation place is used by the next sequential operation
+        (like pop_static) that needs the control token.
+        
+        BOOTSTRAP:
+        If there's no Sys.init but there is Main.main, create a bootstrap
+        transition from init to Main.main.
         """
+        # Bootstrap: if no Sys.init, connect init to Main.main
+        if hasattr(self.net, 'functions'):
+            has_sys_init = 'Sys.init' in self.net.functions
+            has_main_main = 'Main.main' in self.net.functions
+            
+            if not has_sys_init and has_main_main:
+                # Create bootstrap transition from init to Main.main
+                main_place = self.net.functions['Main.main']
+                
+                def bootstrap_op(tokens):
+                    return tokens  # Pass through control token
+                
+                def emit_bootstrap(trans):
+                    return ["// bootstrap: init -> Main.main"]
+                
+                bootstrap_trans = Transition(
+                    name="bootstrap_main",
+                    operation=bootstrap_op,
+                    emit_function=emit_bootstrap
+                )
+                self.net.add_transition(bootstrap_trans)
+                self.net.add_arc(self.net.places["init"], bootstrap_trans)
+                self.net.add_arc(bootstrap_trans, main_place)
+        
+        # Set up parallel forks for each control place with multiple pushes
+        if hasattr(self, '_parallel_pushes_by_ctrl'):
+            for ctrl_name, pushes in self._parallel_pushes_by_ctrl.items():
+                if len(pushes) == 0:
+                    continue
+                
+                ctrl_place = pushes[0][0]  # Get the control place
+                transitions = [t for _, t in pushes]
+                
+                # Check if ctrl_place has other consumers (sequential operations)
+                # that need the control token
+                other_consumers = [t for t in self.net.transitions.values()
+                                  if ctrl_place in t.in_places and t not in transitions]
+                
+                # Always create a fork if there are other consumers
+                # This ensures the control token is duplicated for both parallel pushes
+                # AND sequential operations
+                needs_continuation = len(other_consumers) > 0
+                
+                if len(transitions) == 1 and not needs_continuation:
+                    # Single push with no other consumers - connect directly
+                    self.net.add_arc(ctrl_place, transitions[0])
+                else:
+                    # Multiple pushes OR single push with other consumers - create fork
+                    num_pushes = len(transitions)
+                    total_outputs = num_pushes + (1 if needs_continuation else 0)
+                    
+                    def fork_operation(tokens, n=total_outputs):
+                        # Duplicate the control token for each branch
+                        ctrl = tokens[0] if tokens else Token([])
+                        return [ctrl for _ in range(n)]
+                    
+                    def emit_fork(trans):
+                        return ["// parallel fork - no data operation"]
+                    
+                    fork_trans = Transition(
+                        name=f"fork_{ctrl_name}",
+                        operation=fork_operation,
+                        emit_function=emit_fork
+                    )
+                    self.net.add_transition(fork_trans)
+                    self.net.add_arc(ctrl_place, fork_trans)
+                    
+                    # Create individual start places for each parallel push
+                    for i, push_trans in enumerate(transitions):
+                        start_place = Place(f"fork_{ctrl_name}_out_{i}")
+                        self.net.add_place(start_place)
+                        self.net.add_arc(fork_trans, start_place)
+                        self.net.add_arc(start_place, push_trans)
+                    
+                    # Create continuation place for sequential operations
+                    if needs_continuation:
+                        cont_place = Place(f"fork_{ctrl_name}_cont")
+                        self.net.add_place(cont_place)
+                        self.net.add_arc(fork_trans, cont_place)
+                        
+                        # Redirect other consumers from ctrl_place to cont_place
+                        for consumer in other_consumers:
+                            # Remove arc from ctrl_place to consumer
+                            consumer.in_places = [p for p in consumer.in_places if p != ctrl_place]
+                            # Add arc from cont_place to consumer
+                            self.net.add_arc(cont_place, consumer)
+                            # Update arcs list
+                            self.net.arcs = [(s, t) for s, t in self.net.arcs 
+                                           if not (s == ctrl_place.name and t == consumer.name)]
+        
         # Validate that all call sites have corresponding return places
         for call_id, site_info in self.call_sites.items():
             return_ctrl_place, return_data_place, func_name = site_info
@@ -222,19 +323,28 @@ class PetriEmitter:
             data_places.append(p)
         return data_places
 
-    def _insert_operation(self, transition, output_place, consumes_stack=0, produces_stack=1):
+    def _insert_operation(self, transition, output_place, consumes_stack=0, produces_stack=1, needs_control=False):
         """
         Insert an operation into the Petri net with proper data and control flow.
         
-        Data flow: Operations consume from and produce to the data stack.
-        Control flow: All operations are sequenced through a control place chain.
-        The control token carries the call_id for return routing.
+        PARALLEL EXECUTION MODEL:
+        =========================
+        Operations are connected based on DATA DEPENDENCIES only, not control flow.
+        This enables maximum parallelism - any operations whose data inputs are
+        ready can fire simultaneously.
+        
+        Control flow is only required for:
+        - Function calls (need to set up call frame)
+        - Returns (need to restore caller frame)  
+        - Memory writes (side effects need ordering)
+        - Labels/gotos (explicit control flow)
         
         Args:
             transition: The transition to add
             output_place: The output place of the transition
             consumes_stack: Number of data items to consume from stack
             produces_stack: Number of data items to produce (0 or 1)
+            needs_control: If True, this operation requires control token synchronization
         
         Returns:
             The added transition
@@ -245,18 +355,7 @@ class PetriEmitter:
         # Add the transition to the network
         self.net.add_transition(transition)
         
-        # Connect control flow input (ensures sequential execution)
-        if self.pending_control_place is not None:
-            self.net.add_arc(self.pending_control_place, transition)
-            self.pending_control_place = None
-        elif self.control_place is not None:
-            self.net.add_arc(self.control_place, transition)
-        else:
-            # No control place set yet - connect to init place
-            # This handles standalone VM code without function declarations
-            self.net.add_arc(self.net.places["init"], transition)
-        
-        # Connect data inputs from stack
+        # Connect data inputs from stack - THIS IS THE PRIMARY DEPENDENCY
         for i in range(consumes_stack):
             input_place = self.control_stack.pop()
             self.net.add_arc(input_place, transition)
@@ -264,51 +363,78 @@ class PetriEmitter:
         # Connect data output
         self.net.add_arc(transition, output_place)
         
-        # Create control output place for sequential flow
-        control_out = Place(f"ctrl_{len(self.net.places)}")
-        self.net.add_place(control_out)
-        self.net.add_arc(transition, control_out)
-        self.control_place = control_out
-        
-        # Update transition to produce both data and control tokens
-        # Control token carries per-token stack frames (new) or legacy callstack tuple
-        original_op = transition.operation
-        def seq_operation(tokens, orig=original_op):
-            # Separate data tokens from control tokens
-            # Control tokens have stack_frames (new) or callstack tuple (legacy)
-            data_tokens = []
-            ctrl_token = None
-            
-            for t in tokens:
-                if hasattr(t, 'value'):
-                    val = t.value
-                    # Check for per-token stack frames (new model)
-                    if hasattr(t, 'stack_frames') and t.stack_frames:
-                        ctrl_token = t
-                    elif isinstance(val, list):
-                        # Empty list is a control token (no call stack)
-                        ctrl_token = t
-                    elif isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
-                        # Legacy call stack token
-                        ctrl_token = t
-                    else:
-                        data_tokens.append(t)  # This is a data token
-                else:
-                    data_tokens.append(t)
-            
-            # Pass only data tokens to the original operation
-            result = orig(data_tokens)
-            
-            # Preserve the control token with its per-token state
-            if ctrl_token is None:
-                ctrl_token = Token([])
-            
-            if isinstance(result, list):
-                result.append(ctrl_token)
+        # For operations that need control flow (calls, returns, memory writes),
+        # connect to the control token chain
+        if needs_control:
+            # Connect control flow input
+            if self.pending_control_place is not None:
+                self.net.add_arc(self.pending_control_place, transition)
+                self.pending_control_place = None
+            elif self.control_place is not None:
+                self.net.add_arc(self.control_place, transition)
             else:
-                result = [result, ctrl_token]
-            return result
-        transition.operation = seq_operation
+                self.net.add_arc(self.net.places["init"], transition)
+            
+            # Create control output place for sequential flow
+            control_out = Place(f"ctrl_{len(self.net.places)}")
+            self.net.add_place(control_out)
+            self.net.add_arc(transition, control_out)
+            self.control_place = control_out
+            
+            # Update transition to produce both data and control tokens
+            original_op = transition.operation
+            def seq_operation(tokens, orig=original_op):
+                data_tokens = []
+                ctrl_token = None
+                
+                for t in tokens:
+                    if hasattr(t, 'value'):
+                        val = t.value
+                        if hasattr(t, 'stack_frames') and t.stack_frames:
+                            ctrl_token = t
+                        elif isinstance(val, list):
+                            ctrl_token = t
+                        elif isinstance(val, tuple) and len(val) == 2 and val[0] == "callstack":
+                            ctrl_token = t
+                        else:
+                            data_tokens.append(t)
+                    else:
+                        data_tokens.append(t)
+                
+                result = orig(data_tokens)
+                
+                if ctrl_token is None:
+                    ctrl_token = Token([])
+                
+                if isinstance(result, list):
+                    result.append(ctrl_token)
+                else:
+                    result = [result, ctrl_token]
+                return result
+            transition.operation = seq_operation
+        else:
+            # PARALLEL MODE: No control token needed
+            # Operation fires as soon as data inputs are ready
+            # For push operations (consumes_stack=0), we need to handle parallel execution
+            if consumes_stack == 0:
+                # Determine the control place to connect to
+                ctrl_place = None
+                if self.control_place is not None:
+                    ctrl_place = self.control_place
+                elif self.pending_control_place is not None:
+                    ctrl_place = self.pending_control_place
+                else:
+                    ctrl_place = self.net.places["init"]
+                
+                # Track parallel pushes per control place
+                if not hasattr(self, '_parallel_pushes_by_ctrl'):
+                    self._parallel_pushes_by_ctrl = {}
+                
+                ctrl_name = ctrl_place.name
+                if ctrl_name not in self._parallel_pushes_by_ctrl:
+                    self._parallel_pushes_by_ctrl[ctrl_name] = []
+                
+                self._parallel_pushes_by_ctrl[ctrl_name].append((ctrl_place, transition))
         
         # Push data output to stack if operation produces data
         if produces_stack == 1:
@@ -702,8 +828,11 @@ class PetriEmitter:
         
         self.net.add_transition(ifgoto_transition)
         
-        # Connect control flow input
-        self.net.add_arc(self.control_place, ifgoto_transition)
+        # Connect control flow input - if no control place, connect from init
+        if self.control_place is not None:
+            self.net.add_arc(self.control_place, ifgoto_transition)
+        else:
+            self.net.add_arc(self.net.places["init"], ifgoto_transition)
         
         # If-goto consumes 1 from data stack (the condition)
         if len(self.control_stack) > 0:
@@ -1882,7 +2011,7 @@ class PetriEmitter:
             emit_function=emit_push_local
         )
         
-        return self._insert_operation(push_local_transition, local_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_local_transition, local_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def push_argument(self, vmc):
         """Handle push argument command - pushes argument[index] onto stack"""
@@ -1931,7 +2060,7 @@ class PetriEmitter:
             emit_function=emit_push_argument
         )
         
-        return self._insert_operation(push_arg_transition, arg_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_arg_transition, arg_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def push_this(self, vmc):
         """Handle push this command - pushes this[index] onto stack"""
@@ -1979,7 +2108,7 @@ class PetriEmitter:
             emit_function=emit_push_this
         )
         
-        return self._insert_operation(push_this_transition, this_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_this_transition, this_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def push_that(self, vmc):
         """Handle push that command - pushes that[index] onto stack"""
@@ -2031,7 +2160,7 @@ class PetriEmitter:
             emit_function=emit_push_that
         )
         
-        return self._insert_operation(push_that_transition, that_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_that_transition, that_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def push_pointer(self, vmc):
         """Handle push pointer command - pushes THIS (0) or THAT (1) pointer"""
@@ -2083,7 +2212,7 @@ class PetriEmitter:
             emit_function=emit_push_pointer
         )
         
-        return self._insert_operation(push_pointer_transition, pointer_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_pointer_transition, pointer_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def push_temp(self, vmc):
         """Handle push temp command - pushes temp[index] (R5-R12)"""
@@ -2129,7 +2258,7 @@ class PetriEmitter:
             emit_function=emit_push_temp
         )
         
-        return self._insert_operation(push_temp_transition, temp_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_temp_transition, temp_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def push_static(self, vmc):
         """Handle push static command - pushes static variable"""
@@ -2177,7 +2306,7 @@ class PetriEmitter:
             emit_function=emit_push_static
         )
         
-        return self._insert_operation(push_static_transition, static_place, consumes_stack=0, produces_stack=1)
+        return self._insert_operation(push_static_transition, static_place, consumes_stack=0, produces_stack=1, needs_control=True)
 
     def pop_local(self, vmc):
         """Handle pop local command - pops stack top to local[index]"""
@@ -2247,7 +2376,7 @@ class PetriEmitter:
             emit_function=emit_pop_local
         )
         
-        return self._insert_operation(pop_local_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_local_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)
 
     def pop_argument(self, vmc):
         """Handle pop argument command - pops stack top to argument[index]"""
@@ -2321,7 +2450,7 @@ class PetriEmitter:
             emit_function=emit_pop_argument
         )
         
-        return self._insert_operation(pop_arg_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_arg_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)
 
     def pop_this(self, vmc):
         """Handle pop this command - pops stack top to this[index]"""
@@ -2395,7 +2524,7 @@ class PetriEmitter:
             emit_function=emit_pop_this
         )
         
-        return self._insert_operation(pop_this_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_this_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)
 
     def pop_that(self, vmc):
         """Handle pop that command - pops stack top to that[index]"""
@@ -2469,7 +2598,7 @@ class PetriEmitter:
             emit_function=emit_pop_that
         )
         
-        return self._insert_operation(pop_that_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_that_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)
 
     def pop_pointer(self, vmc):
         """Handle pop pointer command - pops stack top to THIS (0) or THAT (1) pointer"""
@@ -2533,7 +2662,7 @@ class PetriEmitter:
             emit_function=emit_pop_pointer
         )
         
-        return self._insert_operation(pop_pointer_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_pointer_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)
 
     def pop_temp(self, vmc):
         """Handle pop temp command - pops stack top to temp[index] (R5-R12)"""
@@ -2591,7 +2720,7 @@ class PetriEmitter:
             emit_function=emit_pop_temp
         )
         
-        return self._insert_operation(pop_temp_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_temp_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)
 
     def pop_static(self, vmc):
         """Handle pop static command - pops stack top to static variable"""
@@ -2651,4 +2780,4 @@ class PetriEmitter:
             emit_function=emit_pop_static
         )
         
-        return self._insert_operation(pop_static_transition, pop_result_place, consumes_stack=1, produces_stack=0)
+        return self._insert_operation(pop_static_transition, pop_result_place, consumes_stack=1, produces_stack=0, needs_control=True)

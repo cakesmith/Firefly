@@ -509,42 +509,60 @@ class PetriNet:
         """
         Compute the level of each transition based on longest path from start.
         Transitions at the same level can potentially execute in parallel.
+        
+        Level = max(predecessor levels) + 1
+        This ensures a transition is at a higher level than ALL its predecessors.
         """
         self.transition_levels = {}
         
-        # Find starting transitions (no input places or input from init)
-        start_transitions = []
+        # Build predecessor map: transition -> list of predecessor transitions
+        predecessors = {t.name: [] for t in self.transitions.values()}
         for transition in self.transitions.values():
-            if (not transition.in_places or 
-                (len(transition.in_places) == 1 and transition.in_places[0].name == "init")):
-                start_transitions.append(transition)
+            for successor in self._get_successor_transitions(transition):
+                predecessors[successor.name].append(transition.name)
+        
+        # Find starting transitions (no predecessors or only from init)
+        start_transitions = []
+        for trans_name, preds in predecessors.items():
+            if not preds:
+                start_transitions.append(trans_name)
         
         if verbose:
             print(f"    Found {len(start_transitions)} starting transitions")
         
-        # Use a simpler approach: assign levels based on topological order
-        # For cycles (from goto/label), just use the first visit level
-        visited = set()
-        queue = [(t, 0) for t in start_transitions]
+        # Compute levels using dynamic programming
+        # Level of a transition = max(level of predecessors) + 1
+        def compute_level(trans_name, visited_stack=None):
+            if visited_stack is None:
+                visited_stack = set()
+            
+            # Already computed
+            if trans_name in self.transition_levels:
+                return self.transition_levels[trans_name]
+            
+            # Cycle detection
+            if trans_name in visited_stack:
+                return 0  # Break cycle with level 0
+            
+            visited_stack.add(trans_name)
+            
+            preds = predecessors.get(trans_name, [])
+            if not preds:
+                level = 0
+            else:
+                max_pred_level = -1
+                for pred in preds:
+                    pred_level = compute_level(pred, visited_stack)
+                    max_pred_level = max(max_pred_level, pred_level)
+                level = max_pred_level + 1
+            
+            visited_stack.discard(trans_name)
+            self.transition_levels[trans_name] = level
+            return level
         
-        while queue:
-            transition, level = queue.pop(0)
-            
-            if transition.name in visited:
-                continue  # Skip already visited (handles cycles)
-            
-            visited.add(transition.name)
-            self.transition_levels[transition.name] = level
-            
-            # Add successor transitions to queue
-            for successor in self._get_successor_transitions(transition):
-                if successor.name not in visited:
-                    queue.append((successor, level + 1))
-        
-        # Assign level 0 to any unvisited transitions (disconnected or only reachable via back-edges)
+        # Compute levels for all transitions
         for trans_name in self.transitions.keys():
-            if trans_name not in self.transition_levels:
-                self.transition_levels[trans_name] = 0
+            compute_level(trans_name)
         
         if verbose:
             max_level = max(self.transition_levels.values()) if self.transition_levels else 0
@@ -633,146 +651,298 @@ class PetriNet:
     def _color_transition_graph(self, conflict_graph, num_cores, verbose=False):
         """
         Use graph coloring to assign CPU cores to transitions.
-        Conflicting transitions get different cores (colors).
-        Also distribute non-conflicting transitions across cores for load balancing.
-        With shared ROM, control flow operations can be on any core.
+        
+        STRATEGY: Only split work across cores when transitions can truly run in parallel
+        (same level, no conflicts). Sequential chains stay on the same core to avoid
+        inter-core synchronization overhead.
         """
         assignments = {}
         
-        # Sort transitions by conflict degree (most constrained first), then by level
-        if verbose:
-            print(f"    Sorting {len(self.transitions)} transitions...")
-        sorted_transitions = sorted(self.transitions.keys(),
-                                  key=lambda t: (len(conflict_graph[t]), self.transition_levels.get(t, 0)),
-                                  reverse=True)
+        # Group transitions by level
+        levels = {}
+        for trans_name, level in self.transition_levels.items():
+            if level not in levels:
+                levels[level] = []
+            levels[level].append(trans_name)
         
         if verbose:
-            print(f"    Assigning cores...")
+            print(f"    Processing {len(levels)} levels...")
         
-        for idx, trans_name in enumerate(sorted_transitions):
-            if verbose and idx % 1000 == 0 and idx > 0:
-                print(f"    Assigned {idx}/{len(sorted_transitions)} transitions...")
+        # Process level by level
+        for level in sorted(levels.keys()):
+            trans_at_level = levels[level]
             
-            # Find cores used by conflicting transitions
-            used_cores = set()
-            for conflicting_trans in conflict_graph[trans_name]:
-                if conflicting_trans in assignments:
-                    used_cores.add(assignments[conflicting_trans])
+            # Find independent groups at this level (no conflicts between them)
+            # These can be assigned to different cores
+            independent_groups = []
+            assigned_in_level = set()
             
-            # If there are no conflicts, distribute across cores for load balancing
-            if not used_cores:
-                # Count current assignments per core
-                core_counts = {}
-                for core in range(num_cores):
-                    core_counts[core] = 0
+            for trans_name in trans_at_level:
+                if trans_name in assigned_in_level:
+                    continue
                 
-                for assigned_core in assignments.values():
-                    if assigned_core < num_cores:
-                        core_counts[assigned_core] += 1
+                # Start a new group with this transition
+                group = [trans_name]
+                assigned_in_level.add(trans_name)
                 
-                # Assign to the core with the least work
-                core = min(core_counts.keys(), key=lambda c: core_counts[c])
-            else:
-                # Find the lowest available core not used by conflicts
-                core = 0
-                while core in used_cores and core < num_cores:
-                    core += 1
+                # Find all transitions that conflict with this one (same group)
+                for other_trans in trans_at_level:
+                    if other_trans in assigned_in_level:
+                        continue
+                    if other_trans in conflict_graph[trans_name]:
+                        # Conflicts - must be on different core, not same group
+                        continue
+                    # Check if conflicts with anyone in the group
+                    conflicts_with_group = False
+                    for g_trans in group:
+                        if other_trans in conflict_graph[g_trans]:
+                            conflicts_with_group = True
+                            break
+                    if not conflicts_with_group:
+                        # Can be in same group (will go to same core)
+                        # But we want parallelism, so keep separate
+                        pass
                 
-                # If all cores are used by conflicts, use round-robin assignment
-                if core >= num_cores:
-                    # Count assignments per core excluding conflicts
-                    core_counts = {}
-                    for c in range(num_cores):
-                        if c not in used_cores:
-                            core_counts[c] = sum(1 for assigned_core in assignments.values() if assigned_core == c)
-                    
-                    if core_counts:
-                        core = min(core_counts.keys(), key=lambda c: core_counts[c])
-                    else:
-                        # All cores have conflicts, use modulo assignment
-                        core = len(assignments) % num_cores
+                independent_groups.append(group)
             
-            assignments[trans_name] = core
+            # Assign each independent transition to a different core (round-robin)
+            # This maximizes parallelism at each level
+            for i, trans_name in enumerate(trans_at_level):
+                # Check if predecessor is assigned - prefer same core to reduce sync
+                predecessors_cores = set()
+                trans = self.transitions[trans_name]
+                for in_place in trans.in_places:
+                    for other_trans in self.transitions.values():
+                        if in_place in other_trans.out_places and other_trans.name in assignments:
+                            predecessors_cores.add(assignments[other_trans.name])
+                
+                # Check conflicts at this level
+                conflicts_cores = set()
+                for other_trans in trans_at_level:
+                    if other_trans in assignments and other_trans in conflict_graph[trans_name]:
+                        conflicts_cores.add(assignments[other_trans])
+                
+                if len(trans_at_level) > 1 and not conflicts_cores:
+                    # Multiple transitions at this level with no conflicts - parallelize
+                    core = i % num_cores
+                    # Avoid conflict cores
+                    while core in conflicts_cores and core < num_cores:
+                        core = (core + 1) % num_cores
+                elif predecessors_cores and not conflicts_cores:
+                    # Has predecessor, no conflicts - use same core as predecessor
+                    core = list(predecessors_cores)[0]
+                else:
+                    # Use round-robin avoiding conflicts
+                    core = len(assignments) % num_cores
+                    while core in conflicts_cores:
+                        core = (core + 1) % num_cores
+                
+                assignments[trans_name] = core
+        
+        if verbose:
+            # Count per core
+            core_counts = {}
+            for core in range(num_cores):
+                core_counts[core] = sum(1 for c in assignments.values() if c == core)
+            print(f"    Core distribution: {core_counts}")
         
         return assignments
     
     def generate_shared_rom(self):
         """
-        Generate a single shared ROM that all CPU cores can access.
-        Each CPU maintains its own PC (Program Counter) to track execution position.
+        Generate a single shared ROM for multi-core execution with Petri net semantics.
         
-        The ROM contains:
-        1. All transition assembly code with labels
-        2. Synchronization checks for Petri net semantics
-        3. Jump targets that any CPU can reach
+        EVENT-DRIVEN EXECUTION:
+        When a transition fires and decrements a consumer's counter, immediately check
+        if that counter hit 0. If so, jump directly to check/fire that transition.
+        
+        This eliminates polling - execution flows directly from producer to consumer
+        when data is ready.
+        
+        Memory layout:
+        - R0-R99: Reserved (stack pointers, etc.)
+        - R100+i: Countdown counter for transition i (0 = ready to fire)
+        - R200+i: Valid flags for places (1 = has token)
+        - R15000+: Data slots (allocated by allocate_memory)
         
         Returns:
-            List of assembly instructions forming the shared ROM
+            Tuple of (assembly_lines, entry_points, initial_valid_addrs, initial_counters)
         """
         if not self.cpu_assignments:
             raise RuntimeError("CPU cores not assigned. Call assign_cpu_cores() first.")
         
-        shared_rom = []
+        COUNTER_BASE = 100      # Countdown counters for transitions
+        VALID_FLAG_BASE = 200   # Valid flags for places
         
-        # Add initialization code
-        shared_rom.append("// Shared ROM for multi-CPU Petri net execution")
-        shared_rom.append("// Each CPU has its own PC register")
-        shared_rom.append("")
+        # Assign addresses
+        trans_list = list(self.transitions.keys())
+        trans_counter_addr = {name: COUNTER_BASE + i for i, name in enumerate(trans_list)}
         
-        # Generate ROM sections for each CPU core's transitions
-        # But place them all in the shared ROM space
-        for core in range(self.cpu_cores):
-            core_transitions = [
-                trans_name for trans_name, assigned_core in self.cpu_assignments.items()
-                if assigned_core == core
-            ]
+        place_valid_addr = {}
+        for i, place_name in enumerate(self.places.keys()):
+            place_valid_addr[place_name] = VALID_FLAG_BASE + i
+        
+        # Build consumer map: place -> list of transitions that consume from it
+        place_consumers = {p: [] for p in self.places.keys()}
+        for trans_name, trans in self.transitions.items():
+            for in_place in trans.in_places:
+                place_consumers[in_place.name].append(trans_name)
+        
+        # Initial counter values (will be adjusted for initial marking)
+        trans_input_count = {}
+        for trans_name, trans in self.transitions.items():
+            trans_input_count[trans_name] = len(trans.in_places)
+        
+        # Find initial marking - adjust counters for places that start with tokens
+        initial_marking = []
+        for place_name, place in self.places.items():
+            if place.has:
+                initial_marking.append(place_valid_addr[place_name])
+                # Transitions consuming from this place start with counter-1
+                for consumer in place_consumers[place_name]:
+                    trans_input_count[consumer] -= 1
+        
+        # Find termination places
+        termination_addrs = []
+        for place_name in self.places.keys():
+            if place_name.startswith('return_dispatch') or place_name == 'end':
+                termination_addrs.append(place_valid_addr[place_name])
+        
+        # Get transition info
+        transition_asm = {}
+        transition_outputs = {}
+        
+        for trans_name, trans in self.transitions.items():
+            asm = trans.emit_assembly()
+            transition_asm[trans_name] = [asm] if isinstance(asm, str) else asm
             
-            if not core_transitions:
-                continue
-            
-            # Sort transitions by level within each core
-            core_transitions.sort(key=lambda t: self.transition_levels.get(t, 0))
-            
-            shared_rom.append(f"// === CPU Core {core} Transitions ===")
-            shared_rom.append(f"(CORE_{core}_START)")
-            
-            for trans_name in core_transitions:
-                transition = self.transitions[trans_name]
-                
-                # Add transition label
-                shared_rom.append(f"({trans_name})")
-                
-                # Add synchronization check
-                sync_check = self._generate_sync_check(transition)
-                shared_rom.extend(sync_check)
-                
-                # Add the transition's assembly code
-                assembly = transition.emit_assembly()
-                if isinstance(assembly, list):
-                    shared_rom.extend(assembly)
-                else:
-                    shared_rom.append(assembly)
-                
-                # Add synchronization signal
-                sync_signal = self._generate_sync_signal(transition)
-                shared_rom.extend(sync_signal)
-                
-                shared_rom.append("")  # Blank line for readability
+            outputs = [(p.name, p.memory_address, place_valid_addr[p.name]) 
+                      for p in trans.out_places]
+            transition_outputs[trans_name] = outputs
         
-        # Add all labels from the label registry
-        if hasattr(self, 'labels'):
-            shared_rom.append("// === Program Labels ===")
-            for label_name, label_place in self.labels.items():
-                shared_rom.append(f"({label_name})")
+        # Group transitions by core, sorted by level
+        core_transitions = {core_id: [] for core_id in range(self.cpu_cores)}
         
-        # Add CPU-specific entry points
-        shared_rom.append("// === CPU Entry Points ===")
-        for core in range(self.cpu_cores):
-            shared_rom.append(f"(CPU_{core}_ENTRY)")
-            shared_rom.append(f"@CORE_{core}_START")
-            shared_rom.append("0;JMP")
+        for trans_name, core_id in self.cpu_assignments.items():
+            level = self.transition_levels.get(trans_name, 0)
+            core_transitions[core_id].append((level, trans_name))
         
-        return shared_rom
+        for core_id in core_transitions:
+            core_transitions[core_id].sort()
+            core_transitions[core_id] = [name for (_, name) in core_transitions[core_id]]
+        
+        # Build reverse map: transition -> core
+        trans_to_core = {t: c for c, ts in core_transitions.items() for t in ts}
+        
+        # Generate ROM with event-driven execution
+        rom_lines = []
+        entry_points = {}
+        
+        def instr_count(lines):
+            return sum(1 for l in lines if l.strip() and not l.strip().startswith('//') 
+                      and not l.strip().startswith('('))
+        
+        for core_id in range(self.cpu_cores):
+            entry_points[core_id] = instr_count(rom_lines)
+            rom_lines.append(f"(CORE_{core_id}_START)")
+            
+            # Check for termination
+            for term_addr in termination_addrs:
+                rom_lines.extend([
+                    f"@R{term_addr}",
+                    "D=M",
+                    f"@CORE_{core_id}_HALT",
+                    "D;JNE"
+                ])
+            
+            transitions = core_transitions.get(core_id, [])
+            
+            for idx, trans_name in enumerate(transitions):
+                counter_addr = trans_counter_addr[trans_name]
+                outputs = transition_outputs.get(trans_name, [])
+                input_count = len(self.transitions[trans_name].in_places)
+                
+                # Label for checking this transition (jump here to check counter + outputs)
+                rom_lines.append(f"(CORE_{core_id}_CHECK_{trans_name})")
+                
+                # Skip label - next transition or loop end
+                skip_label = (f"CORE_{core_id}_CHECK_{transitions[idx+1]}" 
+                             if idx + 1 < len(transitions) 
+                             else f"CORE_{core_id}_LOOP_END")
+                
+                # Check counter == 0 (ready to fire)
+                rom_lines.extend([
+                    f"@R{counter_addr}",
+                    "D=M",
+                    f"@{skip_label}",
+                    "D;JNE"  # Skip if counter != 0
+                ])
+                
+                # Check outputs are empty (Petri semantics)
+                for place_name, data_addr, valid_addr in outputs:
+                    rom_lines.extend([
+                        f"@R{valid_addr}",
+                        "D=M",
+                        f"@{skip_label}",
+                        "D;JNE"
+                    ])
+                
+                # FIRE: Reset counter to input count (for re-firing in loops)
+                rom_lines.extend([
+                    f"@{input_count}",
+                    "D=A",
+                    f"@R{counter_addr}",
+                    "M=D"
+                ])
+                
+                # Execute transition assembly
+                rom_lines.extend(transition_asm.get(trans_name, []))
+                
+                # Set output valid flags AND decrement consumer counters
+                # Process ALL outputs first, then check for ready consumers
+                for place_name, data_addr, valid_addr in outputs:
+                    rom_lines.extend([
+                        "@1",
+                        "D=A",
+                        f"@R{valid_addr}",
+                        "M=D"
+                    ])
+                    
+                    # Decrement counters of all consumers
+                    for consumer in place_consumers[place_name]:
+                        consumer_counter = trans_counter_addr[consumer]
+                        rom_lines.extend([
+                            f"@R{consumer_counter}",
+                            "M=M-1"
+                        ])
+                
+                # Now check if any same-core consumer became ready (counter == 0)
+                # Jump to the first one found
+                for place_name, data_addr, valid_addr in outputs:
+                    for consumer in place_consumers[place_name]:
+                        consumer_core = trans_to_core.get(consumer, -1)
+                        if consumer_core == core_id:
+                            consumer_counter = trans_counter_addr[consumer]
+                            rom_lines.extend([
+                                f"@R{consumer_counter}",
+                                "D=M",
+                                f"@CORE_{core_id}_CHECK_{consumer}",
+                                "D;JEQ"  # Jump to check if counter == 0
+                            ])
+            
+            # Loop back to start
+            rom_lines.extend([
+                f"(CORE_{core_id}_LOOP_END)",
+                f"@CORE_{core_id}_START",
+                "0;JMP",
+                f"(CORE_{core_id}_HALT)",
+                f"@CORE_{core_id}_HALT",
+                "0;JMP"
+            ])
+        
+        # Return initial counter values along with marking
+        initial_counters = [(trans_counter_addr[t], trans_input_count[t]) for t in trans_list]
+        return rom_lines, entry_points, initial_marking, initial_counters
     
     def generate_roms(self):
         """

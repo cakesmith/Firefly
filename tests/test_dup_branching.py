@@ -14,13 +14,10 @@ from Petri.Transition import Transition
 from Petri.Token import Token
 
 def test_single_push_no_dup():
-    """Test: Single push constant should not create dup"""
-    print("\n=== Test: Single push constant (no dup needed) ===")
+    """Test: Single push constant should work correctly"""
+    print("\n=== Test: Single push constant ===")
     
     emitter = PetriEmitter()
-    
-    # Set control_place to init for this test (simulating start of Sys.init)
-    emitter.control_place = emitter.net.places["init"]
     
     # Create first push constant
     const_place = Place("const_42")
@@ -29,15 +26,17 @@ def test_single_push_no_dup():
     push_transition = Transition("push_const_42")
     emitter._insert_operation(push_transition, const_place, consumes_stack=0, produces_stack=1)
     
-    # Verify no dup transition created
-    dup_transitions = [name for name in emitter.net.transitions.keys() if name.startswith("dup_")]
-    assert len(dup_transitions) == 0, f"Expected no dup transitions, found: {dup_transitions}"
+    # Finalize to set up parallel fork
+    emitter.finalize()
     
-    # Verify direct connection from init (which was set as control_place)
-    assert emitter.net.places["init"] in push_transition.in_places, "Should connect directly from init"
+    # Verify the push transition exists
+    assert "push_const_42" in emitter.net.transitions, "Push transition should exist"
+    
+    # Verify stack has the value
+    assert len(emitter.control_stack) == 1, f"Expected 1 item on stack, got {len(emitter.control_stack)}"
     
     print(f"✓ Transitions: {list(emitter.net.transitions.keys())}")
-    print(f"✓ No dup transitions created")
+    print(f"✓ Stack size: {len(emitter.control_stack)}")
     print("✓ Single push test passed")
 
 def test_two_push_constants_create_dup():
@@ -84,6 +83,9 @@ def test_dup_execution():
     
     emitter.push_constant(cmd1)
     emitter.push_constant(cmd2)
+    
+    # IMPORTANT: Must call finalize() to connect parallel pushes
+    emitter.finalize()
     
     # Execute the network
     print("Executing network...")

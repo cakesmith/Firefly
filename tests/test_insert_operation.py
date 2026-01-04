@@ -14,13 +14,10 @@ from Petri.Transition import Transition
 from Petri.Token import Token
 
 def test_first_operation_from_init():
-    """Test: First operation (consumes 0, produces 1) connects from control place"""
+    """Test: First operation (consumes 0, produces 1) is tracked for parallel execution"""
     print("\n=== Test: First operation from init ===")
     
     emitter = PetriEmitter()
-    
-    # Set control_place to init for this test (simulating start of Sys.init)
-    emitter.control_place = emitter.net.places["init"]
     
     # Create a simple operation
     output_place = Place("test_output")
@@ -28,19 +25,28 @@ def test_first_operation_from_init():
     
     transition = Transition("test_op", operation=lambda tokens: [Token("result")])
     
-    # Add operation that consumes 0, produces 1
+    # Add operation that consumes 0, produces 1 (parallel mode - no control needed)
     result = emitter._insert_operation(transition, output_place, consumes_stack=0, produces_stack=1)
     
     # Verify structure
     assert len(emitter.control_stack) == 1, f"Expected 1 item on stack, got {len(emitter.control_stack)}"
     assert emitter.control_stack[0] == output_place, "Output place should be on stack"
     
-    # Verify connections - should connect from init (which was set as control_place)
-    assert emitter.net.places["init"] in transition.in_places, "Should connect from init"
+    # In parallel mode, push operations are tracked for later connection in finalize()
+    assert hasattr(emitter, '_parallel_pushes_by_ctrl'), "Should track parallel pushes by control place"
+    assert 'init' in emitter._parallel_pushes_by_ctrl, "Should track pushes for init control place"
+    tracked_transitions = [t for _, t in emitter._parallel_pushes_by_ctrl['init']]
+    assert transition in tracked_transitions, "Transition should be tracked for init"
+    
+    # After finalize, it should be connected
+    emitter.finalize()
+    assert emitter.net.places["init"] in transition.in_places or \
+           any(p.name.startswith("fork_") for p in transition.in_places), \
+           "After finalize, should be connected from init or fork output"
     assert output_place in transition.out_places, "Should connect to output place"
     
     print(f"✓ Stack size: {len(emitter.control_stack)}")
-    print(f"✓ Connected from init: {emitter.net.places['init'] in transition.in_places}")
+    print(f"✓ Tracked for parallel execution: {transition in tracked_transitions}")
     print("✓ First operation test passed")
 
 def test_operation_consumes_from_stack():
@@ -140,7 +146,6 @@ def test_invalid_parameters():
     print("\n=== Test: Invalid parameters ===")
     
     emitter = PetriEmitter()
-    emitter.control_place = emitter.net.places["init"]  # Set control place for test
     
     output_place = Place("result")
     emitter.net.add_place(output_place)
@@ -232,7 +237,7 @@ def test_complex_operation_sequence():
     print("✓ Complex sequence test passed")
 
 def test_empty_stack_non_consuming_operation():
-    """Test: Non-consuming operation when stack is empty"""
+    """Test: Non-consuming operation when stack is empty (parallel mode)"""
     print("\n=== Test: Non-consuming operation with empty stack ===")
     
     emitter = PetriEmitter()
@@ -243,15 +248,23 @@ def test_empty_stack_non_consuming_operation():
     
     transition = Transition("create_op")
     
-    # Set control_place to init for this test
-    emitter.control_place = emitter.net.places["init"]
-    
-    # Should connect from init since we set it as control_place
+    # In parallel mode, non-consuming operations are tracked for parallel execution
     result = emitter._insert_operation(transition, output_place, consumes_stack=0, produces_stack=1)
     
-    # Verify connections
-    assert emitter.net.places["init"] in transition.in_places, "Should connect from init when stack empty"
+    # Verify stack has the output
     assert len(emitter.control_stack) == 1, "Should have one item on stack"
+    
+    # Verify transition is tracked for parallel execution
+    assert hasattr(emitter, '_parallel_pushes_by_ctrl'), "Should track parallel pushes"
+    assert 'init' in emitter._parallel_pushes_by_ctrl, "Should track pushes for init"
+    tracked_transitions = [t for _, t in emitter._parallel_pushes_by_ctrl['init']]
+    assert transition in tracked_transitions, "Transition should be tracked"
+    
+    # After finalize, should be connected
+    emitter.finalize()
+    assert emitter.net.places["init"] in transition.in_places or \
+           any(p.name.startswith("fork_") for p in transition.in_places), \
+           "After finalize, should be connected from init or fork output"
     
     print("✓ Empty stack non-consuming operation test passed")
 

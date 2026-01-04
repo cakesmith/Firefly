@@ -42,6 +42,11 @@ def run_test_file(test_file_path):
 
 def main():
     """Main test runner"""
+    # Fix encoding for Windows console
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    
     print("[START] PETRI NET VM COMPILER - TEST RUNNER")
     print("="*60)
     
@@ -68,9 +73,12 @@ def main():
         else:
             print(f"[FAIL] {test_file.name}")
             if stdout:
-                print("STDOUT:", stdout[-300:])  # Last 300 chars
+                # Replace unicode characters that can't be encoded
+                safe_stdout = stdout[-300:].encode('ascii', errors='replace').decode('ascii')
+                print("STDOUT:", safe_stdout)
             if stderr:
-                print("STDERR:", stderr[-300:])
+                safe_stderr = stderr[-300:].encode('ascii', errors='replace').decode('ascii')
+                print("STDERR:", safe_stderr)
             failed += 1
     
     # Summary
