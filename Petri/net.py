@@ -771,8 +771,8 @@ class PetriNet:
         if not self.cpu_assignments:
             raise RuntimeError("CPU cores not assigned. Call assign_cpu_cores() first.")
         
-        COUNTER_BASE = 100      # Countdown counters for transitions
-        VALID_FLAG_BASE = 200   # Valid flags for places
+        COUNTER_BASE = 1000     # Countdown counters for transitions
+        VALID_FLAG_BASE = 2000  # Valid flags for places
         
         # Assign addresses
         trans_list = list(self.transitions.keys())

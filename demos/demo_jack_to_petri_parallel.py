@@ -284,38 +284,70 @@ def generate_multicore_rom(emitter, num_cores: int) -> Tuple[List[str], Dict[int
     return net.generate_shared_rom()
 
 
-# Jack source code - real-world examples (using addition to avoid Math.multiply dependency)
-JACK_IMAGE_BRIGHTNESS = '''
+# Jack source code - examples designed for parallel execution
+# Key insight: nested expressions create parallel data dependencies
+# Sequential let statements create control flow dependencies
+
+JACK_PARALLEL_SUMS_8 = '''
 class Main {
-    static int p1, p2, p3, p4, p5, p6, p7, p8;
+    static int r1, r2, r3, r4, r5, r6, r7, r8;
     function void main() {
-        // 8 independent pixel transformations using addition
-        let p1 = (120 + 120) + 10;
-        let p2 = (85 + 85) + 10;
-        let p3 = (200 + 200) + 10;
-        let p4 = (45 + 45) + 10;
-        let p5 = (180 + 180) + 10;
-        let p6 = (95 + 95) + 10;
-        let p7 = (150 + 150) + 10;
-        let p8 = (70 + 70) + 10;
+        // 8 independent complex sums - each is ((a+b)+(c+d))
+        // All 8 can compute in parallel at each level
+        let r1 = ((1+2)+(3+4)) + ((5+6)+(7+8));
+        let r2 = ((10+20)+(30+40)) + ((50+60)+(70+80));
+        let r3 = ((11+22)+(33+44)) + ((55+66)+(77+88));
+        let r4 = ((12+23)+(34+45)) + ((56+67)+(78+89));
+        let r5 = ((13+24)+(35+46)) + ((57+68)+(79+90));
+        let r6 = ((14+25)+(36+47)) + ((58+69)+(80+91));
+        let r7 = ((15+26)+(37+48)) + ((59+70)+(81+92));
+        let r8 = ((16+27)+(38+49)) + ((60+71)+(82+93));
         return;
     }
 }
 '''
 
-JACK_PHYSICS_PARTICLES = '''
+JACK_PARALLEL_SUMS_4 = '''
 class Main {
-    static int x1, x2, x3, x4, y1, y2, y3, y4;
+    static int r1, r2, r3, r4;
     function void main() {
-        // 8 independent position updates: pos + velocity + acceleration
-        let x1 = (100 + 5) + 1;
-        let x2 = (200 + 3) + 0;
-        let x3 = (150 + 8) + 1;
-        let x4 = (300 + 0) + 2;
-        let y1 = (50 + 2) + 1;
-        let y2 = (100 + 4) + 0;
-        let y3 = (75 + 6) + 1;
-        let y4 = (200 + 1) + 1;
+        // 4 independent deep sums - more operations per result
+        let r1 = (((1+2)+(3+4))+((5+6)+(7+8))) + (((9+10)+(11+12))+((13+14)+(15+16)));
+        let r2 = (((17+18)+(19+20))+((21+22)+(23+24))) + (((25+26)+(27+28))+((29+30)+(31+32)));
+        let r3 = (((33+34)+(35+36))+((37+38)+(39+40))) + (((41+42)+(43+44))+((45+46)+(47+48)));
+        let r4 = (((49+50)+(51+52))+((53+54)+(55+56))) + (((57+58)+(59+60))+((61+62)+(63+64)));
+        return;
+    }
+}
+'''
+
+JACK_TREE_REDUCE_16 = '''
+class Main {
+    static int result;
+    function void main() {
+        // Single deep tree: 16 leaves -> 1 result
+        // Level 1: 8 parallel adds, Level 2: 4 parallel, Level 3: 2 parallel, Level 4: 1
+        let result = 
+            (((1+2)+(3+4))+((5+6)+(7+8))) + 
+            (((9+10)+(11+12))+((13+14)+(15+16)));
+        return;
+    }
+}
+'''
+
+JACK_WIDE_TREE = '''
+class Main {
+    static int a, b, c, d, e, f, g, h;
+    function void main() {
+        // 8 independent binary trees
+        let a = (1+2) + (3+4);
+        let b = (5+6) + (7+8);
+        let c = (9+10) + (11+12);
+        let d = (13+14) + (15+16);
+        let e = (17+18) + (19+20);
+        let f = (21+22) + (23+24);
+        let g = (25+26) + (27+28);
+        let h = (29+30) + (31+32);
         return;
     }
 }
@@ -325,7 +357,7 @@ JACK_DOT_PRODUCTS = '''
 class Main {
     static int dot1, dot2, dot3, dot4;
     function void main() {
-        // 4 independent sums (simplified from dot products)
+        // 4 independent dot products (sum of element-wise products as additions)
         let dot1 = ((1+5) + (2+6)) + ((3+7) + (4+8));
         let dot2 = ((2+6) + (3+7)) + ((4+8) + (5+9));
         let dot3 = ((1+1) + (2+2)) + ((3+3) + (4+4));
@@ -335,19 +367,15 @@ class Main {
 }
 '''
 
-JACK_AUDIO_EQUALIZER = '''
+JACK_MATRIX_TRACE = '''
 class Main {
-    static int b1, b2, b3, b4, b5, b6, b7, b8;
+    static int trace1, trace2, trace3, trace4;
     function void main() {
-        // 8 frequency bands using addition
-        let b1 = (100 + 100) + 5;
-        let b2 = (120 + 0) + 0;
-        let b3 = (80 + 0) + 10;
-        let b4 = (90 + 0) + 5;
-        let b5 = (110 + 0) + 0;
-        let b6 = (70 + 70) + 15;
-        let b7 = (60 + 0) + 5;
-        let b8 = (40 + 0) + 10;
+        // 4 independent matrix trace computations (sum of diagonal)
+        let trace1 = ((11+22)+(33+44)) + ((55+66)+(77+88));
+        let trace2 = ((10+20)+(30+40)) + ((50+60)+(70+80));
+        let trace3 = ((12+24)+(36+48)) + ((60+72)+(84+96));
+        let trace4 = ((15+30)+(45+60)) + ((75+90)+(105+120));
         return;
     }
 }
@@ -517,10 +545,12 @@ def main():
 """)
     
     demos = [
-        ("Image Processing", JACK_IMAGE_BRIGHTNESS, "8 pixel brightness adjustments"),
-        ("Physics Simulation", JACK_PHYSICS_PARTICLES, "8 particle position updates"),
-        ("Vector Math", JACK_DOT_PRODUCTS, "4 dot products"),
-        ("Audio Processing", JACK_AUDIO_EQUALIZER, "8-band equalizer"),
+        ("8 Parallel Sums", JACK_PARALLEL_SUMS_8, "8 independent 8-element tree sums"),
+        ("4 Deep Sums", JACK_PARALLEL_SUMS_4, "4 independent 16-element tree sums"),
+        ("Tree Reduce 16", JACK_TREE_REDUCE_16, "single 16->1 reduction tree"),
+        ("Wide Tree 8", JACK_WIDE_TREE, "8 independent 4-element trees"),
+        ("Dot Products", JACK_DOT_PRODUCTS, "4 independent dot products"),
+        ("Matrix Traces", JACK_MATRIX_TRACE, "4 independent 8-element traces"),
     ]
     
     all_results = []
