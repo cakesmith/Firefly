@@ -167,22 +167,23 @@ class PetriNet:
     
     def _build_interference_graph(self, verbose=False):
         """
-        Build interference graph: places that can be alive simultaneously
-        must have different memory slots (connected by edges)
+        Build interference graph using happens-before analysis.
         
-        Optimized version with pre-built lookup tables for large networks.
+        Two places DON'T interfere only if one is ALWAYS consumed before the other
+        is produced (strict ordering). Otherwise, they might be alive together.
+        
+        This is conservative but correct - we only allow memory sharing when
+        we can PROVE the places can't be alive simultaneously.
         """
-        interference = {name: set() for name in self.places.keys()}
-        
-        num_places = len(self.places)
-        num_transitions = len(self.transitions)
+        place_names = list(self.places.keys())
+        num_places = len(place_names)
         
         if verbose:
-            print(f"    Analyzing {num_transitions} transitions for interference...")
+            print(f"    Computing happens-before ordering for {num_places} places...")
         
-        # Pre-build lookup tables for O(1) access (optimization for large networks)
-        place_to_consumers = {name: [] for name in self.places.keys()}  # place -> transitions that consume it
-        place_to_producers = {name: [] for name in self.places.keys()}  # place -> transitions that produce it
+        # Build lookup tables
+        place_to_consumers = {name: [] for name in place_names}
+        place_to_producers = {name: [] for name in place_names}
         
         for transition in self.transitions.values():
             for p in transition.in_places:
@@ -190,29 +191,82 @@ class PetriNet:
             for p in transition.out_places:
                 place_to_producers[p.name].append(transition)
         
-        # For each transition, analyze which places can be alive together
-        for idx, transition in enumerate(self.transitions.values()):
-            if verbose and idx % 1000 == 0 and idx > 0:
-                print(f"    Processed {idx}/{num_transitions} transitions...")
-            
-            # All input places of a transition can be alive together
-            input_names = [p.name for p in transition.in_places]
-            for i, place1 in enumerate(input_names):
-                for j, place2 in enumerate(input_names):
-                    if i != j:
-                        interference[place1].add(place2)
-                        interference[place2].add(place1)
+        # Compute "happens-before" relation using topological ordering
+        # Place A happens-before Place B if A must be consumed before B is produced
+        happens_before = self._compute_happens_before(place_to_consumers, place_to_producers, verbose)
         
-        # Additional analysis: places in parallel paths and pipeline overlaps
+        # Build interference: places interfere unless one strictly happens-before the other
+        interference = {name: set() for name in place_names}
+        
         if verbose:
-            print(f"    Analyzing parallel paths...")
-        self._analyze_parallel_paths_optimized(interference, place_to_consumers, place_to_producers, verbose=verbose)
+            print(f"    Building interference from ordering...")
+        
+        for i, p1 in enumerate(place_names):
+            for j, p2 in enumerate(place_names):
+                if i < j:
+                    # Places interfere unless one strictly precedes the other
+                    p1_before_p2 = p2 in happens_before.get(p1, set())
+                    p2_before_p1 = p1 in happens_before.get(p2, set())
+                    
+                    if not p1_before_p2 and not p2_before_p1:
+                        # No ordering - they can be alive together
+                        interference[p1].add(p2)
+                        interference[p2].add(p1)
+        
+        if verbose:
+            total_edges = sum(len(v) for v in interference.values()) // 2
+            print(f"    Interference graph has {total_edges} edges")
         
         return interference
+    
+    def _compute_happens_before(self, place_to_consumers, place_to_producers, verbose=False):
+        """
+        Compute happens-before relation between places.
+        
+        Place A happens-before Place B if:
+        - A is consumed by a transition T, and
+        - B is produced by T or by a transition reachable from T's outputs
+        
+        Returns dict mapping place -> set of places that happen after it.
+        """
+        happens_after = {name: set() for name in self.places.keys()}
+        
+        # For each place, find all places that are produced after it's consumed
+        for place_name in self.places.keys():
+            # Find transitions that consume this place
+            consumers = place_to_consumers.get(place_name, [])
+            
+            for consumer_trans in consumers:
+                # All outputs of this transition happen after this place
+                for out_place in consumer_trans.out_places:
+                    happens_after[place_name].add(out_place.name)
+                
+                # Transitively, anything reachable from outputs also happens after
+                visited = set()
+                frontier = [p.name for p in consumer_trans.out_places]
+                
+                while frontier:
+                    current = frontier.pop()
+                    if current in visited:
+                        continue
+                    visited.add(current)
+                    happens_after[place_name].add(current)
+                    
+                    # Follow consumers of current place
+                    for trans in place_to_consumers.get(current, []):
+                        for out_p in trans.out_places:
+                            if out_p.name not in visited:
+                                frontier.append(out_p.name)
+        
+        return happens_after
     
     def _analyze_parallel_paths_optimized(self, interference, place_to_consumers, place_to_producers, verbose=False):
         """
         Optimized parallel path analysis using pre-built lookup tables.
+        
+        CRITICAL: For correctness, we need to ensure that places in different
+        parallel branches don't share memory. We use a deeper analysis to
+        capture all places that can be alive simultaneously.
         """
         num_transitions = len(self.transitions)
         
@@ -228,9 +282,10 @@ class PetriNet:
                 fork_count += 1
                 branches = []
                 for output_place in transition.out_places:
-                    # Use optimized reachable places with lookup table
+                    # Use deeper analysis to capture all reachable places
+                    # max_depth=10 should be enough for most computations
                     branch_places = self._get_reachable_places_optimized(
-                        output_place.name, place_to_consumers, max_depth=2)
+                        output_place.name, place_to_consumers, max_depth=10)
                     branches.append(branch_places)
                 
                 # Places in different branches can be alive simultaneously

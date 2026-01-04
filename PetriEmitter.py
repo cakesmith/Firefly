@@ -320,6 +320,12 @@ class PetriEmitter:
             # Skip ifgoto fallthrough places
             if name.startswith('ifgoto_fallthrough_'):
                 continue
+            # Skip fork continuation places (control flow)
+            if '_cont' in name:
+                continue
+            # Skip fork output places (control flow)
+            if name.startswith('fork_') and '_out_' in name:
+                continue
             data_places.append(p)
         return data_places
 

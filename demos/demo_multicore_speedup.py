@@ -12,13 +12,15 @@ Architecture:
 - SHARED ROM: Single instruction memory, each core has its own PC
 - SHARED RAM: All cores read/write same memory with arbitration
 - Event-driven execution: transitions fire when inputs ready
+
+Run with --verify to check computation correctness.
+Run with --benchmark (default) to measure speedup.
 """
 
 import sys
 import os
 import tempfile
 import shutil
-from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -115,7 +117,6 @@ class MultiCoreCPU:
             self.core_halted.append(False)
         
         self.total_cycles = 0
-        self.instructions_per_core = {i: 0 for i in range(num_cores)}
     
     def load_rom(self, instructions: List[dict]):
         self.shared_rom = instructions
@@ -150,7 +151,6 @@ class MultiCoreCPU:
             else:
                 self.core_pcs[core_id] = pc + 1
             
-            self.instructions_per_core[core_id] += 1
             any_executed = True
         
         if any_executed:
@@ -227,8 +227,11 @@ class SharedMemory:
             self.ram[addr] = value & 0xFFFF
 
 
-def compile_and_run(jack_source: str, num_cores: int) -> int:
-    """Compile Jack to assembly and run on multicore CPU."""
+def compile_and_run(jack_source: str, num_cores: int, verbose: bool = False) -> Tuple[int, List[int]]:
+    """Compile Jack to assembly and run on multicore CPU.
+    
+    Returns: (cycles, static_values) where static_values are RAM[16..].
+    """
     temp_dir = tempfile.mkdtemp()
     
     try:
@@ -263,7 +266,11 @@ def compile_and_run(jack_source: str, num_cores: int) -> int:
         for core_id, pc in entry_points.items():
             cpu.set_core_pc(core_id, pc)
         
-        return cpu.run(max_cycles=500000)
+        cycles = cpu.run(max_cycles=500000)
+        
+        # Return static variable values (RAM[16..31])
+        statics = cpu.shared_ram[16:32]
+        return cycles, statics
     finally:
         shutil.rmtree(temp_dir)
 
@@ -272,13 +279,12 @@ def compile_and_run(jack_source: str, num_cores: int) -> int:
 # BENCHMARK PROGRAMS - Real-world parallel patterns
 # =============================================================================
 
-# FFT Butterfly: Core operation in Fast Fourier Transform
-# 8 independent butterfly operations (each combines 2 inputs)
-FFT_BUTTERFLY = '''
+BENCHMARKS = {
+    'FFT Butterfly': {
+        'source': '''
 class Main {
     static int y0, y1, y2, y3, y4, y5, y6, y7;
     function void main() {
-        // 8 parallel butterfly operations: y = (a+b) + (c-d) style
         let y0 = ((10+20) + (30+40)) + ((50+60) + (70+80));
         let y1 = ((11+21) + (31+41)) + ((51+61) + (71+81));
         let y2 = ((12+22) + (32+42)) + ((52+62) + (72+82));
@@ -290,14 +296,15 @@ class Main {
         return;
     }
 }
-'''
-
-# RGB Color Processing: Process 4 pixels, each with R+G+B channels
-COLOR_PROCESS = '''
+''',
+        'description': '8 parallel butterfly operations',
+        'expected': [360, 368, 376, 384, 392, 400, 408, 416],
+    },
+    'RGB Processing': {
+        'source': '''
 class Main {
     static int p0, p1, p2, p3;
     function void main() {
-        // 4 pixels: combine RGB channels with weights
         let p0 = (((100+50)+(25+10)) + ((200+100)+(50+25))) + (((150+75)+(37+18)) + ((175+87)+(43+21)));
         let p1 = (((110+55)+(27+11)) + ((210+105)+(52+26))) + (((160+80)+(40+20)) + ((185+92)+(46+23)));
         let p2 = (((120+60)+(30+12)) + ((220+110)+(55+27))) + (((170+85)+(42+21)) + ((195+97)+(48+24)));
@@ -305,14 +312,15 @@ class Main {
         return;
     }
 }
-'''
-
-# Matrix Multiply Row: Compute 4 elements of result row (dot products)
-MATRIX_ROW = '''
+''',
+        'description': '4 pixels × RGB channel mixing',
+        'expected': [1166, 1242, 1316, 1390],
+    },
+    'Matrix Row': {
+        'source': '''
 class Main {
     static int c0, c1, c2, c3;
     function void main() {
-        // 4 dot products for one row of matrix multiply
         let c0 = (((1+5)+(2+6))+((3+7)+(4+8))) + (((9+13)+(10+14))+((11+15)+(12+16)));
         let c1 = (((1+6)+(2+7))+((3+8)+(4+9))) + (((9+14)+(10+15))+((11+16)+(12+17)));
         let c2 = (((1+7)+(2+8))+((3+9)+(4+10))) + (((9+15)+(10+16))+((11+17)+(12+18)));
@@ -320,28 +328,30 @@ class Main {
         return;
     }
 }
-'''
-
-# Parallel Reduction: Sum 32 values using tree reduction
-TREE_REDUCE_32 = '''
+''',
+        'description': '4 dot products (matrix multiply)',
+        'expected': [136, 144, 152, 160],
+    },
+    'Tree Reduce 32': {
+        'source': '''
 class Main {
     static int sum;
     function void main() {
-        // 32->16->8->4->2->1 parallel reduction
         let sum = 
             ((((1+2)+(3+4))+((5+6)+(7+8)))+(((9+10)+(11+12))+((13+14)+(15+16)))) +
             ((((17+18)+(19+20))+((21+22)+(23+24)))+(((25+26)+(27+28))+((29+30)+(31+32))));
         return;
     }
 }
-'''
-
-# Physics: 6 independent force calculations
-PHYSICS_FORCES = '''
+''',
+        'description': '32→1 parallel reduction',
+        'expected': [528],
+    },
+    'Physics Forces': {
+        'source': '''
 class Main {
     static int f1, f2, f3, f4, f5, f6;
     function void main() {
-        // 6 force vectors: each is sum of component forces
         let f1 = (((10+20)+(30+40))+((50+60)+(70+80))) + (((5+10)+(15+20))+((25+30)+(35+40)));
         let f2 = (((11+21)+(31+41))+((51+61)+(71+81))) + (((6+11)+(16+21))+((26+31)+(36+41)));
         let f3 = (((12+22)+(32+42))+((52+62)+(72+82))) + (((7+12)+(17+22))+((27+32)+(37+42)));
@@ -351,14 +361,15 @@ class Main {
         return;
     }
 }
-'''
-
-# Neural Network Layer: 4 neurons, each sums 8 weighted inputs
-NEURAL_LAYER = '''
+''',
+        'description': '6 force vector calculations',
+        'expected': [540, 556, 572, 588, 604, 620],
+    },
+    'Neural Layer': {
+        'source': '''
 class Main {
     static int n1, n2, n3, n4;
     function void main() {
-        // 4 neurons computing weighted sums
         let n1 = ((((1+10)+(2+20))+((3+30)+(4+40)))+(((5+50)+(6+60))+((7+70)+(8+80)))) + 100;
         let n2 = ((((2+11)+(3+21))+((4+31)+(5+41)))+(((6+51)+(7+61))+((8+71)+(9+81)))) + 100;
         let n3 = ((((3+12)+(4+22))+((5+32)+(6+42)))+(((7+52)+(8+62))+((9+72)+(10+82)))) + 100;
@@ -366,14 +377,15 @@ class Main {
         return;
     }
 }
-'''
-
-# Convolution: 4 output pixels from 3x3 kernel
-CONVOLUTION = '''
+''',
+        'description': '4 neurons × 8 weighted inputs',
+        'expected': [496, 512, 528, 544],
+    },
+    'Convolution': {
+        'source': '''
 class Main {
     static int out1, out2, out3, out4;
     function void main() {
-        // 4 convolution outputs (simplified 3x3 kernel sums)
         let out1 = ((((1+2)+(3+4))+((5+6)+(7+8)))+((9+10)+(11+12))) + (((13+14)+(15+16))+((17+18)+(19+20)));
         let out2 = ((((2+3)+(4+5))+((6+7)+(8+9)))+((10+11)+(12+13))) + (((14+15)+(16+17))+((18+19)+(20+21)));
         let out3 = ((((3+4)+(5+6))+((7+8)+(9+10)))+((11+12)+(13+14))) + (((15+16)+(17+18))+((19+20)+(21+22)));
@@ -381,14 +393,15 @@ class Main {
         return;
     }
 }
-'''
-
-# Crypto Hash Round: 8 parallel mixing operations
-HASH_MIX = '''
+''',
+        'description': '4 output pixels, 3×3 kernel',
+        'expected': [210, 230, 250, 270],
+    },
+    'Hash Mixing': {
+        'source': '''
 class Main {
     static int h0, h1, h2, h3, h4, h5, h6, h7;
     function void main() {
-        // 8 parallel hash state updates
         let h0 = (((100+200)+(300+400))+((500+600)+(700+800))) + (((10+20)+(30+40))+((50+60)+(70+80)));
         let h1 = (((101+201)+(301+401))+((501+601)+(701+801))) + (((11+21)+(31+41))+((51+61)+(71+81)));
         let h2 = (((102+202)+(302+402))+((502+602)+(702+802))) + (((12+22)+(32+42))+((52+62)+(72+82)));
@@ -400,21 +413,56 @@ class Main {
         return;
     }
 }
-'''
+''',
+        'description': '8 parallel hash state updates',
+        'expected': [3960, 3976, 3992, 4008, 4024, 4040, 4056, 4072],
+    },
+}
 
 
-def run_benchmark(name: str, jack_source: str, description: str):
+def verify_correctness():
+    """Verify all benchmarks produce correct results."""
+    print("=" * 60)
+    print("  VERIFICATION: Checking computation correctness")
+    print("=" * 60)
+    
+    all_passed = True
+    for name, bench in BENCHMARKS.items():
+        expected = bench['expected']
+        num_statics = len(expected)
+        
+        _, statics = compile_and_run(bench['source'], num_cores=1)
+        actual = statics[:num_statics]
+        
+        if actual == expected:
+            print(f"  ✓ {name}: {actual}")
+        else:
+            print(f"  ✗ {name}:")
+            print(f"      Expected: {expected}")
+            print(f"      Actual:   {actual}")
+            all_passed = False
+    
+    print()
+    if all_passed:
+        print("  ALL BENCHMARKS PASSED!")
+    else:
+        print("  SOME BENCHMARKS FAILED!")
+    print("=" * 60)
+    return all_passed
+
+
+def run_benchmark(name: str, bench: dict):
     """Run a benchmark and report speedup."""
     print(f"\n{'─'*70}")
     print(f"  {name}")
-    print(f"  {description}")
+    print(f"  {bench['description']}")
     print(f"{'─'*70}")
     
     results = {}
     base_cycles = None
     
     for cores in [1, 2, 4, 8]:
-        cycles = compile_and_run(jack_source, cores)
+        cycles, _ = compile_and_run(bench['source'], cores)
         if base_cycles is None:
             base_cycles = cycles
         
@@ -432,14 +480,13 @@ def run_benchmark(name: str, jack_source: str, description: str):
             marker = " ★ linear"
         elif efficiency >= 70:
             marker = " ✓ good"
-        elif speedup > 1.0:
-            marker = ""
         print(f"  {cores:<8} {cycles:<12} {speedup:<12.2f}x {efficiency:>5.0f}%{marker}")
     
     return results
 
 
-def main():
+def run_benchmarks():
+    """Run all benchmarks and show speedup summary."""
     print("=" * 70)
     print("  MULTICORE SPEEDUP DEMONSTRATION")
     print("  Petri Net → Assembly → Parallel Execution")
@@ -454,20 +501,9 @@ def main():
   • Event-driven execution (no polling overhead)
 """)
     
-    benchmarks = [
-        ("FFT Butterfly", FFT_BUTTERFLY, "8 parallel butterfly operations"),
-        ("RGB Processing", COLOR_PROCESS, "4 pixels × RGB channel mixing"),
-        ("Matrix Row", MATRIX_ROW, "4 dot products (matrix multiply)"),
-        ("Tree Reduce 32", TREE_REDUCE_32, "32→1 parallel reduction"),
-        ("Physics Forces", PHYSICS_FORCES, "6 force vector calculations"),
-        ("Neural Layer", NEURAL_LAYER, "4 neurons × 8 weighted inputs"),
-        ("Convolution", CONVOLUTION, "4 output pixels, 3×3 kernel"),
-        ("Hash Mixing", HASH_MIX, "8 parallel hash state updates"),
-    ]
-    
     all_results = {}
-    for name, source, desc in benchmarks:
-        all_results[name] = run_benchmark(name, source, desc)
+    for name, bench in BENCHMARKS.items():
+        all_results[name] = run_benchmark(name, bench)
     
     # Summary
     print("\n" + "=" * 70)
@@ -492,6 +528,16 @@ def main():
     print(f"  Best 4-core efficiency: {best_eff[0]} ({best_eff[1][4][2]:.0f}%)")
     
     print("\n" + "=" * 70)
+
+
+def main():
+    if '--verify' in sys.argv:
+        verify_correctness()
+    else:
+        # Always verify first, then run benchmarks
+        if verify_correctness():
+            print()
+            run_benchmarks()
 
 
 if __name__ == "__main__":
